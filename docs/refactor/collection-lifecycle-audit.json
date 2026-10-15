@@ -116,6 +116,21 @@
       "acceptance": "将真实生产信封 1/5、6/7、3、11/23/26 贯穿存储与同用查询；校验 provider/channel、时间、身份和文件名单；不能仅传预分类的 fixture kind 验收。"
     }
   ],
+  "runtime_observations": {
+    "date": "2026-10-15",
+    "network_recent_200": {
+      "first_seen": 112,
+      "no_longer_observed": 88
+    },
+    "writer_contention": {
+      "sample_shell_registration_pending": 42302,
+      "recovery_state": "stopped_due_to_writer_contention",
+      "persisted_recovery_cursor": 3584,
+      "latest_record_seq_at_check": 88252,
+      "normal_collection_running": true,
+      "acceptance": "历史未全部回补；需要先评估投影吞吐和公平写入窗口，不提高重试频率。"
+    }
+  },
   "sources": [
     {
       "source": "pcscope.apps.browser-policies",
