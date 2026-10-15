@@ -165,6 +165,39 @@ pub(crate) fn record_snapshot_absence(tx:&Connection,source:&str,scope:&str,run:
     insert(tx,&address,item,EvidenceKind::Record,source,scope,item,None,observed,ingested,
         &serde_json::to_string(&decoding_of_stored_material())?,&record_payload_ref(seq))
 }
+/// Durable addition work, paired with the existing complete-snapshot absence work.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn record_snapshot_appearance(tx:&Connection,source:&str,scope:&str,run:&str,item:&str,seq:i64,observed:&str,ingested:&str)->Result<usize> {
+    if pcscope_contracts::adapters::source_gaps::reading_destination(source).is_some(){return Ok(0)}
+    let address=format!("snapshot-appearance:{}",crate::digest(&serde_json::to_string(&(source,scope,run,item))?));
+    insert(tx,&address,item,EvidenceKind::Record,source,scope,item,None,observed,ingested,
+        &serde_json::to_string(&decoding_of_stored_material())?,&record_payload_ref(seq))
+}
+/// Opt-in bounded recovery. The sequence cursor and original records stay independent.
+pub(crate) fn repair_snapshot_appearance(tx:&Connection,limit:usize)->Result<Value> {
+    anyhow::ensure!((1..=256).contains(&limit),"appearance repair batch must be 1–256 records");
+    let cursor:i64=tx.query_row("SELECT value FROM settings WHERE key='projection.appearance_repair_cursor.v1'",[],|row|row.get::<_,String>(0)).optional()?.map(|value|value.parse()).transpose()?.unwrap_or(0);
+    let rows:Vec<(i64,String,String,String,String,i64)>= {
+        let mut query=tx.prepare("SELECT seq,source,kind,object_id,occurred_at,length(CAST(data AS BLOB)) FROM records WHERE seq>? ORDER BY seq LIMIT ?")?;
+        let rows=query.query_map(params![cursor,limit as i64],|row|Ok((row.get(0)?,row.get(1)?,row.get(2)?,row.get(3)?,row.get(4)?,row.get(5)?)))?;
+        rows.collect::<rusqlite::Result<_>>()?
+    };
+    let(mut next,mut examined,mut queued,mut skipped,mut bytes)=(cursor,0usize,0usize,0usize,0i64);
+    for (seq,source,kind,item,at,size) in &rows {
+        if kind=="object.first_seen"&&*size<=1048576&&bytes+*size>2097152 {break}
+        next=*seq;examined+=1;if kind!="object.first_seen" {continue}
+        if *size>1048576 {skipped+=1;continue}
+        let text:String=tx.query_row("SELECT data FROM records WHERE seq=?",[seq],|row|row.get(0))?;bytes+=*size;
+        let data:Value=match serde_json::from_str(&text){Ok(value)=>value,Err(_)=>{skipped+=1;continue}};
+        if data["_snapshot_appearance_v1"]==true {continue}
+        let Some(scope)=data["scope"].as_str().filter(|scope|!scope.is_empty())else{skipped+=1;continue};
+        if data["basis"]!="snapshot"||data.get("before")!=Some(&Value::Null)||!data["after"].is_object(){skipped+=1;continue}
+        // Use one stable legacy address; normal and recovery evidence deduplicate at the action.
+        queued+=record_snapshot_appearance(tx,source,scope,&format!("legacy-record-{seq}"),item,*seq,at,at)?;
+    }
+    tx.execute("INSERT INTO settings(key,value) VALUES('projection.appearance_repair_cursor.v1',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",[next.to_string()])?;
+    Ok(json!({"examined":examined,"queued":queued,"skipped":skipped,"cursor":next,"material_bytes":bytes,"caught_up":examined==rows.len()&&rows.len()<limit}))
+}
 /// Opt-in bounded repair for retained legacy differences. Never edits their original material.
 pub(crate) fn repair_snapshot_absence(tx:&Connection,limit:usize)->Result<Value> {
     anyhow::ensure!((1..=256).contains(&limit),"absence repair batch must be 1–256 records");

@@ -101,6 +101,16 @@ pub fn project_pending(tx: &Connection, machine_id: &str, installation_id: &str,
             if wrote {report.projected+=1;}else{report.skipped+=1;}
             continue;
         }
+        if input.evidence.kind==pcscope_contracts::adapter::EvidenceKind::Record && input.evidence.id.starts_with("snapshot-appearance:") {
+            if !valid_snapshot_appearance(&input) {
+                finish(tx,queue_id,"failed",Some("snapshot addition material is missing or invalid"))?;
+                report.rejected+=1;continue;
+            }
+            let wrote=apply_snapshot_appearance(tx,&input,&context,&disabled)?;
+            finish(tx,queue_id,"done",None)?;
+            if wrote {report.projected+=1;}else{report.skipped+=1;}
+            continue;
+        }
         // A source with no adapter is not an error to hide: it is a known gap, and the queue keeps
         // the reason so the health view can show which sources are still unconverted.
         let Some(adapter) = adapter_for(&input.source) else {
@@ -151,6 +161,43 @@ fn finish(tx: &Connection, queue_id: i64, state: &str, error: Option<&str>) -> R
         params![state, error, queue_id],
     )?;
     Ok(())
+}
+fn valid_snapshot_appearance(input:&EvidenceInput)->bool {
+    input.payload["basis"]=="snapshot"&&input.payload.get("before")==Some(&Value::Null)&&input.payload["after"].is_object()&&input.payload["scope"].as_str()==Some(input.source_scope.as_str())
+}
+fn apply_snapshot_appearance(tx:&Connection,input:&EvidenceInput,context:&AdapterContext,disabled:&std::collections::BTreeSet<String>)->Result<bool> {
+    if disabled.contains(&crate::item_controls::classify(&input.source,&input.item_id,"",&input.payload["after"])){return Ok(false)}
+    let Some(adapter)=adapter_for(&input.source)else{return Ok(false)};
+    let mut present=input.clone();present.payload=input.payload["after"].clone();present.evidence.kind=pcscope_contracts::adapter::EvidenceKind::Snapshot;
+    let adapted=adapter.adapt(&present,context);
+    if !pcscope_contracts::adapter::validate(&adapted,context).is_empty()||!adapted.problems.is_empty(){return Ok(false)}
+    let mut wrote=false;let mut seen=std::collections::BTreeSet::new();
+    for observation in adapted.observations {
+        let candidate=observation.identity;if candidate.ambiguous.is_some()||!observation.complete{continue}
+        let Some(strategy)=pcscope_contracts::identity::TypeStrategy::for_type(&candidate.type_id)else{continue};
+        let (key,missing)=pcscope_contracts::identity::normalise(&strategy,&candidate);
+        let matches:Vec<u64>={
+            let mut query=tx.prepare("SELECT DISTINCT i.instance_id FROM source_bindings b JOIN object_instances i ON i.instance_id=b.instance_id WHERE b.source=? AND b.item_id=? AND b.native_record_id=? AND b.scope=? AND i.type_id=? AND i.machine_id=? AND i.installation_id=? AND i.scope=? AND i.first_observed_at=? AND (? OR i.native_key=?) LIMIT 2")?;
+            let rows=query.query_map(params![input.source,input.item_id,input.native_record_id,candidate.scope,candidate.type_id,context.machine_id,context.installation_id,candidate.scope,input.observed_at,!missing.is_empty(),key],|row|row.get(0))?;
+            rows.collect::<rusqlite::Result<_>>()?
+        };
+        // An extra registry role or another source for an already-known object is not a new object.
+        // A provisional endpoint is usable only when its exact retained source binding is unique.
+        if matches.len()!=1||!seen.insert(matches[0]){continue}let instance=matches[0];
+        let from=input.payload["before_observed_at"].as_str().and_then(|at|pcscope_contracts::semantics::canonical_time(at).ok())
+            .filter(|at|pcscope_contracts::semantics::canonical_time(&input.observed_at).ok().is_some_and(|until|at<&until));
+        let existing:Option<i64>=tx.query_row("SELECT action_row FROM object_actions WHERE instance_id=? AND action_id='observed.first_seen' AND observed_at=? LIMIT 1",params![instance,input.observed_at],|row|row.get(0)).optional()?;
+        let action=if let Some(id)=existing{id}else{
+            // Store only the original appearance's small typed summary. Later current state must
+            // never relabel an old listening item as a connected socket (or the reverse).
+            let field=|id:&str|observation.fields.iter().find(|field|field.field_id==id&&field.status==pcscope_contracts::adapter::ValueStatus::Known).and_then(|field|field.value.clone());
+            let summary=json!({"snapshot_presence":{"source":input.source,"protocol":field("protocol"),"state":field("state")}});
+            tx.execute("INSERT INTO object_actions(instance_id,unassigned_reason,action_id,target_type,title,result,occurred_at,precision,interval_from,interval_until,observed_at,actor,program,rule_version,source_record) VALUES(?,NULL,'observed.first_seen',?,'新增列表项','observed',NULL,?,?,?,?,NULL,NULL,?,?)",params![instance,candidate.type_id,if from.is_some(){"interval"}else{"observation_only"},from,if from.is_some(){Some(input.observed_at.as_str())}else{None},input.observed_at,context.rule_version,summary.to_string()])?;
+            wrote=true;tx.last_insert_rowid()
+        };
+        tx.execute("INSERT OR IGNORE INTO evidence_refs(subject_kind,subject_id,evidence_kind,evidence_id) VALUES('action',?,'record',?)",params![action.to_string(),input.evidence.id])?;
+    }
+    Ok(wrote)
 }
 fn apply_snapshot_absence(tx:&Connection,input:&EvidenceInput,context:&AdapterContext,disabled:&std::collections::BTreeSet<String>)->Result<bool> {
     // Only internal complete-snapshot difference records reach this branch. Never treat a gap,
@@ -872,6 +919,74 @@ mod tests {
     const TASK_PATH: &str = r"\例子文件夹\例子任务";
     const MACHINE: &str = "m";
     const INSTALL: &str = "i";
+
+    fn network_snapshot(source:&str,run:&str,time:&str,items:Value)->Envelope {
+        envelope(json!({"protocol_version":1,"request_id":run,"type":"snapshot","source":source,"scope":"machine:m/schema:1/context:/shard:0","run_id":run,"observed_at":time,"complete":true,"items":items}))
+    }
+    fn tcp_item(port:u32,state:&str)->Value {
+        json!({"id":format!("tcp-{port}"),"data":{"LocalAddress":"127.0.0.1","LocalPort":port,"RemoteAddress":"127.0.0.1","RemotePort":443,"OwningProcess":42,"CreationTime":"2026-10-15T01:00:01Z","State":state}})
+    }
+    #[test]
+    fn snapshot_additions_reach_timeline_without_audit_logs_or_baseline_noise() {
+        use pcscope_contracts::query::{ActionFilter,QueryRequest};
+        let mut store=Store::open(":memory:").unwrap();let tcp="pcscope.network.tcp";let udp="pcscope.network.udp";
+        store.ingest(&network_snapshot(tcp,"baseline","2026-10-15T01:00:00Z",json!([tcp_item(50000,"Listen")]))).unwrap();
+        store.ingest(&network_snapshot(udp,"udp-baseline","2026-10-15T01:00:00Z",json!([]))).unwrap();drain(&store);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions"),0,"initial inventory must not claim new connections");
+        let added=network_snapshot(tcp,"added","2026-10-15T01:00:03Z",json!([tcp_item(50000,"Listen"),tcp_item(50001,"Established"),tcp_item(50002,"Listen")]));
+        store.ingest(&added).unwrap();
+        store.ingest(&network_snapshot(udp,"udp-added","2026-10-15T01:00:03Z",json!([{"id":"udp-5353","data":{"LocalAddress":"0.0.0.0","LocalPort":5353,"OwningProcess":42,"CreationTime":"2026-10-15T01:00:01Z"}}]))).unwrap();drain(&store);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.first_seen' AND occurred_at IS NULL AND precision='interval'"),3);
+        store.ingest(&added).unwrap();drain(&store);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.first_seen'"),3,"replay does not duplicate arrivals");
+        store.ingest(&network_snapshot(tcp,"changed","2026-10-15T01:00:04Z",json!([tcp_item(50000,"Listen"),tcp_item(50001,"CloseWait"),tcp_item(50002,"Listen")]))).unwrap();drain(&store);
+        let response=store.query(&QueryRequest::ActionTimeline(ActionFilter{type_id:Some("network.endpoint".into()),action_id:Some("observed.first_seen".into()),..Default::default()})).unwrap();
+        let rows=response.data.as_ref().unwrap().as_array().unwrap();assert_eq!(rows.len(),3);
+        assert!(rows.iter().any(|row|row["source_record"]["snapshot_presence"]["state"]=="Established"));
+        assert!(rows.iter().all(|row|row["interval_from"]=="2026-10-15T01:00:00.000Z"&&row["interval_until"]=="2026-10-15T01:00:03Z"));
+        store.ingest(&network_snapshot(tcp,"gone","2026-10-15T01:00:05Z",json!([tcp_item(50000,"Listen")]))).unwrap();drain(&store);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.no_longer_observed'"),2,"arrivals and disappearances both exist");
+    }
+    #[test]
+    fn retained_addition_recovery_is_bounded_idempotent_and_preserves_raw_material() {
+        let mut store=Store::open(":memory:").unwrap();let source="pcscope.network.tcp";
+        store.ingest(&network_snapshot(source,"baseline","2026-10-15T01:00:00Z",json!([]))).unwrap();drain(&store);
+        store.ingest(&network_snapshot(source,"added","2026-10-15T01:00:03Z",json!([tcp_item(50001,"Established")]))).unwrap();
+        store.conn.execute("DELETE FROM projection_queue WHERE evidence_id LIKE 'snapshot-appearance:%'",[]).unwrap();
+        store.conn.execute("DELETE FROM evidence WHERE evidence_id LIKE 'snapshot-appearance:%'",[]).unwrap();drain(&store);
+        let text:String=store.conn.query_row("SELECT data FROM records WHERE kind='object.first_seen'",[],|row|row.get(0)).unwrap();
+        let mut legacy:Value=serde_json::from_str(&text).unwrap();legacy.as_object_mut().unwrap().remove("_snapshot_appearance_v1");
+        store.conn.execute("UPDATE records SET data=? WHERE kind='object.first_seen'",[legacy.to_string()]).unwrap();
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions"),0);
+        let before:String=store.conn.query_row("SELECT data FROM records WHERE kind='object.first_seen'",[],|row|row.get(0)).unwrap();
+        assert_eq!(store.repair_snapshot_appearance(1).unwrap()["queued"],1);drain(&store);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.first_seen'"),1);
+        assert_eq!(store.repair_snapshot_appearance(1).unwrap()["queued"],0);
+        let after:String=store.conn.query_row("SELECT data FROM records WHERE kind='object.first_seen'",[],|row|row.get(0)).unwrap();assert_eq!(before,after);
+        assert!(store.repair_snapshot_appearance(0).is_err());assert!(store.repair_snapshot_appearance(257).is_err());
+    }
+    #[test]
+    fn a_new_source_slice_for_a_known_object_does_not_create_an_arrival() {
+        let mut store=Store::open(":memory:").unwrap();
+        store.ingest(&tasks_snapshot("known","2026-10-15T01:00:00Z","Known task",true)).unwrap();drain(&store);
+        let mut empty=tasks_snapshot("other-base","2026-10-15T01:00:01Z","Known task",true);
+        if let pcscope_contracts::Message::Snapshot{scope,items,..}=&mut empty.message {*scope="machine:m/install:i/schema:1/context:other/shard:0".into();items.clear();}
+        store.ingest(&empty).unwrap();
+        let mut extra=tasks_snapshot("other-role","2026-10-15T01:00:03Z","Known task",true);
+        if let pcscope_contracts::Message::Snapshot{scope,..}=&mut extra.message {*scope="machine:m/install:i/schema:1/context:other/shard:0".into();}
+        store.ingest(&extra).unwrap();drain(&store);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.first_seen'"),0);
+    }
+    #[test]
+    fn missing_addition_material_does_not_block_other_pending_observations() {
+        let mut store=Store::open(":memory:").unwrap();let source="pcscope.network.tcp";
+        store.ingest(&network_snapshot(source,"baseline","2026-10-15T01:00:00Z",json!([]))).unwrap();drain(&store);
+        store.ingest(&network_snapshot(source,"added","2026-10-15T01:00:03Z",json!([tcp_item(50001,"Established"),tcp_item(50002,"Listen")]))).unwrap();
+        store.conn.execute("DELETE FROM records WHERE object_id='tcp-50001'",[]).unwrap();
+        let report=store.project_pending(MACHINE,INSTALL,100).unwrap();assert_eq!(report.rejected,1);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.first_seen'"),1);
+        assert_eq!(count(&store,"SELECT count(*) FROM projection_queue WHERE state='pending'"),0,"a missing historical record must not cause a retry loop");
+    }
 
     fn envelope(value: Value) -> Envelope {
         parse(&value.to_string()).unwrap()

@@ -371,6 +371,7 @@ impl Store {
                 let payload = serde_json::to_string(&checked.message)?;
                 let old_run: Option<String> = tx.query_row("SELECT digest FROM snapshot_receipts WHERE source=? AND scope=? AND run_id=?", params![source,scope,run_id], |r|r.get(0)).optional()?;
                 let mut absent_records=Vec::new();
+                let mut appeared_records=Vec::new();
                 if let Some(old) = old_run {
                     if old != digest(&payload) {
                         bail!("snapshot run reused with different content");
@@ -415,8 +416,10 @@ impl Store {
                     } else {
                         "object.first_seen"
                     };
-                    let detail = json!({"scope":scope,"before":before.map(|s|serde_json::from_str::<Value>(s)).transpose()?,"after":serde_json::from_str::<Value>(data)?,"basis":"snapshot","before_observed_at":before_seen.as_ref().or(previous_observation.as_ref())});
+                    let mut detail = json!({"scope":scope,"before":before.map(|s|serde_json::from_str::<Value>(s)).transpose()?,"after":serde_json::from_str::<Value>(data)?,"basis":"snapshot","before_observed_at":before_seen.as_ref().or(previous_observation.as_ref())});
+                    if kind=="object.first_seen"&&detail["after"].is_object(){detail["_snapshot_appearance_v1"]=json!(true);}
                     tx.execute("INSERT INTO records(source,kind,object_id,occurred_at,data) VALUES(?,?,?,?,?)",params![source,kind,id,observed_at,detail.to_string()])?;
+                    if kind=="object.first_seen"&&detail["after"].is_object() {appeared_records.push((id.clone(),tx.last_insert_rowid()));}
                     inserted += 1;
                 }
                 for (id, data) in &old {
@@ -443,6 +446,9 @@ impl Store {
                     )?;
                 }
                 store_snapshot(&tx, source, scope, run_id, &payload, unit_id, observed_at, &ingested_at, items)?;
+                // Queue additions after their snapshot observations establish the object binding.
+                // Initial baselines remain observations, rather than fabricated creation events.
+                for (id,seq) in appeared_records {evidence::record_snapshot_appearance(&tx,source,scope,run_id,&id,seq,observed_at,&ingested_at)?;}
                 // All present aliases/child records must project before missing records from this
                 // same complete round; one disappearing registry role cannot hide its live object.
                 for (id,seq) in absent_records {evidence::record_snapshot_absence(&tx,source,scope,run_id,&id,seq,observed_at,&ingested_at)?;}
@@ -704,6 +710,10 @@ impl Store {
     /// Explicit resumable compatibility repair. The caller controls each bounded batch.
     pub fn repair_snapshot_absence(&self,limit:usize)->Result<Value> {
         let tx=self.conn.unchecked_transaction()?;let report=evidence::repair_snapshot_absence(&tx,limit)?;tx.commit()?;Ok(report)
+    }
+    /// Explicit bounded recovery of retained additions; never edits the original records.
+    pub fn repair_snapshot_appearance(&self,limit:usize)->Result<Value> {
+        let tx=self.conn.unchecked_transaction()?;let report=evidence::repair_snapshot_appearance(&tx,limit)?;tx.commit()?;Ok(report)
     }
 
     pub fn objects(&self, offset: usize, limit: usize) -> Result<Vec<Value>> {

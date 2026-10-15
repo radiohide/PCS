@@ -476,6 +476,10 @@ fn dispatch_raw(state: &Arc<State>, request: Request) -> Result<Value> {
             Ok(json!({"scheduled":true}))
         }
         Request::Retention => anyhow::bail!("retention is answered by the read-only path"),
+        Request::RepairSnapshotAppearance { limit } => {
+            anyhow::ensure!(!state.stopping.load(Ordering::SeqCst),"后台正在退出，请稍后重试");
+            state.store.try_lock().map_err(|_|anyhow::anyhow!("后台正在处理采集，请稍后重试"))?.repair_snapshot_appearance(limit)
+        }
         Request::SetRetention { mode, quota_bytes } => state
             .store
             .lock()

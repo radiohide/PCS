@@ -112,6 +112,13 @@ const PCScopeReadableEvents=(()=>{
     }
     const labels={'observed.first_seen':'首次采集到','execution.process_started':'开始运行','execution.process_stopped':'已退出','execution.module_loaded':'已加载','files.deleted':'已删除','files.deleted_archived':'已删除并归档','startup.task_started':'开始运行','network.connection_allowed':'已允许','network.connection_blocked':'已阻止','identity.logon_failed':'登录失败'};
     result.label=labels[row.action_id]||result.label;
+    if(row.action_id==='observed.first_seen'&&row.source_record?.snapshot_presence){
+      const presence=row.source_record.snapshot_presence,state=String(presence.state||'').toLowerCase();
+      result.label='新发现';
+      if(!uncertainAssociation(row)&&id==='network.endpoint'){
+        result.label=presence.source==='pcscope.network.udp'?'新增 UDP 端口':['listen','listening'].includes(state)?'新增监听端口':state==='established'?'新增连接':'新增网络项';
+      }
+    }
     if(row.action_id==='observed.no_longer_observed')result.label=absence(row).label;
     if(row.action_id==='startup.task_ended'){
       result.label=['succeeded','success'].includes(row.result)?'运行成功':['failed','failure'].includes(row.result)?'运行失败':row.result==='cancelled'?'本次运行已取消':'本次运行已结束';

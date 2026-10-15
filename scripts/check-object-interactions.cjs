@@ -166,6 +166,11 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   assert.doesNotMatch(await page.locator('#timeline-results').innerText(),/runtime\.process|file\.watched_file|尚不能据此确认已被删除/);
   await page.screenshot({path:path.join(output,'timeline-types-preview.png'),fullPage:false});
   checks.push('real timeline distinguishes process, file, service, task, module, queue, connection and certificate with visible types and collapsed raw details');
+  const arrivalRows=['Established','Listen',null].map((connectionState,index)=>({...timelineRows[0],action_id:'observed.first_seen',instance_id:index+1,source_record:{snapshot_presence:{source:index===2?'pcscope.network.udp':'pcscope.network.tcp',protocol:index===2?null:'TCP',state:connectionState}},context:{type_id:'network.endpoint',subject_label:'本机端口 '+(61981+index),attribution_status:'stored',key_facts:[{field_id:'state',status:'known',value:'Closed'}]}}));
+  await page.evaluate(data=>window.__qa.timeline=data,arrivalRows);await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-entry').first().waitFor();
+  assert.deepEqual(await page.locator('.timeline-event-label').allTextContents(),['新增连接','新增监听端口','新增 UDP 端口']);
+  assert.doesNotMatch(await page.locator('#timeline-results').innerText(),/已不在连接与监听列表|Closed/);
+  checks.push('new TCP connections, listening ports and UDP ports have distinct arrival cards based on the original snapshot rather than later state');
   const grouped79=Array.from({length:79},(_,index)=>({...timelineRows[0],instance_id:index+1,context:{type_id:index<50?'runtime.process':index<68?'startup.service':index<76?'network.adapter':'file.watched_file',subject_label:'分组示例 '+(index+1),attribution_status:'stored'}}));
   await page.evaluate(data=>{window.__qa.timeline=data;},grouped79);
   await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-category-toggle').first().waitFor();

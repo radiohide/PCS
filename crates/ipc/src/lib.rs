@@ -55,6 +55,7 @@ pub enum Request {
     SetMonitoringSettings { mode: String, repair: bool },
     Status,
     Collect,
+    RepairSnapshotAppearance { limit: usize },
     Plugins,
     SetPlugin {
         id: String,

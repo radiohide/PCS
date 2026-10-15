@@ -133,7 +133,8 @@ pub(crate) fn cleanup(path: &std::path::Path) {
         store.ingest(&snapshot("run-2", &["task-01"])).unwrap();
 
         let report = store.project_pending("M", "I", 100).unwrap();
-        assert_eq!(report.projected, 2, "the readable sources are projected");
+        assert_eq!(report.projected, 3, "both readable observations and the added task reach projection");
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.first_seen'"),1,"the later task is new, rather than part of the initial baseline");
         assert_eq!(report.unadapted, 1, "the unreadable one is reported, not dropped");
         assert_eq!(count(&store, "SELECT count(distinct source) FROM evidence"), 2, "the source whose material failed is still retained");
         assert_eq!(count(&store, "SELECT count(*) FROM evidence WHERE source='pcscope.unconverted.thing'"), 1);

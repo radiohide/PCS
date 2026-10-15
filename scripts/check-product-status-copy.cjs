@@ -23,6 +23,12 @@ assert.match(readableEvents.impact(missing('desktop.print_job')),/完成或被�
 assert.match(readableEvents.impact(missing('software.appx_package')),/当前账户.*已无此包/);
 assert.match(readableEvents.impact(missing('software.provisioned_package')),/新账户.*预装应用清单/);
 assert.match(readableEvents.impact(missing('network.endpoint')),/连接.*列表/);
+const arrival=(source,state)=>({action_id:'observed.first_seen',instance_id:1,result:'observed',context:{type_id:'network.endpoint',attribution_status:'stored',key_facts:[{field_id:'state',status:'known',value:'Closed'}]},source_record:{snapshot_presence:{source,protocol:'TCP',state}}});
+assert.equal(readableEvents.card(arrival('pcscope.network.tcp','Established')).label,'新增连接');
+assert.equal(readableEvents.card(arrival('pcscope.network.tcp','Listen')).label,'新增监听端口');
+assert.equal(readableEvents.card(arrival('pcscope.network.udp',null)).label,'新增 UDP 端口');
+assert.equal(readableEvents.card(arrival('pcscope.network.tcp','SynSent')).label,'新增网络项');
+assert.equal(readableEvents.card({action_id:'observed.first_seen',context:{type_id:'network.endpoint'}}).label,'首次采集到','an old first observation must not imply connection creation');
 assert.match(readableEvents.impact(missing('account.group_membership')),/成员关系/);
 assert.match(readableEvents.impact(missing('security.certificate_registration')),/证书存储区.*登记/);
 assert.match(readableEvents.impact(missing('virtualization.disk_attachment')),/磁盘连接/);
