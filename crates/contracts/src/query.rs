@@ -104,6 +104,9 @@ pub struct ActionFilter {
     pub instance: Option<String>,
     #[serde(default = "default_true")]
     pub include_unassigned: bool,
+    /// Routine refreshes stay available in object history and can be explicitly included here.
+    #[serde(default)]
+    pub include_routine: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub since: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -116,7 +119,7 @@ fn default_true() -> bool {
 }
 impl Default for ActionFilter {
     fn default() -> Self {
-        Self { action_id: None, category: None, type_id: None, source: None, instance: None, include_unassigned: true, since: None, cursor: None, limit: default_limit() }
+        Self { action_id: None, category: None, type_id: None, source: None, instance: None, include_unassigned: true, include_routine: false, since: None, cursor: None, limit: default_limit() }
     }
 }
 

@@ -101,6 +101,16 @@ assert.equal(groupCount([processMissing,point]),2,'exact events do not join inte
 assert.match(view.timeline({data:[ranged('2026-10-14T15:59:00Z','2026-10-14T16:01:00Z')]}),/timeline-time-end/,'cross-day ranges retain both ends');
 const serviceEvent={action_id:'startup.service_state_changed',field_id:'state',before:'Stopped',after:'Running',context:{type_id:'startup.service',subject_label:'Volume Shadow Copy'}};
 const serviceCard=readableEvents.card(serviceEvent);
+const routineCard=(type_id,field_id,before,after,extra={})=>readableEvents.card({action_id:'observed.state_changed',field_id,before,after,context:{type_id,attribution_status:'stored'},...extra});
+assert.equal(routineCard('account.user_profile','last_use','2026-10-15T08:08:26Z','2026-10-15T08:14:27Z').kind,'value');
+assert.equal(routineCard('account.user_profile','last_use','2026-10-15T08:08:26Z','2026-10-15T08:14:27Z').field,'最近使用时间已更新');
+assert.equal(routineCard('startup.scheduled_task','last_run','2026-10-15T08:08:26Z','2026-10-15T08:14:27Z').field,'最近执行');
+assert.equal(routineCard('security.protection','signature_version','1.0','1.1').label,'病毒库已更新');
+assert.equal(routineCard('security.protection','signature_version','1.0','1.1',{source_record:{protection_update:{engine_changed:true,signature_changed:true}}}).label,'防护程序和病毒库已更新');
+assert.match(routineCard('hardware.battery','charge',21,20).label,/电量偏低/);
+assert.match(routineCard('hardware.battery','charge',11,10).label,/电量很低/);
+assert.match(routineCard('hardware.battery','charge',20,21).label,/电量已恢复/);
+assert.equal(routineCard('runtime.module_instance','module_base',4096,8192).label,'模块加载位置已变化','module address presentation remains unchanged');
 assert.equal(serviceCard.kind,'diff');assert.equal(serviceCard.after,'运行中');assert.equal(serviceCard.note,'');
 assert.equal(readableEvents.card({...serviceEvent,after_status:'unreadable'}).kind,'event');
 assert.equal(readableEvents.card({...serviceEvent,before:null}).kind,'value','no previous value means no change arrow');
@@ -121,6 +131,8 @@ assert.match(uncertainTimeline,/事件中的任务/);assert.match(uncertainTimel
 assert.doesNotMatch(uncertainTimeline,/data-object-alias=/,'unverified historical associations must not offer a misleading detail link');
 const uncertainDetail=view.detail({data:{summary:{type_id:'startup.scheduled_task',display_name:'旧占位对象',key_facts:[]},actions_preview:[uncertainTask],fields:[],bindings:[]}});
 assert.match(uncertainDetail,/<details><summary>1 条历史日志未能对应到此对象/,'unverified history is retained separately from confirmed object activity');
+const taskDetail=view.detail({data:{summary:{type_id:'startup.scheduled_task',display_name:'示例任务',identity_status:'confirmed',key_facts:[]},actions_preview:[{action_id:'observed.state_changed',field_id:'last_run',before:'2026-10-15T08:08:26Z',after:'2026-10-15T08:14:27Z',context:{type_id:'startup.scheduled_task',attribution_status:'stored'}},{action_id:'startup.task_ended',result:'failed',context:{type_id:'startup.scheduled_task',attribution_status:'stored'}}],fields:[],bindings:[]}});
+assert.match(taskDetail,/<h4>执行记录<\/h4>/);assert.match(taskDetail.split('<h4>执行记录</h4>')[1],/最近执行/);assert.match(taskDetail.split('<h4>执行记录</h4>')[1],/本次任务未成功完成/);
 const assess=check=>view.moduleFileAssessment({check});
 assert.match(assess({status:'missing',pe_status:'basic_headers_valid'}),/下次.*可能失败/,'an earlier good result cannot hide a missing file');
 assert.match(assess({status:'unavailable',pe_status:'basic_headers_valid'}),/本次文件检查失败/,'unreadable is unknown, not healthy');

@@ -147,20 +147,26 @@ const PCScopeModelView=(()=>{
     // the moment something happened would claim a precision the source does not have.
     const renderAction=action=>{
       const when=action.time_derived?'发生于 '+time(action.interval_from)+' 至 '+time(action.interval_until):time(action.occurred_at||action.observed_at);
-      const change=readableEvents.change(action);
-      return '<li><span class="action-title">'+esc(readableEvents.title(action))+'</span><span class="event-result">'+esc(readableEvents.result(action))+'</span><p>'+esc(readableEvents.subject(action))+'</p><p class="timeline-type">类型：'+esc(readableEvents.typeLabel(action))+'</p><p>'+esc(change||readableEvents.impact(action))+'</p>'+(readableEvents.attribution(action)?'<p class="notice">'+esc(readableEvents.attribution(action))+'</p>':'')+'<small class="muted">'+esc(when)+(action.time_derived?'（发生在此期间）':'')+'</small><details><summary>原始变化记录</summary><pre>'+esc(JSON.stringify(action,null,2))+'</pre></details></li>';
+      const display=readableEvents.card(action),change=readableEvents.change(action);
+      const simple=(action.context?.type_id==='account.user_profile'&&action.field_id==='last_use')||(action.context?.type_id==='startup.scheduled_task'&&['last_run','next_run'].includes(action.field_id))||(action.context?.type_id==='network.adapter'&&action.field_id==='speed')||(action.context?.type_id==='security.protection'&&['signature_version','engine_version'].includes(action.field_id))||(action.context?.type_id==='hardware.battery'&&action.field_id==='charge');
+      const description=simple&&display.kind==='value'?[display.field,display.after].filter(Boolean).join('：'):change||readableEvents.impact(action);
+      const heading=simple?(display.kind==='value'?display.field:display.kind==='event'?display.label:readableEvents.title(action)):readableEvents.title(action);
+      return '<li><span class="action-title">'+esc(heading)+'</span><span class="event-result">'+esc(readableEvents.result(action))+'</span><p>'+esc(readableEvents.subject(action))+'</p><p class="timeline-type">类型：'+esc(readableEvents.typeLabel(action))+'</p><p>'+esc(description)+'</p>'+(readableEvents.attribution(action)?'<p class="notice">'+esc(readableEvents.attribution(action))+'</p>':'')+'<small class="muted">'+esc(when)+(action.time_derived?'（发生在此期间）':'')+'</small><details><summary>原始变化记录</summary><pre>'+esc(JSON.stringify(action,null,2))+'</pre></details></li>';
     };
     const previews=data.actions_preview||[],uncertainActions=previews.filter(readableEvents.uncertainAssociation);
     const accountNote=accountExplanation(summary,previews);
     const mainFacts=presentation.entries(summary,data.fields||[],{omitNames:true});
-    const actions=previews.filter(action=>!readableEvents.uncertainAssociation(action)).map(renderAction).join('');
+    const reliable=previews.filter(action=>!readableEvents.uncertainAssociation(action));
+    const isTaskRun=action=>summary.type_id==='startup.scheduled_task'&&(['last_run','last_result'].includes(action.field_id)||['startup.task_started','startup.task_ended'].includes(action.action_id));
+    const actions=reliable.filter(action=>!isTaskRun(action)).map(renderAction).join('');
+    const taskRuns=reliable.filter(isTaskRun).map(renderAction).join('');
     const bindings=(data.bindings||[]).map(binding=>`<li>${esc(binding.source)} · ${esc(binding.item_id)}<br><small class="muted">${esc(time(binding.valid_from))} → ${binding.valid_to?esc(time(binding.valid_to)):'现在'}</small></li>`).join('');
     return `<div class="model-detail">
       <h3>${esc(objectNames.name(summary,data.fields||[]))}</h3>${objectNames.dictionaryMatched(summary,data.fields||[])?'<span class="badge">按登记识别</span><p>'+esc(summary.presentation.description||'这是系统保留的一项登记。')+'</p><p class="muted">名称根据安装登记识别。</p>':objectNames.unnamedRegistration(summary,data.fields||[])?'<p class="notice">系统保留的安装登记，未取得软件名称。</p>':''}
       <p class="muted">${esc(objectNames.typeName(summary))} · ${esc(presentation.state(summary,data.fields||[]))}${summary.identity_status!=='confirmed'?` · ${esc(label(identityNames,summary.identity_status))}`:''}</p>
       ${accountNote?'<p class="notice">'+esc(accountNote)+'</p>':''}
       <h4>${presentation.lifecycle(summary)?'上次采集的信息':'主要信息'}</h4>${presentation.lifecycle(summary)?'<p class="muted">采集时间：'+esc(time(summary.seen_at))+'</p>':''}<ul class="fact-list">${mainFacts.map(fact=>factFact(fact,summary)).join('')||'<li class="muted">来源未提供更多资料</li>'}</ul>
-      <h4>最近变化</h4><ul class="action-list">${actions||'<li class="muted">尚无该对象的变化记录</li>'}</ul>${uncertainActions.length?'<details><summary>'+uncertainActions.length+' 条历史日志未能对应到此对象</summary><p class="notice">这些日志保留在此供核对。</p><ul class="action-list">'+uncertainActions.map(renderAction).join('')+'</ul></details>':''}
+      <h4>最近变化</h4><ul class="action-list">${actions||'<li class="muted">尚无该对象的变化记录</li>'}</ul>${taskRuns?'<h4>执行记录</h4><ul class="action-list task-execution-list">'+taskRuns+'</ul>':''}${uncertainActions.length?'<details><summary>'+uncertainActions.length+' 条历史日志未能对应到此对象</summary><p class="notice">这些日志保留在此供核对。</p><ul class="action-list">'+uncertainActions.map(renderAction).join('')+'</ul></details>':''}
       <details><summary>详细名称、全部属性与来源</summary><p>原始名称：${esc(summary.display_name||'未提供')}</p><p>内部标识：${esc(summary.alias)}</p><p>范围：${esc(summary.scope||'未提供')}</p>${summary.presentation?'<h4>名称说明与依据</h4><pre>'+esc(JSON.stringify(summary.presentation,null,2))+'</pre>':''}<ul class="fact-list">${fields||'<li class="muted">没有字段事实</li>'}</ul><h4>来源记录</h4><ul class="binding-list">${bindings||'<li class="muted">没有来源绑定</li>'}</ul><h4>全部采集记录</h4><pre>${esc(JSON.stringify(summary.coverage||[],null,2))}</pre></details>
     </div>`;
   }

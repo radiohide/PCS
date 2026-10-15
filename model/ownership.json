@@ -10,6 +10,7 @@
         "pcscope/crates/storage/src/evidence.rs",
         "pcscope/crates/storage/src/identity.rs",
         "pcscope/crates/storage/src/projection.rs",
+        "pcscope/crates/storage/src/timeline_policy.rs",
         "pcscope/crates/storage/src/collection.rs",
         "pcscope/crates/storage/src/coverage.rs",
         "pcscope/crates/storage/src/item_controls.rs",

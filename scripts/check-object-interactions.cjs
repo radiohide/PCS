@@ -35,7 +35,11 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
     if(q.query==='type_catalog')return samples.type_catalog;
     if(q.query==='source_readings'&&window.__qa.sourcePages)return window.__qa.sourcePages[q.cursor?1:0];
     if(q.query==='instance_actions'&&window.__qa.actionPages)return window.__qa.actionPages[q.cursor?1:0];
-    if(q.query==='action_timeline'&&window.__qa.timelinePages)return window.__qa.timelinePages[q.cursor?1:0];
+    if(q.query==='action_timeline'&&window.__qa.timelinePages){
+     if(q.cursor==='point-older'&&window.__qa.holdPointOlder)await new Promise(resolve=>window.__qa.releasePointOlder=resolve);
+     return window.__qa.timelinePages[q.cursor?1:0];
+    }
+    if(q.query==='action_timeline'&&window.__qa.routineFixture)return {...empty,status:'loaded',data:q.include_routine?[...window.__qa.routineFixture.main,...window.__qa.routineFixture.routine]:window.__qa.routineFixture.main};
     if(q.query==='action_timeline'&&window.__qa.timeline)return {...empty,status:'loaded',data:window.__qa.timeline};
     if(window.__qa.liveFixture&&q.query==='instance_list')return window.__qa.liveFixture.list;
     if(window.__qa.liveFixture&&q.query==='instance_detail'){
@@ -171,6 +175,26 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   assert.deepEqual(await page.locator('.timeline-event-label').allTextContents(),['新增连接','新增监听端口','新增 UDP 端口']);
   assert.doesNotMatch(await page.locator('#timeline-results').innerText(),/已不在连接与监听列表|Closed/);
   checks.push('new TCP connections, listening ports and UDP ports have distinct arrival cards based on the original snapshot rather than later state');
+  const readableUpdates={main:[
+    {...timelineRows[0],field_id:'module_base',action_id:'observed.state_changed',before:4096,after:8192,context:{type_id:'runtime.module_instance',subject_label:'示例组件',attribution_status:'stored'}},
+    {...timelineRows[0],field_id:'signature_version',action_id:'observed.state_changed',before:'1.0',after:'1.1',source_record:{protection_update:{engine_changed:true,signature_changed:true}},context:{type_id:'security.protection',subject_label:'系统防护',attribution_status:'stored'}},
+    {...timelineRows[0],field_id:'charge',action_id:'observed.state_changed',before:21,after:20,context:{type_id:'hardware.battery',subject_label:'电池',attribution_status:'stored'}},
+    {...timelineRows[0],action_id:'startup.task_ended',result:'failed',context:{type_id:'startup.scheduled_task',subject_label:'示例任务',attribution_status:'stored'}},
+  ],routine:[
+    {...timelineRows[0],field_id:'last_use',action_id:'observed.state_changed',before:'2026-10-15T08:08:26Z',after:'2026-10-15T08:14:27Z',context:{type_id:'account.user_profile',subject_label:'本地服务账户资料',attribution_status:'stored'}},
+    {...timelineRows[0],field_id:'last_run',action_id:'observed.state_changed',before:'2026-10-15T08:08:26Z',after:'2026-10-15T08:14:27Z',context:{type_id:'startup.scheduled_task',subject_label:'示例任务',attribution_status:'stored'}},
+  ]};
+  await page.evaluate(data=>window.__qa.routineFixture=data,readableUpdates);await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-entry').first().waitFor();
+  assert.equal(await page.locator('#timeline-routine').inputValue(),'false');assert.equal(await page.locator('.timeline-entry').count(),4);
+  const updateText=await page.locator('#timeline-results').innerText();for(const expected of ['模块加载位置已变化','防护程序和病毒库已更新','电量偏低','运行失败'])assert(updateText.includes(expected));
+  assert.doesNotMatch(updateText,/最近使用时间已更新|最近执行|1\.0|1\.1/);
+  await page.locator('#timeline-routine').selectOption('true');await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===6);
+  assert.match(await page.locator('#timeline-results').innerText(),/最近使用时间已更新/);assert.match(await page.locator('#timeline-results').innerText(),/最近执行/);
+  assert.equal(await page.evaluate(()=>window.__qa.calls.filter(q=>q.query==='action_timeline').at(-1).include_routine),true);
+  await page.locator('#timeline-clear').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===4);
+  assert.equal(await page.locator('#timeline-routine').inputValue(),'false');
+  await page.evaluate(()=>delete window.__qa.routineFixture);
+  checks.push('main timeline retains module address changes, battery alerts, failures and security summaries; routine history is explicitly selectable and filters reset');
   const pointTimes=['2026-10-15T08:09:04.0982704Z','2026-10-15T08:09:04.0982607Z'];
   const pointRows=pointTimes.map((occurred_at,index)=>({instance_id:index+1,action_id:index?'identity.logon':'identity.special_privileges',result:'observed',precision:'exact',time_derived:false,occurred_at,observed_at:'2026-10-15T08:09:24.616Z',context:{type_id:'runtime.logon_session',subject_label:'登录会话示例 '+index,attribution_status:'stored'}}));
   await page.evaluate(data=>window.__qa.timeline=data,pointRows);await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-entry').first().waitFor();
@@ -310,10 +334,11 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   assert.equal(await page.locator('.timeline-category-toggle').count(),2);assert.match(await page.locator('.timeline-time-value').textContent(),/2026-10-14.*2026-10-15/);
   checks.push('overlapping intervals on either side of midnight merge across pages and retain full dates and both types');
   const pagedPoints=[{...pointRows[0],occurred_at:'2026-10-15T08:10:00Z'},{...pointRows[1],occurred_at:'2026-10-15T08:09:40Z'},{...pointRows[1],instance_id:3,occurred_at:'2026-10-15T08:09:20Z'}];
-  await page.evaluate(data=>window.__qa.timelinePages=[{status:'loaded',data:data.slice(0,1),page:{has_more:true,next_cursor:'point-older'}},{status:'loaded',data:data.slice(1),page:{has_more:false}}],pagedPoints);
+  await page.evaluate(data=>{window.__qa.holdPointOlder=true;window.__qa.timelinePages=[{status:'loaded',data:data.slice(0,1),page:{has_more:true,next_cursor:'point-older'}},{status:'loaded',data:data.slice(1),page:{has_more:false}}];},pagedPoints);
   await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-entry').first().waitFor();
   assert.equal(await page.locator('.timeline-group-count').textContent(),'已加载 1 条','a point card near the page boundary remains open to nearby older records');
   await page.locator('.timeline-entry details summary').first().click();
+  await page.evaluate(()=>{window.__qa.holdPointOlder=false;window.__qa.releasePointOlder?.();});
   await page.locator('#timeline-more').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===3);
   assert.deepEqual(await page.locator('.timeline-group-count').allTextContents(),['2 条记录','1 条记录']);
   assert.match(await page.locator('.timeline-time-value').first().textContent(),/16:09:40.*16:10:00/);

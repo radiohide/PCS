@@ -390,7 +390,7 @@ setInterval(async()=>{
 // is shown as such with the reason it could not be attributed, rather than filed under whichever
 // object was nearest; and an action whose time is a fallback says so, because an interval's end is
 // a bound on when a change took effect and not the moment it happened.
-const timelineFilters={action:'',category:'',type_id:'',period:'',unassigned:true};
+const timelineFilters={action:'',category:'',type_id:'',period:'',unassigned:true,routine:false};
 let timelineCollapsed=localStorage.getItem('pcscope.timelineCollapsed')==='true';
 let timelineWalk={cursor:null,watermark:null};
 async function renderTimeline(){
@@ -399,6 +399,7 @@ async function renderTimeline(){
     <label>类别<select id="timeline-category"><option value="">全部类别</option></select></label>
     <label>类型<select id="timeline-type"><option value="">全部类型</option></select></label>
     <label>时间范围<select id="timeline-period">${[['','全部时间'],['1','最近 24 小时'],['7','最近 7 天'],['30','最近 30 天']].map(([v,n])=>`<option value="${v}" ${v===timelineFilters.period?'selected':''}>${n}</option>`).join('')}</select></label>
+    <label>显示内容<select id="timeline-routine"><option value="false" ${timelineFilters.routine?'':'selected'}>主要变化</option><option value="true" ${timelineFilters.routine?'selected':''}>含日常更新</option></select></label>
     <label class="object-search">未对应到具体对象的日志<select id="timeline-unassigned"><option value="true" ${timelineFilters.unassigned?'selected':''}>也显示</option><option value="false" ${timelineFilters.unassigned?'':'selected'}>暂时隐藏</option></select></label>
     <button id="timeline-clear">清空筛选</button></div><div id="timeline-results" aria-live="polite"></div><div id="timeline-more"></div></section>`;
   const results=content.querySelector('#timeline-results'),more=content.querySelector('#timeline-more');
@@ -416,7 +417,7 @@ async function renderTimeline(){
     content.querySelector('#timeline-type').innerHTML='<option value="">全部类型</option>'+catalog.filter(t=>!timelineFilters.category||t.category===timelineFilters.category).map(t=>`<option value="${esc(t.type_id)}" ${t.type_id===timelineFilters.type_id?'selected':''}>${esc(PCScopeObjectNames.typeName(t))}</option>`).join('');
   };
   const request=()=>{
-    const body={query:'action_timeline',limit:timelineWalk.cursor?80:200,include_unassigned:timelineFilters.unassigned};
+    const body={query:'action_timeline',limit:timelineWalk.cursor?80:200,include_unassigned:timelineFilters.unassigned,include_routine:timelineFilters.routine};
     if(timelineFilters.action)body.action_id=timelineFilters.action;
     if(timelineFilters.category)body.category=timelineFilters.category;
     if(timelineFilters.type_id)body.type_id=timelineFilters.type_id;
@@ -472,8 +473,9 @@ async function renderTimeline(){
   content.querySelector('#timeline-action').oninput=e=>{timelineFilters.action=e.target.value;schedule();};
   content.querySelector('#timeline-period').onchange=e=>{timelineFilters.period=e.target.value;reset();schedule(0);};
   content.querySelector('#timeline-unassigned').onchange=e=>{timelineFilters.unassigned=e.target.value==='true';reset();schedule(0);};
+  content.querySelector('#timeline-routine').onchange=e=>{timelineFilters.routine=e.target.value==='true';reset();schedule(0);};
   for(const key of ['category','type_id'])content.querySelector('#timeline-'+(key==='type_id'?'type':key)).onchange=e=>{timelineFilters[key]=e.target.value;if(key==='category')timelineFilters.type_id='';options();schedule(0);};
-  content.querySelector('#timeline-clear').onclick=()=>{Object.assign(timelineFilters,{action:'',category:'',type_id:'',period:'',unassigned:true});content.querySelector('#timeline-action').value='';content.querySelector('#timeline-period').value='';content.querySelector('#timeline-unassigned').value='true';options();schedule(0);};
+  content.querySelector('#timeline-clear').onclick=()=>{Object.assign(timelineFilters,{action:'',category:'',type_id:'',period:'',unassigned:true,routine:false});content.querySelector('#timeline-action').value='';content.querySelector('#timeline-period').value='';content.querySelector('#timeline-unassigned').value='true';content.querySelector('#timeline-routine').value='false';options();schedule(0);};
   content.querySelector('#collect').onclick=collect;
   state.reloadPage=()=>{reset();return refresh();};
   try{catalog=(await api('query',{request:{query:'type_catalog'}})).data||[];}catch(error){catalog=[];notice(errorText(error),error);}

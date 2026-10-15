@@ -101,6 +101,18 @@ const PCScopeReadableEvents=(()=>{
       }
       if(field==='exists'&&row.after===false&&['file.watched_file','file.watched_directory'].includes(id))result.note='依赖此路径的功能可能受影响。';
       const after=format(row.after,afterStatus),before=format(row.before,beforeStatus);
+      if(!uncertainAssociation(row)&&['observed.state_changed','observed.configuration_changed'].includes(row.action_id)){
+        if(id==='security.protection'&&['signature_version','engine_version'].includes(field))return {...result,field:'',label:row.source_record?.protection_update?.engine_changed&&row.source_record?.protection_update?.signature_changed?'防护程序和病毒库已更新':field==='signature_version'?'病毒库已更新':'防护程序已更新',tone:'positive'};
+        if(id==='hardware.battery'&&field==='charge'){
+          const band=value=>{if(typeof value!=='number'&&!(typeof value==='string'&&value.trim()))return null;const n=Number(value);return Number.isFinite(n)&&n>=0&&n<=100?(n<=10?0:n<=20?1:2):null;};
+          const old=band(row.before),now=band(row.after);
+          if(old!==null&&now!==null&&old!==now)return {...result,field:'',label:(now===0?'电量很低':now===1?'电量偏低':'电量已恢复')+' · '+after,tone:now<2?'attention':'positive'};
+        }
+        if(id==='account.user_profile'&&field==='last_use')return {...result,kind:'value',field:'最近使用时间已更新',after};
+        if(id==='startup.scheduled_task'&&field==='last_run')return {...result,kind:'value',field:'最近执行',after};
+        if(id==='startup.scheduled_task'&&field==='next_run')return {...result,kind:'value',field:'下次执行',after};
+        if(id==='network.adapter'&&field==='speed')return {...result,kind:'value',field:'当前连接速率',after};
+      }
       if(field==='sha256'||field==='module_base')return {...result,label:beforeStatus==='known'?(field==='sha256'?'文件内容已变化':'模块加载位置已变化'):after};
       if(beforeStatus!=='known')return {...result,kind:'value',after};
       const opaque=/详细|展开查看|尚未识别|含义待核实|状态未知|已隐藏/;

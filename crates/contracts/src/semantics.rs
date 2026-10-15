@@ -250,7 +250,7 @@ pub fn select_current(observations: &[FactObservation]) -> CurrentValue {
     let newest = effective_time(valued[0]);
     let at_newest: Vec<&FactObservation> = valued.iter().copied().filter(|o| effective_time(o) == newest).collect();
     let first = at_newest[0].value.clone().unwrap_or(Value::Null);
-    if at_newest.iter().all(|o| o.value.as_ref() == Some(&first)) {
+    if at_newest.iter().all(|o| o.value.as_ref().is_some_and(|value|crate::sensitive::equivalent(value,&first))) {
         return CurrentValue::Known {
             value: first,
             sources: at_newest.iter().map(|o| o.source.clone()).collect(),

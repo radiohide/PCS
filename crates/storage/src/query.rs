@@ -787,7 +787,7 @@ fn key_facts_all(conn: &Connection, instance_id: i64, type_id: &str) -> Result<V
 }
 
 fn action_views(conn: &Connection, instance: Option<i64>, unassigned: Option<bool>, limit: usize) -> Result<(Vec<Value>, bool)> {
-    let mut clauses = Vec::new();
+    let mut clauses = vec!["pcscope_action_visible(a.action_id,coalesce((SELECT type_id FROM object_instances i WHERE i.instance_id=a.instance_id),a.target_type,''),coalesce(a.field_id,''),a.before_value,a.after_value,1)".to_owned()];
     match instance {
         Some(id) => clauses.push(format!("instance_id = {id}")),
         None => {
@@ -799,7 +799,7 @@ fn action_views(conn: &Connection, instance: Option<i64>, unassigned: Option<boo
     let where_clause = if clauses.is_empty() { "1=1".to_owned() } else { clauses.join(" AND ") };
     let mut statement = conn.prepare(&format!(
         "SELECT action_id,title,result,phase,precision,occurred_at,interval_from,interval_until,observed_at,field_id,before_value,after_value,unassigned_reason,source_record,action_row,target_type,instance_id
-         FROM object_actions WHERE {where_clause} ORDER BY coalesce(interval_until,occurred_at,observed_at) DESC, action_row DESC LIMIT ?"
+         FROM object_actions a WHERE {where_clause} ORDER BY coalesce(interval_until,occurred_at,observed_at) DESC, action_row DESC LIMIT ?"
     ))?;
     let limit = clamp(limit);
     let rows = statement.query_map(params![(limit + 1) as i64], |row| {
@@ -910,7 +910,7 @@ pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryRespons
     // whenever the source did not state a moment, which is why the response marks it rather than
     // presenting it as when something happened.
     let anchor = "coalesce(a.interval_until,a.occurred_at,a.observed_at)";
-    let mut clauses = vec!["1=1".to_owned()];
+    let mut clauses = vec![format!("pcscope_action_visible(a.action_id,coalesce((SELECT type_id FROM object_instances i WHERE i.instance_id=a.instance_id),a.target_type,''),coalesce(a.field_id,''),a.before_value,a.after_value,{})",if filter.include_routine{1}else{0})];
     let mut args: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
     if let Some(bound) = window {
         clauses.push("a.action_row <= ?".into());
@@ -918,6 +918,15 @@ pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryRespons
     }
     if !filter.include_unassigned {
         clauses.push("a.instance_id IS NOT NULL".into());
+    }
+    if !filter.include_routine {
+        // One security update summary per observation; full object history retains both fields.
+        // Bind the sibling lookup to this page walk's watermark, too.
+        clauses.push(format!("NOT(a.action_id='observed.state_changed' AND coalesce(a.field_id,'')='engine_version'
+            AND EXISTS(SELECT 1 FROM object_instances i WHERE i.instance_id=a.instance_id AND i.type_id='security.protection')
+            AND EXISTS(SELECT 1 FROM object_actions s WHERE s.instance_id=a.instance_id AND s.observed_at=a.observed_at
+                AND s.field_id='signature_version' AND s.action_id='observed.state_changed' AND s.action_row<={}
+                AND pcscope_action_visible(s.action_id,'security.protection',s.field_id,s.before_value,s.after_value,1)))",action_bound(&walk_watermark)));
     }
     if let Some(action_id) = &filter.action_id {
         clauses.push("a.action_id = ?".into());
@@ -1010,7 +1019,16 @@ pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryRespons
     };
     let mut data: Vec<Value> = all_rows.into_iter().map(|(value, _, _)| value).collect();
     let mut labels=HistoryLabelCache::new();
-    for action in &mut data { enrich_action_context(conn,action,&mut labels)?; }
+    for action in &mut data {
+        enrich_action_context(conn,action,&mut labels)?;
+        if !filter.include_routine && action["field_id"]=="signature_version" && action["context"]["type_id"]=="security.protection" {
+            let engine:Option<(Option<String>,Option<String>)>=conn.query_row("SELECT before_value,after_value FROM object_actions s WHERE instance_id=? AND observed_at=? AND field_id='engine_version' AND action_id='observed.state_changed' AND action_row<=? AND pcscope_action_visible(s.action_id,'security.protection',s.field_id,s.before_value,s.after_value,1) ORDER BY action_row DESC LIMIT 1",params![action["instance_id"].as_i64(),action["observed_at"].as_str(),action_bound(&walk_watermark)],|r|Ok((r.get(0)?,r.get(1)?))).optional()?;
+            if let Some((before,after))=engine {
+                let decode=|text:Option<String>|text.and_then(|text|serde_json::from_str::<Value>(&text).ok());
+                action["source_record"]=json!({"protection_update":{"engine_changed":true,"signature_changed":true,"engine_before":decode(before),"engine_after":decode(after)}});
+            }
+        }
+    }
     let status = if data.is_empty() { ResponseStatus::Empty } else { ResponseStatus::Loaded };
     let page = Page { next_cursor, limit, watermark: walk_watermark, has_more };
     Ok(response(status, Value::Array(data), Some(page), None))

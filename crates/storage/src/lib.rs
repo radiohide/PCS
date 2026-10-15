@@ -1,4 +1,5 @@
 mod self_activity;
+mod timeline_policy;
 mod registration_dictionary;
 mod item_controls;
 mod related;
@@ -227,6 +228,7 @@ impl Store {
         model::ensure_catalog(&mut conn)?;
         let now: String = conn.query_row("SELECT strftime('%Y-%m-%dT%H:%M:%fZ','now')", [], |r| r.get(0))?;
         model::ensure_projections(&conn, &now)?;
+        timeline_policy::install(&conn)?;
         let mut store = Self {
             conn,
             path: if path == Path::new(":memory:") {
@@ -242,6 +244,7 @@ impl Store {
     /// Independent WAL reader: never takes the collection writer's mutex or performs migrations.
     pub fn open_reader(path: impl AsRef<Path>, budget: std::time::Duration) -> Result<Self> {
         let conn=Connection::open_with_flags(path,rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY|rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX)?;
+        timeline_policy::install(&conn)?;
         // Readers refuse a newer structure too; a partially understood model must not be presented
         // as if it were complete.
         let version:i64=conn.query_row("PRAGMA user_version",[],|r|r.get(0))?;

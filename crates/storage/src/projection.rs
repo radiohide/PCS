@@ -445,7 +445,8 @@ fn record_fact(
             let before = previous.value.clone().filter(|_| states_a_value(&previous));
             let changed = previous.status == pcscope_contracts::adapter::ValueStatus::Known
                 && now.status == pcscope_contracts::adapter::ValueStatus::Known
-                && effective_time(&previous) != effective_time(&now) && before.as_ref() != now.value.as_ref();
+                && effective_time(&previous) != effective_time(&now)
+                && !matches!((&before,&now.value),(Some(before),Some(after)) if pcscope_contracts::sensitive::equivalent(before,after));
             // A late, older observation leaves the current value alone — it is still recorded as
             // history, but it does not become the present.
             let is_current = states_a_value(&now)

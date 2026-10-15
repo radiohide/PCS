@@ -1,6 +1,6 @@
 {
   "date": "2026-10-15",
-  "product_version": "0.2.4",
+  "product_version": "0.2.6",
   "basis": "current_source_review",
   "verification": "逐项源码覆盖审查；没有执行真实驱动安装/卸载等破坏性操作；未声称全部端到端实机通过。",
   "counts": {
@@ -117,6 +117,7 @@
     }
   ],
   "runtime_observations": {
+    "basis_version": "0.2.4",
     "date": "2026-10-15",
     "network_recent_200": {
       "first_seen": 112,
@@ -13510,7 +13511,10 @@
     "model/native-migration.json": "6351a8501165247b8253d0dc83e23b6abdc8bc1ec972569b5ce3087f214af8f3",
     "apps/desktop/ui/collection-catalog.json": "698a40b281a965ce91e7683430da7de0a0c9c5a95afba249a4c56e9f9e7b86fb",
     "apps/desktop/ui/collection-controls.json": "f3ae0c24555cc6108a2dcd3c4750f06fe8f0d440c748eaa724ca9da731e92cfc",
-    "crates/storage/src/projection.rs": "bd38dd93abcdd965c3399fd63c0fa2721310764257318e374e64e7f1270eb4b8",
+    "crates/storage/src/timeline_policy.rs": "5e969ea61acbd43df0a352bdbf349efe9ca39923b8de4f4fe10a7914c230ec26",
+    "crates/storage/src/query.rs": "300e20e5d55ea1fb1e036f682f977e3af88b74118d78383fb52403e8d8ee6bb5",
+    "crates/contracts/src/semantics.rs": "50f9326d75ddb309683670114bd63b25e7ac87c51b7fba02038820a1c8eaca48",
+    "crates/storage/src/projection.rs": "bdf19ac17d8cf03ddaab5ab9394beac23b16d8533a8fd0f8f6344b39eb971ad4",
     "crates/storage/src/identity.rs": "b523ddba74cdb1a684624d9d8cff98235578809f20bd1f33c5ef85807326e55a",
     "crates/storage/src/evidence.rs": "5fb90aa95391d5a9a91739d7ec2321009537e01bb5861b8dd75dcde8f82406bc",
     "crates/storage/src/item_controls.rs": "3b1f9be31f81949509e49d403e5d6d6f66dadd46ca77356280027643030b194d",
