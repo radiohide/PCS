@@ -19,7 +19,7 @@
       try{await controller.advance();}finally{running=false;pump();}
     },120);
   }
-  function mount(anchor,{query,apply,onStart=()=>{},onError=()=>{},active=()=>true,endLabel='已显示全部结果'}){
+  function mount(anchor,{query,apply,onStart=()=>{},onError=()=>{},active=()=>true,canAutoLoad=()=>true,endLabel='已显示全部结果'}){
     let generation=0,cursor=null,more=false,loaded=false,busy=false,disposed=false,fault=null,emptyPages=0,queued=false,restart=false,restartOnRetry=false;
     const requested=new Set();
     anchor.classList.add('auto-page');anchor.hidden=true;
@@ -49,7 +49,7 @@
     }
     function enqueue(){
       if(!alive()){dispose();return;}
-      if(queued||busy||fault||!more||!near())return;
+      if(queued||busy||fault||!more||!canAutoLoad()||!near())return;
       queued=true;waiting.push(controller);pump();
     }
     async function run(append){
@@ -82,7 +82,7 @@
       if(load&&!busy)return run(false);
     }
     function dispose(){if(disposed)return;disposed=true;generation++;observer.disconnect();controllers.delete(controller);}
-    const controller={reset,pause:()=>reset({load:false}),resume:()=>{if(alive()){paint();enqueue();}},check:enqueue,dispose,advance:async()=>{queued=false;if(alive()&&!busy&&!fault&&more&&near())await run(true);}};
+    const controller={reset,pause:()=>reset({load:false}),resume:()=>{if(alive()){paint();enqueue();}},check:enqueue,dispose,advance:async()=>{queued=false;if(alive()&&!busy&&!fault&&more&&canAutoLoad()&&near())await run(true);}};
     retry.onclick=()=>{if(!busy){if(restartOnRetry)reset();else{fault=null;run(loaded);}}};
     const observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting))enqueue();},{root:null,rootMargin:'0px 0px 160px 0px'});
     observer.observe(anchor);controllers.add(controller);return controller;

@@ -12,7 +12,7 @@ const PCScopeTimelineGroups=(()=>{
     return tones[hash%tones.length];
   }
   let sequence=0;
-  function mount(root){
+  function mount(root,{collapsed=false}={}){
     const states=new Map(),unknownStates=new WeakMap(),metadata=new WeakMap(),pending=new WeakSet();
     let lastMoment=null;
     const read=group=>{if(!metadata.has(group))metadata.set(group,JSON.parse(group.dataset.timeMeta));return metadata.get(group);};
@@ -64,7 +64,7 @@ const PCScopeTimelineGroups=(()=>{
     }
     function stateOf(group){
       const key=group.dataset.timeGroup,store=key?states:unknownStates,identity=key||group;
-      if(!store.has(identity))store.set(identity,{collapsed:false,muted:new Set()});
+      if(!store.has(identity))store.set(identity,{collapsed,muted:new Set()});
       return store.get(identity);
     }
     function count(group){
@@ -136,7 +136,11 @@ const PCScopeTimelineGroups=(()=>{
       }
       for(const group of groups)update(group);
     }
-    return {sync,append,markBoundary,dispose:()=>root.removeEventListener('click',onClick)};
+    function setCollapsed(value){
+      collapsed=!!value;
+      for(const group of root.querySelectorAll('.timeline-group')){stateOf(group).collapsed=collapsed;update(group);}
+    }
+    return {sync,append,markBoundary,setCollapsed,dispose:()=>root.removeEventListener('click',onClick)};
   }
   return {mount};
 })();

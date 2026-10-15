@@ -232,6 +232,7 @@ function mountModuleFileHistory(){
 
 let renderRevision=0;
 async function render(){
+  state.disposePage?.();state.disposePage=null;
   PCScopeAutoPage.disposeWithin(content);
   const revision=++renderRevision;
   state.reloadPage=null;
@@ -390,9 +391,10 @@ setInterval(async()=>{
 // object was nearest; and an action whose time is a fallback says so, because an interval's end is
 // a bound on when a change took effect and not the moment it happened.
 const timelineFilters={action:'',category:'',type_id:'',period:'',unassigned:true};
+let timelineCollapsed=localStorage.getItem('pcscope.timelineCollapsed')==='true';
 let timelineWalk={cursor:null,watermark:null};
 async function renderTimeline(){
-  content.innerHTML=head('时间线','按时间查看系统变化。','<div class="operation-feedback"><button id="collect" class="primary">立即采集</button><span id="collect-feedback" role="status"></span></div>')+`<section class="panel"><div class="object-filters">
+  content.innerHTML=head('时间线','按时间查看系统变化。','<div class="operation-feedback"><button type="button" id="timeline-fold-all">全部折叠</button><button id="collect" class="primary">立即采集</button><span id="collect-feedback" role="status"></span></div>')+`<section class="panel"><div class="object-filters">
     <label class="object-search">发生了什么<select id="timeline-action"><option value="">全部变化</option>${PCScopeReadableEvents.options().map(action=>`<option value="${esc(action.id)}" ${action.id===timelineFilters.action?'selected':''}>${esc(action.label)}</option>`).join('')}</select></label>
     <label>类别<select id="timeline-category"><option value="">全部类别</option></select></label>
     <label>类型<select id="timeline-type"><option value="">全部类型</option></select></label>
@@ -400,7 +402,13 @@ async function renderTimeline(){
     <label class="object-search">未对应到具体对象的日志<select id="timeline-unassigned"><option value="true" ${timelineFilters.unassigned?'selected':''}>也显示</option><option value="false" ${timelineFilters.unassigned?'':'selected'}>暂时隐藏</option></select></label>
     <button id="timeline-clear">清空筛选</button></div><div id="timeline-results" aria-live="polite"></div><div id="timeline-more"></div></section>`;
   const results=content.querySelector('#timeline-results'),more=content.querySelector('#timeline-more');
-  const groupControls=PCScopeTimelineGroups.mount(results);
+  const groupControls=PCScopeTimelineGroups.mount(results,{collapsed:timelineCollapsed});
+  const foldAll=content.querySelector('#timeline-fold-all');
+  const showFoldMode=()=>{foldAll.textContent=timelineCollapsed?'全部展开':'全部折叠';foldAll.setAttribute('aria-controls',results.id);};
+  showFoldMode();
+  let pagingReady=!timelineCollapsed;
+  const pagingInput=new AbortController();
+  state.disposePage=()=>{pagingInput.abort();groupControls.dispose();};
   mountModuleFileHistory();
   let catalog=[],requestId=0,timer;
   const options=()=>{
@@ -431,18 +439,34 @@ async function renderTimeline(){
     });
   };
   const pager=PCScopeAutoPage.mount(more,{
+    // Folding can bring the sentinel into view. Wait for scrolling intent before
+    // continuing, rather than walking history just because the layout got shorter.
+    canAutoLoad:()=>pagingReady,
     query:cursor=>{timelineWalk.cursor=cursor;return api('query',{request:request()});},
     onStart:({append})=>{if(!append){results.setAttribute('aria-busy','true');results.innerHTML='<div class="empty">正在读取变化记录…</div>';}},
     apply:(response,{append})=>{
       timelineWalk.watermark=response.page?.watermark||null;
       const html=PCScopeModelView.timeline(response);
       if(append)groupControls.append(html);else {results.innerHTML=html;groupControls.sync();}
+      if(append&&timelineCollapsed)pagingReady=false;
       groupControls.markBoundary(!!response.page?.has_more);
       results.setAttribute('aria-busy','false');bindObjects(results);
     },
     onError:(error,{append})=>{results.setAttribute('aria-busy','false');if(!append)results.innerHTML=`<div class="empty">${errorHtml(error)}</div>`;}
   });
-  const refresh=()=>pager.reset();
+  const refresh=()=>{pagingReady=!timelineCollapsed;return pager.reset();};
+  const allowPaging=event=>{
+    if(event.type==='keydown'&&(!['ArrowDown','PageDown','End',' '].includes(event.key)||event.target.closest('input,select,textarea,[contenteditable]')||event.key===' '&&event.target.closest('button,summary')))return;
+    if(event.type==='wheel'&&event.deltaY<=0)return;
+    if(event.type==='pointerdown'&&(event.target!==content||event.offsetX<content.clientWidth))return;
+    pagingReady=true;pager.resume();
+  };
+  for(const event of ['wheel','touchmove','keydown','pointerdown'])content.addEventListener(event,allowPaging,{passive:true,signal:pagingInput.signal});
+  foldAll.onclick=()=>{
+    timelineCollapsed=!timelineCollapsed;pagingReady=false;
+    localStorage.setItem('pcscope.timelineCollapsed',String(timelineCollapsed));
+    groupControls.setCollapsed(timelineCollapsed);showFoldMode();
+  };
   const reset=()=>{timelineWalk={cursor:null,watermark:null};};
   const schedule=(delay=250)=>{clearTimeout(timer);++requestId;pager.pause();reset();timer=setTimeout(()=>refresh(),delay);};
   content.querySelector('#timeline-action').oninput=e=>{timelineFilters.action=e.target.value;schedule();};
