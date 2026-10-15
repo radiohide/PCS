@@ -75,7 +75,7 @@ const PCScopeTimelineGroups=(()=>{
       if(hasMore&&!lastMoment)return;
       const last=lastMoment?time.rank(lastMoment):-Infinity;
       for(const group of root.querySelectorAll('.timeline-group')){
-        const meta=read(group),open=hasMore&&meta.known&&last>=time.rank(meta)-(meta.kind==='interval'?time.tolerance:0);
+        const meta=read(group),open=hasMore&&meta.known&&last>=time.rank(meta)-time.tolerance;
         if(open)pending.add(group);else pending.delete(group);count(group);
       }
     }

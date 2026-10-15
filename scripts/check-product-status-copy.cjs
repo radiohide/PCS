@@ -86,7 +86,17 @@ assert.match(grouping.range(acrossMidnight[0]).start,/\d{4}-\d{2}-\d{2}/,'cross-
 assert.equal(groupCount([ranged(null,null),ranged(null,null)]),2,'missing bounds do not identify a shared interval');
 const point={...processMissing,precision:'exact',time_derived:false,occurred_at:'2026-10-15T02:29:32Z',observed_at:'2026-10-15T02:29:32Z'};
 assert.equal(groupCount([point,{...point,occurred_at:null}]),2,'event time and recording time remain distinct');
-assert.equal(groupCount([point,{...point,occurred_at:'2026-10-15T02:29:33Z'}]),2,'exact events are not grouped with a 30-second tolerance');
+assert.equal(groupCount([point,{...point,occurred_at:'2026-10-15T02:29:33Z'}]),1,'point events share the bounded 30-second display tolerance');
+const fractionalPoints=['2026-10-15T08:09:04.0982607Z','2026-10-15T08:09:04.0982704Z'].map(occurred_at=>({...point,occurred_at}));
+assert.equal(groupCount(fractionalPoints),1,'production logon timestamps differing by microseconds share one displayed time');
+assert.equal(grouping.range(grouping.groupRows(fractionalPoints)[0]).end,null,'same displayed second has one time label');
+const atSecond=seconds=>({...point,occurred_at:new Date(Date.parse(point.occurred_at)+seconds*1000).toISOString()});
+assert.equal(groupCount([point,atSecond(30)]),1,'30 seconds is inclusive for point events');
+assert.equal(groupCount([point,atSecond(30.001)]),2,'point spans cannot exceed 30 seconds');
+assert.equal(groupCount([point,atSecond(20),atSecond(40)]),2,'point events cannot chain across a span beyond 30 seconds');
+assert.equal(groupCount([point,{...point,occurred_at:'2026-10-15T10:29:32+08:00'}]),1,'equivalent point times use instants, not raw strings');
+assert(grouping.range(grouping.groupRows([point,atSecond(20)])[0]).end,'point groups covering multiple seconds display both bounds');
+assert.equal(groupCount([{...point,occurred_at:null},{...point,occurred_at:null,observed_at:'2026-10-15T02:29:52Z'}]),1,'recording times use the same tolerance while remaining separate from occurrence times');
 assert.equal(groupCount([processMissing,point]),2,'exact events do not join interval cards');
 assert.match(view.timeline({data:[ranged('2026-10-14T15:59:00Z','2026-10-14T16:01:00Z')]}),/timeline-time-end/,'cross-day ranges retain both ends');
 const serviceEvent={action_id:'startup.service_state_changed',field_id:'state',before:'Stopped',after:'Running',context:{type_id:'startup.service',subject_label:'Volume Shadow Copy'}};

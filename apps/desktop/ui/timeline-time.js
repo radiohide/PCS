@@ -21,15 +21,16 @@ const PCScopeTimelineTime=(()=>{
   }
   function matches(group,moment){
     if(!group.known||!moment.known||group.kind!==moment.kind)return false;
-    if(group.kind!=='interval')return group.key===moment.key;
     const start=Date.parse(moment.start),end=Date.parse(moment.end);
+    // Point records use the same bounded tolerance as ranges. Never compare raw timestamp
+    // strings: even two source timestamps within one millisecond may have different fractions.
+    if(group.kind!=='interval')return Math.max(group.maxEnd,end)-Math.min(group.minStart,start)<=tolerance;
     if(Math.max(group.maxStart,start)-Math.min(group.minStart,start)>tolerance||Math.max(group.maxEnd,end)-Math.min(group.minEnd,end)>tolerance)return false;
     // Identical zero-length source intervals can share a card; adjacent intervals cannot.
     if(group.minStart===start&&group.maxStart===start&&group.minEnd===end&&group.maxEnd===end)return true;
     return Math.max(group.maxStart,start)<Math.min(group.minEnd,end);
   }
   function include(group,moment){
-    if(group.kind!=='interval')return;
     const start=Date.parse(moment.start),end=Date.parse(moment.end);
     if(start<group.minStart)group.start=moment.start;
     if(end>group.maxEnd)group.end=moment.end;
@@ -50,7 +51,8 @@ const PCScopeTimelineTime=(()=>{
   function range(group){
     if(!group.known)return {start:'时间未记录',end:null};
     const cross=date(group.start)!==date(group.end),stamp=value=>local(value).slice(cross?0:11);
-    return {start:stamp(group.start),end:group.kind==='interval'?stamp(group.end):null};
+    const multipleSeconds=Math.floor(Date.parse(group.start)/1000)!==Math.floor(Date.parse(group.end)/1000);
+    return {start:stamp(group.start),end:group.kind==='interval'||multipleSeconds?stamp(group.end):null};
   }
   return {tolerance,moment,seed,matches,include,groupRows,range,rank};
 })();
