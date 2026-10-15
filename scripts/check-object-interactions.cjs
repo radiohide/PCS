@@ -184,15 +184,26 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await group79.locator('.timeline-group-empty [data-timeline-show-all]').click();
   assert.equal(await group79.locator('.timeline-branch:visible').count(),79);assert.equal(await group79.locator('.timeline-entry details[open]').count(),1,'local hiding preserves open details');
   await group79.locator('[data-timeline-toggle]').click();assert.equal(await group79.locator('[data-timeline-toggle]').getAttribute('aria-expanded'),'false');
-  assert.equal(await group79.locator('.timeline-branch:visible').count(),0);assert.equal(await group79.locator('.timeline-category-toggle:visible').count(),0);
+  assert.equal(await group79.locator('.timeline-branch:visible').count(),0);assert.equal(await group79.locator('.timeline-category-toggle:visible').count(),4);
+  await page.screenshot({path:path.join(output,'timeline-categories-collapsed-dark.png'),fullPage:false});
+  await page.locator('#theme').click();await page.screenshot({path:path.join(output,'timeline-categories-collapsed-light.png'),fullPage:false});await page.locator('#theme').click();
+  const colorBefore=await processChip.evaluate(button=>getComputedStyle(button).color);
+  await processChip.click();assert.equal(await group79.locator('.timeline-branch:visible').count(),0,'a collapsed category switch must not unfold the group');
+  assert.equal(await group79.locator('[data-timeline-visible]').textContent(),'显示 29 / 79 条');
+  assert.notEqual(await processChip.evaluate(button=>getComputedStyle(button).color),colorBefore,'a hidden category becomes neutral');
+  await processChip.click();
   await group79.locator('[data-timeline-toggle]').focus();await page.keyboard.press('Enter');
   assert.equal(await group79.locator('.timeline-branch:visible').count(),79);assert.equal(await group79.locator('.timeline-entry details[open]').count(),1);
+  await group79.locator('[data-timeline-time-toggle]').click();assert.equal(await group79.locator('.timeline-branch:visible').count(),0);
+  await page.keyboard.press('Enter');assert.equal(await group79.locator('.timeline-branch:visible').count(),79,'the time label also expands by keyboard');
   assert.equal(await page.evaluate(()=>window.__qa.calls.length),callsBeforeToggling,'local category and collapse controls do not query or collect');
   checks.push('79 records have accurate per-type counts, independent toggle lights, an all-hidden recovery and keyboard group expansion without IPC');
   for(const width of [960,700]){
     await page.setViewportSize({width,height:760});
     assert(await group79.evaluate(group=>group.scrollWidth<=group.clientWidth+1),'time controls fit width '+width);
     await group79.locator('[data-timeline-toggle]').click();assert.equal(await group79.locator('.timeline-branch:visible').count(),0);
+    assert.equal(await group79.locator('.timeline-category-toggle:visible').count(),4);
+    assert(await group79.evaluate(group=>group.scrollWidth<=group.clientWidth+1),'collapsed category controls fit width '+width);
     await group79.locator('[data-timeline-toggle]').click();assert.equal(await group79.locator('.timeline-branch:visible').count(),79);
   }
   await page.setViewportSize({width:1440,height:1000});
@@ -203,6 +214,23 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   assert(categoryLayout.scroll>categoryLayout.height);assert(categoryLayout.contentWidth<=categoryLayout.width+1,'many category names remain within the rail');
   await page.locator('.timeline-category-toggle').last().click();assert.equal(await page.locator('.timeline-category-toggle[aria-pressed=false]').count(),1,'the last category remains reachable');
   checks.push('narrow layouts fold correctly and all 101 object types remain reachable in bounded category controls');
+  const colorsByTheme={};
+  for(const theme of ['dark','light']){
+    await page.locator('#app').evaluate((app,value)=>app.dataset.theme=value,theme);
+    const categories=await page.locator('.timeline-category-toggle').evaluateAll(buttons=>buttons.filter(button=>button.getAttribute('aria-pressed')==='true').map(button=>({label:button.dataset.timelineCategoryToggle,color:getComputedStyle(button).color,tone:button.dataset.timelineTone})));
+    colorsByTheme[theme]=Object.fromEntries(categories.map(item=>[item.label,item.color]));
+    const sample=['运行进程','用户资料','时间同步设置','网络连接','域名解析缓存','系统服务','进程加载模块'];
+    assert(sample.every(label=>colorsByTheme[theme][label]),'all seven common categories are exercised');
+    assert.equal(new Set(sample.map(label=>colorsByTheme[theme][label])).size,sample.length,'common categories use distinct colors in '+theme);
+    assert(categories.every(item=>item.tone&&item.color),'every object category has a usable color');
+    for(const label of sample){
+      const chip=page.locator('[data-timeline-category-toggle="'+label+'"]');
+      const row=page.locator('.timeline-branch[data-timeline-category="'+label+'"] .timeline-type').first();
+      assert.equal(await row.evaluate(element=>getComputedStyle(element).color),await chip.evaluate(element=>getComputedStyle(element).color),'record type and switch colors match');
+    }
+  }
+  await page.locator('#app').evaluate(app=>app.dataset.theme='dark');
+  checks.push('category colors are stable and distinct for common types in both themes, match record types and stay usable when folded');
   const startupRows=Array.from({length:200},(_,index)=>({...timelineRows[0],instance_id:index+1,interval_from:index<80?'2026-10-15T03:00:30.1160614Z':index<83?'2026-10-15T03:00:29.9816849Z':'2026-10-15T02:00:00Z',interval_until:index<80?'2026-10-15T03:02:41.3133775Z':index<83?'2026-10-15T03:02:41.1726548Z':'2026-10-15T02:05:00Z',context:{type_id:index<80?'network.endpoint':index<83?'network.dns_cache_entry':'file.watched_file',subject_label:'首屏示例 '+index,attribution_status:'stored'}}));
   const afterStartup={...timelineRows[0],interval_from:'2026-10-15T01:00:00Z',interval_until:'2026-10-15T01:05:00Z'};
   await page.evaluate(({first,second})=>{window.__qa.timelinePages=[{status:'loaded',data:first,page:{has_more:true,next_cursor:'after-first-200'}},{status:'loaded',data:[second],page:{has_more:false}}];},{first:startupRows,second:afterStartup});
@@ -232,6 +260,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   assert.equal(await page.locator('.timeline-group-count').first().textContent(),'5 条记录');
   assert.match(await page.locator('.timeline-time-value').first().textContent(),/10:48:00.*10:50:18/,'merged header shows the union of original intervals');
   const mergedGroup=page.locator('.timeline-group').first();
+  assert.equal(await mergedGroup.locator('.timeline-category-toggle:visible').count(),1,'appended counts stay visible while folded');
   assert.equal(await mergedGroup.locator('[data-timeline-toggle]').getAttribute('aria-expanded'),'false','append retains the group fold');
   assert.equal(await mergedGroup.locator('[data-timeline-category-toggle="系统服务"]').getAttribute('aria-pressed'),'false','append retains disabled types');
   assert.equal(await mergedGroup.locator('.timeline-category-count').textContent(),'5','append updates the type count');

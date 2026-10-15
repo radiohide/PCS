@@ -2,6 +2,15 @@
 // Local display controls. Record nodes stay mounted, including any open object or log details.
 const PCScopeTimelineGroups=(()=>{
   const time=typeof PCScopeTimelineTime!=='undefined'?PCScopeTimelineTime:require('./timeline-time.js');
+  // The same readable category is already the switch identity. Keep its color stable
+  // across groups and pages, including categories first encountered on a later page.
+  const categoryTones={'运行进程':'blue','用户配置文件':'teal','用户资料':'teal','时间同步配置':'amber','时间同步设置':'amber','网络连接':'cyan','域名解析缓存':'green','DNS 缓存项':'green','系统服务':'indigo','进程加载模块':'pink','已加载模块':'pink'};
+  const tones=['blue','cyan','teal','green','olive','amber','orange','rose','pink','indigo'];
+  function toneOf(category){
+    if(Object.hasOwn(categoryTones,category))return categoryTones[category];
+    let hash=0;for(const character of category)hash=(Math.imul(hash,31)+character.codePointAt(0))>>>0;
+    return tones[hash%tones.length];
+  }
   let sequence=0;
   function mount(root){
     const states=new Map(),unknownStates=new WeakMap(),metadata=new WeakMap(),pending=new WeakSet();
@@ -77,6 +86,7 @@ const PCScopeTimelineGroups=(()=>{
       if(!body.id)body.id='timeline-group-records-'+(++sequence);
       for(const row of rows){
         const category=row.dataset.timelineCategory||'其他记录';
+        row.dataset.timelineTone=toneOf(category);
         counts.set(category,(counts.get(category)||0)+1);
         row.hidden=state.muted.has(category);if(!row.hidden)visible++;
       }
@@ -89,6 +99,7 @@ const PCScopeTimelineGroups=(()=>{
           button.querySelector('.timeline-category-name').textContent=category;controls.append(button);
         }
         const on=!state.muted.has(category);
+        button.dataset.timelineTone=toneOf(category);
         button.setAttribute('aria-pressed',String(on));button.setAttribute('aria-controls',body.id);
         button.setAttribute('aria-label',category+'，'+count+' 条，'+(on?'点击隐藏':'点击显示'));
         button.title=on?'隐藏本组的'+category:'显示本组的'+category;
@@ -97,22 +108,22 @@ const PCScopeTimelineGroups=(()=>{
       for(const [category,button] of buttons)if(!counts.has(category))button.remove();
       count(group);
       group.querySelector('[data-timeline-visible]').textContent=visible===rows.length?'全部显示':'显示 '+visible+' / '+rows.length+' 条';
-      group.querySelector('.timeline-category-footer [data-timeline-show-all]').hidden=visible===rows.length;
-      const toggle=group.querySelector('[data-timeline-toggle]');
-      toggle.setAttribute('aria-controls',body.id);toggle.setAttribute('aria-expanded',String(!state.collapsed));
-      toggle.title=state.collapsed?'展开本组记录':'收起本组记录';
+      group.querySelector('.timeline-category-footer').hidden=visible===rows.length;
+      for(const toggle of group.querySelectorAll('[data-timeline-toggle],[data-timeline-time-toggle]')){
+        toggle.setAttribute('aria-controls',body.id);toggle.setAttribute('aria-expanded',String(!state.collapsed));
+        toggle.title=state.collapsed?'展开本组记录':'收起本组记录';
+      }
       group.querySelector('.timeline-fold-label').textContent=state.collapsed?'展开':'收起';
       group.classList.toggle('is-collapsed',state.collapsed);
-      group.querySelector('.timeline-group-options').hidden=state.collapsed;
       body.hidden=state.collapsed||visible===0;
       group.querySelector(':scope > .timeline-group-empty').hidden=state.collapsed||visible!==0;
     }
     const onClick=event=>{
-      const button=event.target.closest('button[data-timeline-toggle],button[data-timeline-category-toggle],button[data-timeline-show-all]');
+      const button=event.target.closest('button[data-timeline-toggle],button[data-timeline-time-toggle],button[data-timeline-category-toggle],button[data-timeline-show-all]');
       if(!button||!root.contains(button))return;
       const group=button.closest('.timeline-group');if(!group)return;
       const state=stateOf(group);
-      if(button.hasAttribute('data-timeline-toggle'))state.collapsed=!state.collapsed;
+      if(button.hasAttribute('data-timeline-toggle')||button.hasAttribute('data-timeline-time-toggle'))state.collapsed=!state.collapsed;
       else if(button.hasAttribute('data-timeline-show-all'))state.muted.clear();
       else {const category=button.dataset.timelineCategoryToggle;if(state.muted.has(category))state.muted.delete(category);else state.muted.add(category);}
       update(group);
