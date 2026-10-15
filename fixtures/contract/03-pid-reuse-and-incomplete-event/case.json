@@ -1,0 +1,41 @@
+{
+  "name": "03-pid-reuse-and-incomplete-event",
+  "description": "同一进程 ID 不同创建时间，以及一条只有进程路径、没有进程 ID 的不完整事件。",
+  "machine_id": "example-machine",
+  "installation_id": "example-install",
+  "collected_scope": "install:example-install",
+  "configured": true,
+  "complete": true,
+  "assertions": [
+    {
+      "what": "同 PID 不同创建时间是两个实例",
+      "path": "instances",
+      "contains": { "type_id": "runtime.process", "identity_status": "confirmed" },
+      "basis": "进程身份由进程 ID 与创建时间共同构成；只有 ID 不足以唯一识别"
+    },
+    {
+      "what": "PID 复用不会把两次进程生命周期拼接",
+      "path": "instances.length",
+      "min": 3,
+      "basis": "两个进程实例加上事件产生的暂定实例"
+    },
+    {
+      "what": "只有进程路径的事件得到暂定身份而不是确定身份",
+      "path": "instances",
+      "contains": { "identity_status": "provisional", "missing_keys": ["pid", "created_at"] },
+      "basis": "事件未提供进程 ID 与创建时间，不得用路径或名称顶替身份键"
+    },
+    {
+      "what": "不完整身份仍产出动作并标注缺口",
+      "path": "actions",
+      "contains": { "action_id": "execution.process_started", "target_status": "provisional" },
+      "basis": "动作可以挂在暂定身份上，但必须让暂定状态可见"
+    },
+    {
+      "what": "进程启动的结果语义是 started，不是 succeeded",
+      "path": "actions",
+      "contains": { "action_id": "execution.process_started", "result": "started" },
+      "basis": "来源记录的是启动"
+    }
+  ]
+}

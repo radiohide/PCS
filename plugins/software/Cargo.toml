@@ -1,0 +1,13 @@
+[package]
+name = "pcscope-software"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+pcscope-contracts.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.56"

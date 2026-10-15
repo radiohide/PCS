@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict');
+const rules=require('../apps/desktop/ui/evidence-explanations.js'),details=require('../apps/desktop/ui/object-details.js');
+const row={source:'pcscope.eventlog.application',kind:'windows.event',data:{provider:'unknown-provider',event_id:88,level:3,channel:'Application'}};
+const unknownRaw=JSON.stringify(row);
+assert.match(rules.explain(row),/未识别事件/);
+assert.doesNotMatch(rules.explain(row),/unknown-provider|88/,'provider identifiers and event numbers are not readable event names');
+assert.equal(JSON.stringify(row),unknownRaw,'readable explanation must retain the exact provider and event number for original details');
+assert.doesNotMatch(rules.explain(row),/不能|不代表|需要结合|不是模型/);
+assert.match(rules.coverage(row).join(''),/正文未保存/);
+assert.equal(details.valueText('level',3),'警告（3）');assert.equal(details.valueText('name',null),'未记录');assert.equal(details.valueText('name','******'),'已隐藏');
+assert.match(rules.explain({source:'pcscope.files.usn',kind:'files.usn_changed',data:{name:'a',reason_mask:0x80000100}}),/建立、关闭记录/);
+assert.equal(rules.explain({source:'pcscope.eventlog.security',kind:'coverage.recovered',data:{}}),'已恢复采集');
+assert.equal(rules.coverage({data:{nested:{redacted:true},command_collected:false}}).length,2);
+console.log('PASS: explicit missing/hidden state, unknown evidence, USN, recovery, no generic disclaimer paragraphs');

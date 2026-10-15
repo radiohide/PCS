@@ -1,0 +1,128 @@
+{
+  "version": 1,
+  "note": "Production native ownership. Owned sources never fall back to PowerShell after failure. Unlisted sources stay explicit compatibility work; no loss of scope is hidden.",
+  "native_only": [
+    "pcscope.execution.module-scan-status",
+    "pcscope.execution.module-file-state"
+  ],
+  "pcscope-powershell-adapter.exe": [
+    "pcscope.system.version",
+    "pcscope.system.boot-state",
+    "pcscope.startup.services",
+    "pcscope.startup.tasks",
+    "pcscope.storage.volumes",
+    "pcscope.network.adapters",
+    "pcscope.network.addresses",
+    "pcscope.hardware.devices",
+    "pcscope.system.hotfixes",
+    "pcscope.virtualization.platform",
+    "pcscope.startup.logon",
+    "pcscope.shell.registrations",
+    "pcscope.identity.groups",
+    "pcscope.identity.accounts"
+  ],
+  "network": [
+    "pcscope.network.routes",
+    "pcscope.network.tcp",
+    "pcscope.network.udp",
+    "pcscope.network.winrm-configuration",
+    "pcscope.network.profiles",
+    "pcscope.network.mapped-drives",
+    "pcscope.network.share-sessions",
+    "pcscope.network.firewall-profiles",
+    "pcscope.network.firewall-rules",
+    "pcscope.network.ipsec",
+    "pcscope.network.dns-configuration",
+    "pcscope.network.dns-cache",
+    "pcscope.network.hosts",
+    "pcscope.network.shares",
+    "pcscope.network.access"
+  ],
+  "startup": [
+    "pcscope.startup.task-details",
+    "pcscope.startup.service-configuration",
+    "pcscope.startup.session-hooks",
+    "pcscope.startup.advanced-extensions",
+    "pcscope.environment.configuration",
+    "pcscope.startup.wmi-filters",
+    "pcscope.startup.wmi-consumers",
+    "pcscope.startup.wmi-bindings"
+  ],
+  "desktop": [
+    "pcscope.desktop.input",
+    "pcscope.desktop.clipboard",
+    "pcscope.desktop.shell-settings",
+    "pcscope.desktop.printing",
+    "pcscope.desktop.printer-drivers",
+    "pcscope.desktop.printer-ports",
+    "pcscope.desktop.print-jobs",
+    "pcscope.desktop.shortcuts"
+  ],
+  "virtualization": [
+    "pcscope.virtualization.wsl-registration"
+  ],
+  "system": [
+    "pcscope.execution.resources",
+    "pcscope.identity.assigned-rights",
+    "pcscope.identity.interactive-sessions",
+    "pcscope.execution.processes",
+    "pcscope.identity.profiles",
+    "pcscope.identity.logon-sessions",
+    "pcscope.identity.machine",
+    "pcscope.system.restore-points",
+    "pcscope.system.clock",
+    "pcscope.system.reboot-pending",
+    "pcscope.software.user-inventory",
+    "pcscope.system.update-history",
+    "pcscope.software.appx-user",
+    "pcscope.software.optional-features",
+    "pcscope.software.provisioned"
+  ],
+  "security": [
+    "pcscope.security.key-metadata",
+    "pcscope.collector.event-channel-coverage",
+    "pcscope.security.certificates.currentuser",
+    "pcscope.security.certificates.localmachine",
+    "pcscope.policy.configuration",
+    "pcscope.security.protection",
+    "pcscope.security.protection-policy",
+    "pcscope.security.products",
+    "pcscope.security.detections",
+    "pcscope.security.deviceguard",
+    "pcscope.security.ssh-public-keys",
+    "pcscope.security.secureboot",
+    "pcscope.security.encryption",
+    "pcscope.security.tpm"
+  ],
+  "storage": [
+    "pcscope.hardware.driver-packages",
+    "pcscope.hardware.driver-services",
+    "pcscope.hardware.driver-bindings",
+    "pcscope.hardware.firmware",
+    "pcscope.hardware.battery",
+    "pcscope.power.configuration",
+    "pcscope.storage.disks",
+    "pcscope.storage.partitions",
+    "pcscope.hardware.disk-health"
+  ],
+  "applications": [
+    "pcscope.apps.dotnet-runtimes",
+    "pcscope.apps.browser-policies",
+    "pcscope.apps.onedrive-registration",
+    "pcscope.apps.ide-extensions",
+    "pcscope.apps.npm-global-packages",
+    "pcscope.apps.chromium-extensions",
+    "pcscope.apps.firefox-extensions"
+  ],
+  "scoped": [
+    "pcscope.collector.scoped-configuration",
+    "pcscope.files.metadata-security",
+    "pcscope.files.directory-security",
+    "pcscope.execution.modules",
+    "pcscope.execution.module-scan-status",
+    "pcscope.execution.module-file-state",
+    "pcscope.software.portable",
+    "pcscope.apps.mihomo",
+    "pcscope.virtualization.docker"
+  ]
+}

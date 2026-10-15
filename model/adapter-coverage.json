@@ -1,0 +1,449 @@
+{
+  "declared": [
+    {
+      "source": "pcscope.identity.accounts",
+      "type_id": "account.user"
+    },
+    {
+      "source": "pcscope.identity.groups",
+      "type_id": "account.group"
+    },
+    {
+      "source": "pcscope.identity.profiles",
+      "type_id": "account.user_profile"
+    },
+    {
+      "source": "pcscope.identity.assigned-rights",
+      "type_id": "account.right_assignment"
+    },
+    {
+      "source": "pcscope.identity.machine",
+      "type_id": "account.machine_identity"
+    },
+    {
+      "source": "pcscope.software",
+      "type_id": "software.installation_registration"
+    },
+    {
+      "source": "pcscope.software.user-inventory",
+      "type_id": "software.installation_registration"
+    },
+    {
+      "source": "pcscope.system.hotfixes",
+      "type_id": "software.system_update"
+    },
+    {
+      "source": "pcscope.software.appx-user",
+      "type_id": "software.appx_package"
+    },
+    {
+      "source": "pcscope.software.provisioned",
+      "type_id": "software.provisioned_package"
+    },
+    {
+      "source": "pcscope.software.optional-features",
+      "type_id": "software.optional_feature"
+    },
+    {
+      "source": "pcscope.apps.npm-global-packages",
+      "type_id": "software.language_package"
+    },
+    {
+      "source": "pcscope.software.portable",
+      "type_id": "software.portable_registration"
+    },
+    {
+      "source": "pcscope.execution.processes",
+      "type_id": "runtime.process"
+    },
+    {
+      "source": "pcscope.execution.modules",
+      "type_id": "runtime.module_instance"
+    },
+    {
+      "source": "pcscope.identity.logon-sessions",
+      "type_id": "runtime.logon_session"
+    },
+    {
+      "source": "pcscope.identity.interactive-sessions",
+      "type_id": "runtime.terminal_session"
+    },
+    {
+      "source": "pcscope.startup.services",
+      "type_id": "startup.service"
+    },
+    {
+      "source": "pcscope.startup.service-configuration",
+      "type_id": "startup.service"
+    },
+    {
+      "source": "pcscope.startup.tasks",
+      "type_id": "startup.scheduled_task"
+    },
+    {
+      "source": "pcscope.startup.task-details",
+      "type_id": "startup.scheduled_task"
+    },
+    {
+      "source": "pcscope.startup.logon",
+      "type_id": "startup.logon_startup_entry"
+    },
+    {
+      "source": "pcscope.startup.session-hooks",
+      "type_id": "startup.logon_initialization"
+    },
+    {
+      "source": "pcscope.startup.advanced-extensions",
+      "type_id": "startup.ifeo_configuration"
+    },
+    {
+      "source": "pcscope.startup.wmi-filters",
+      "type_id": "startup.wmi_filter"
+    },
+    {
+      "source": "pcscope.startup.wmi-consumers",
+      "type_id": "startup.wmi_consumer"
+    },
+    {
+      "source": "pcscope.startup.wmi-bindings",
+      "type_id": "startup.wmi_binding"
+    },
+    {
+      "source": "pcscope.policy.configuration",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.apps.browser-policies",
+      "type_id": "policy.browser_policy"
+    },
+    {
+      "source": "pcscope.environment.configuration",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.system.clock",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.system.reboot-pending",
+      "type_id": "policy.os_configuration"
+    },
+    {
+      "source": "pcscope.system.restore-points",
+      "type_id": "policy.system_restore_point"
+    },
+    {
+      "source": "pcscope.power.configuration",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.system.boot-state",
+      "type_id": "policy.os_configuration"
+    },
+    {
+      "source": "pcscope.system.version",
+      "type_id": "policy.os_configuration"
+    },
+    {
+      "source": "pcscope.shell.registrations",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.apps.chromium-extensions",
+      "type_id": "shell.browser_extension"
+    },
+    {
+      "source": "pcscope.apps.firefox-extensions",
+      "type_id": "shell.browser_extension"
+    },
+    {
+      "source": "pcscope.hardware.devices",
+      "type_id": "hardware.device"
+    },
+    {
+      "source": "pcscope.hardware.driver-bindings",
+      "type_id": "hardware.driver_binding"
+    },
+    {
+      "source": "pcscope.hardware.driver-services",
+      "type_id": "hardware.driver_service"
+    },
+    {
+      "source": "pcscope.hardware.firmware",
+      "type_id": "hardware.firmware"
+    },
+    {
+      "source": "pcscope.hardware.disk-health",
+      "type_id": "hardware.disk"
+    },
+    {
+      "source": "pcscope.hardware.battery",
+      "type_id": "hardware.battery"
+    },
+    {
+      "source": "pcscope.storage.disks",
+      "type_id": "hardware.disk"
+    },
+    {
+      "source": "pcscope.storage.partitions",
+      "type_id": "hardware.partition"
+    },
+    {
+      "source": "pcscope.storage.volumes",
+      "type_id": "hardware.volume"
+    },
+    {
+      "source": "pcscope.security.tpm",
+      "type_id": "hardware.tpm"
+    },
+    {
+      "source": "pcscope.usn.volumes",
+      "type_id": "hardware.volume"
+    },
+    {
+      "source": "pcscope.network.adapters",
+      "type_id": "network.adapter"
+    },
+    {
+      "source": "pcscope.network.addresses",
+      "type_id": "network.address_configuration"
+    },
+    {
+      "source": "pcscope.network.access",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.network.dns-cache",
+      "type_id": "network.dns_cache_entry"
+    },
+    {
+      "source": "pcscope.network.dns-configuration",
+      "type_id": "network.dns_configuration"
+    },
+    {
+      "source": "pcscope.network.firewall-profiles",
+      "type_id": "network.firewall_profile"
+    },
+    {
+      "source": "pcscope.network.firewall-rules",
+      "type_id": "network.firewall_rule"
+    },
+    {
+      "source": "pcscope.network.hosts",
+      "type_id": "network.hosts_entry"
+    },
+    {
+      "source": "pcscope.network.ipsec",
+      "type_id": "network.ipsec_rule"
+    },
+    {
+      "source": "pcscope.network.mapped-drives",
+      "type_id": "network.smb_mapping"
+    },
+    {
+      "source": "pcscope.network.profiles",
+      "type_id": "network.connection_profile"
+    },
+    {
+      "source": "pcscope.network.routes",
+      "type_id": "network.route"
+    },
+    {
+      "source": "pcscope.network.share-sessions",
+      "type_id": "network.smb_session"
+    },
+    {
+      "source": "pcscope.network.shares",
+      "type_id": "network.smb_share"
+    },
+    {
+      "source": "pcscope.network.tcp",
+      "type_id": "network.endpoint"
+    },
+    {
+      "source": "pcscope.network.udp",
+      "type_id": "network.endpoint"
+    },
+    {
+      "source": "pcscope.network.winrm-configuration",
+      "type_id": "network.remote_access_configuration"
+    },
+    {
+      "source": "pcscope.apps.mihomo",
+      "type_id": "network.proxy_configuration"
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-vms",
+      "type_id": "virtualization.virtual_machine"
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-switches",
+      "type_id": "virtualization.virtual_switch"
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-disks",
+      "type_id": "virtualization.disk_attachment"
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-checkpoints",
+      "type_id": "virtualization.checkpoint"
+    },
+    {
+      "source": "pcscope.virtualization.wsl-registration",
+      "type_id": "virtualization.wsl_distribution"
+    },
+    {
+      "source": "pcscope.virtualization.docker",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.virtualization.platform",
+      "type_id": "virtualization.platform_capability"
+    },
+    {
+      "source": "pcscope.desktop.printing",
+      "type_id": "desktop.printer"
+    },
+    {
+      "source": "pcscope.desktop.printer-drivers",
+      "type_id": "desktop.printer_driver"
+    },
+    {
+      "source": "pcscope.desktop.printer-ports",
+      "type_id": "desktop.printer_port"
+    },
+    {
+      "source": "pcscope.desktop.print-jobs",
+      "type_id": "desktop.print_job"
+    },
+    {
+      "source": "pcscope.desktop.input",
+      "type_id": "desktop.input_configuration"
+    },
+    {
+      "source": "pcscope.desktop.clipboard",
+      "type_id": "desktop.shell_configuration"
+    },
+    {
+      "source": "pcscope.desktop.shell-settings",
+      "type_id": "desktop.shell_configuration"
+    },
+    {
+      "source": "pcscope.desktop.shortcuts",
+      "type_id": "desktop.shortcut"
+    },
+    {
+      "source": "pcscope.apps.ide-extensions",
+      "type_id": "desktop.editor_extension"
+    },
+    {
+      "source": "pcscope.apps.onedrive-registration",
+      "type_id": "desktop.sync_account"
+    },
+    {
+      "source": "pcscope.security.protection",
+      "type_id": "security.protection"
+    },
+    {
+      "source": "pcscope.security.protection-policy",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.security.products",
+      "type_id": "security.security_product"
+    },
+    {
+      "source": "pcscope.security.detections",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.security.deviceguard",
+      "type_id": "security.device_guard_configuration"
+    },
+    {
+      "source": "pcscope.security.secureboot",
+      "type_id": "security.secure_boot_configuration"
+    },
+    {
+      "source": "pcscope.security.certificates.currentuser",
+      "type_id": "security.certificate_registration"
+    },
+    {
+      "source": "pcscope.security.certificates.localmachine",
+      "type_id": "security.certificate_registration"
+    },
+    {
+      "source": "pcscope.security.encryption",
+      "type_id": "security.bitlocker_configuration"
+    },
+    {
+      "source": "pcscope.security.ssh-public-keys",
+      "type_id": "security.ssh_public_key"
+    },
+    {
+      "source": "pcscope.files.metadata-security",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.files.directory-security",
+      "type_id": "file.watched_directory"
+    },
+    {
+      "source": "pcscope.execution.module-scan-status",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.execution.module-file-state",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.apps.dotnet-runtimes",
+      "type_id": "software.runtime"
+    },
+    {
+      "source": "pcscope.system.update-history",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.hardware.driver-packages",
+      "type_id": "hardware.driver_package"
+    },
+    {
+      "source": "pcscope.security.key-metadata",
+      "type_id": "security.key_metadata"
+    },
+    {
+      "source": "pcscope.collector.scoped-configuration",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.collector.event-channel-coverage",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.usn.watch-list",
+      "type_id": null
+    },
+    {
+      "source": "pcscope.execution.resources",
+      "type_id": null
+    }
+  ],
+  "event_exclusions": [
+    "pcscope.usn.volumes",
+    "pcscope.usn.changes",
+    "pcscope.usn.watch-list"
+  ],
+  "event_prefix": "pcscope.eventlog.",
+  "event_sources": [
+    "pcscope.core"
+  ],
+  "generated_by": "crates/contracts/examples/adapter-coverage.rs",
+  "note": "已声明来源的清单。对账把它与 model/source-map.cjs 和 model/sources.json 比对；差异必须由 model/adapter-exceptions.cjs 逐条给出原因。",
+  "reference_sources": [
+    "pcscope.startup.tasks",
+    "pcscope.startup.task-details",
+    "pcscope.execution.processes"
+  ],
+  "usn_prefix": "pcscope.usn."
+}

@@ -1,0 +1,140 @@
+{
+  "generated_by": "scripts/build-fixtures.cjs",
+  "scenarios": [
+    {
+      "file": "01-baseline.jsonl",
+      "messages": 24,
+      "kinds": {
+        "snapshot": 24
+      },
+      "sources": [
+        "pcscope.desktop.printing",
+        "pcscope.desktop.shortcuts",
+        "pcscope.environment.configuration",
+        "pcscope.execution.processes",
+        "pcscope.execution.resources",
+        "pcscope.files.metadata-security",
+        "pcscope.hardware.driver-services",
+        "pcscope.identity.accounts",
+        "pcscope.identity.groups",
+        "pcscope.network.firewall-rules",
+        "pcscope.network.tcp",
+        "pcscope.policy.configuration",
+        "pcscope.security.certificates.localmachine",
+        "pcscope.security.ssh-public-keys",
+        "pcscope.shell.registrations",
+        "pcscope.software",
+        "pcscope.software.appx-user",
+        "pcscope.startup.logon",
+        "pcscope.startup.services",
+        "pcscope.startup.tasks",
+        "pcscope.startup.wmi-filters",
+        "pcscope.storage.disks",
+        "pcscope.virtualization.wsl-registration"
+      ],
+      "bytes": 14334
+    },
+    {
+      "file": "02-changes.jsonl",
+      "messages": 4,
+      "kinds": {
+        "snapshot": 4
+      },
+      "sources": [
+        "pcscope.execution.processes",
+        "pcscope.startup.services",
+        "pcscope.startup.tasks"
+      ],
+      "bytes": 2857
+    },
+    {
+      "file": "03-gaps.jsonl",
+      "messages": 2,
+      "kinds": {
+        "gap": 2
+      },
+      "sources": [
+        "pcscope.network.firewall-rules",
+        "pcscope.security.encryption"
+      ],
+      "bytes": 453
+    },
+    {
+      "file": "04-events.jsonl",
+      "messages": 4,
+      "kinds": {
+        "event_batch": 4
+      },
+      "sources": [
+        "pcscope.eventlog.application",
+        "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+        "pcscope.eventlog.security",
+        "pcscope.eventlog.system"
+      ],
+      "bytes": 3736
+    },
+    {
+      "file": "05-usn.jsonl",
+      "messages": 3,
+      "kinds": {
+        "snapshot": 2,
+        "event_batch": 1
+      },
+      "sources": [
+        "pcscope.usn.c",
+        "pcscope.usn.volumes",
+        "pcscope.usn.watch-list"
+      ],
+      "bytes": 1987
+    },
+    {
+      "file": "06-edge-cases.jsonl",
+      "messages": 2,
+      "kinds": {
+        "snapshot": 2
+      },
+      "sources": [
+        "pcscope.desktop.shortcuts",
+        "pcscope.identity.accounts"
+      ],
+      "bytes": 1596
+    },
+    {
+      "file": "07-replay-and-late.jsonl",
+      "messages": 2,
+      "kinds": {
+        "event_batch": 2
+      },
+      "sources": [
+        "pcscope.eventlog.security"
+      ],
+      "bytes": 2582
+    }
+  ],
+  "invalid": [
+    {
+      "file": "invalid/incomplete-snapshot.jsonl",
+      "expectation": "必须被协议校验或入库校验拒绝，不得写入任何记录"
+    },
+    {
+      "file": "invalid/duplicate-identity.jsonl",
+      "expectation": "必须被协议校验或入库校验拒绝，不得写入任何记录"
+    },
+    {
+      "file": "invalid/wrong-protocol-version.jsonl",
+      "expectation": "必须被协议校验或入库校验拒绝，不得写入任何记录"
+    },
+    {
+      "file": "invalid/empty-source.jsonl",
+      "expectation": "必须被协议校验或入库校验拒绝，不得写入任何记录"
+    },
+    {
+      "file": "invalid/unknown-event-field.jsonl",
+      "expectation": "必须被协议校验或入库校验拒绝，不得写入任何记录"
+    },
+    {
+      "file": "invalid/zero-batch-seq.jsonl",
+      "expectation": "必须被协议校验或入库校验拒绝，不得写入任何记录"
+    }
+  ]
+}

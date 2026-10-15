@@ -1,0 +1,5 @@
+Emit 'virtualization.hyperv-vms' {Get-VM | ForEach-Object {Item ([string]$_.Id) (Fields $_ @('Id','Name','State','Generation','Version','ProcessorCount','MemoryStartup','DynamicMemoryEnabled','MemoryMinimum','MemoryMaximum','AutomaticStartAction','AutomaticStopAction','ConfigurationLocation','CheckpointType'))}}
+Emit 'virtualization.hyperv-switches' {Get-VMSwitch | ForEach-Object {Item ([string]$_.Id) (Fields $_ @('Id','Name','SwitchType','NetAdapterInterfaceDescription','AllowManagementOS'))}}
+Emit 'virtualization.hyperv-disks' {Get-VM | Get-VMHardDiskDrive | ForEach-Object {Item "$($_.VMId)/$($_.ControllerType)/$($_.ControllerNumber)/$($_.ControllerLocation)" (Fields $_ @('VMId','VMName','Path','ControllerType','ControllerNumber','ControllerLocation','DiskNumber'))}}
+Emit 'virtualization.hyperv-checkpoints' {Get-VM | Get-VMSnapshot | ForEach-Object {Item ([string]$_.Id) (Fields $_ @('Id','VMId','Name','CreationTime','SnapshotType','ParentSnapshotId'))}}
+Emit 'virtualization.wsl-registration' {Registry CurrentUser 'Software\Microsoft\Windows\CurrentVersion\Lxss' @('DistributionName','Version','BasePath','DefaultUid','Flags','State','DefaultDistribution') 1}

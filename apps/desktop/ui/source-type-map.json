@@ -1,0 +1,3341 @@
+{
+  "generated_by": "scripts/build-source-type-map.cjs",
+  "note": "每个来源提供哪些对象类型，以及那些类型声明了哪些字段与动作。由来源映射、目录与适配器覆盖三处连接而成；不手工维护。",
+  "sources": [
+    {
+      "source": "pcscope.apps.browser-policies",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "policy.browser_policy",
+          "name": "浏览器策略",
+          "category": "policy",
+          "fields": [
+            "browser",
+            "path",
+            "name",
+            "value"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.apps.chromium-extensions",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "shell.browser_extension",
+          "name": "浏览器扩展",
+          "category": "shell",
+          "fields": [
+            "browser",
+            "profile",
+            "extension_id",
+            "version",
+            "name",
+            "permissions",
+            "state"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.apps.dotnet-runtimes",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "software.runtime",
+          "name": "运行时",
+          "category": "software",
+          "fields": [
+            "family",
+            "version",
+            "install_path"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.apps.firefox-extensions",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "shell.browser_extension",
+          "name": "浏览器扩展",
+          "category": "shell",
+          "fields": [
+            "browser",
+            "profile",
+            "extension_id",
+            "version",
+            "name",
+            "permissions",
+            "state"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.apps.ide-extensions",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "desktop.editor_extension",
+          "name": "编辑器扩展",
+          "category": "desktop",
+          "fields": [
+            "editor",
+            "extension_id",
+            "version",
+            "name",
+            "publisher",
+            "engines"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.apps.mihomo",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.proxy_configuration",
+          "name": "代理配置",
+          "category": "network",
+          "fields": [
+            "scope",
+            "path",
+            "enabled",
+            "server",
+            "bypass"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.apps.npm-global-packages",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "software.language_package",
+          "name": "语言包登记",
+          "category": "software",
+          "fields": [
+            "manager",
+            "name",
+            "version",
+            "path"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.apps.onedrive-registration",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "desktop.sync_account",
+          "name": "同步账户登记",
+          "category": "desktop",
+          "fields": [
+            "provider",
+            "account",
+            "mount_point",
+            "policy"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.collector.event-channel-coverage",
+      "destination": "coverage",
+      "handling": "source_reading",
+      "types": []
+    },
+    {
+      "source": "pcscope.collector.scoped-configuration",
+      "destination": "coverage",
+      "handling": "source_reading",
+      "types": []
+    },
+    {
+      "source": "pcscope.desktop.clipboard",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "desktop.shell_configuration",
+          "name": "桌面与资源管理器配置",
+          "category": "desktop",
+          "fields": [
+            "path",
+            "name",
+            "value"
+          ],
+          "actions": [
+            "execution.clipboard_changed"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.desktop.input",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "desktop.input_configuration",
+          "name": "输入法配置",
+          "category": "desktop",
+          "fields": [
+            "path",
+            "layout_file",
+            "ime_file",
+            "upper_filters",
+            "lower_filters"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.desktop.print-jobs",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "desktop.print_job",
+          "name": "打印作业",
+          "category": "desktop",
+          "fields": [
+            "printer",
+            "job_id",
+            "submitted_at",
+            "size",
+            "pages",
+            "status"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.desktop.printer-drivers",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "desktop.printer_driver",
+          "name": "打印驱动",
+          "category": "desktop",
+          "fields": [
+            "name",
+            "environment",
+            "manufacturer",
+            "driver_path",
+            "inf"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.desktop.printer-ports",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "desktop.printer_port",
+          "name": "打印端口",
+          "category": "desktop",
+          "fields": [
+            "name",
+            "port_type",
+            "host",
+            "protocol",
+            "port_number"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.desktop.printing",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "desktop.printer",
+          "name": "打印机",
+          "category": "desktop",
+          "fields": [
+            "name",
+            "driver",
+            "port",
+            "shared",
+            "status"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.desktop.shell-settings",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "desktop.shell_configuration",
+          "name": "桌面与资源管理器配置",
+          "category": "desktop",
+          "fields": [
+            "path",
+            "name",
+            "value"
+          ],
+          "actions": [
+            "execution.clipboard_changed"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.desktop.shortcuts",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "desktop.shortcut",
+          "name": "快捷方式",
+          "category": "desktop",
+          "fields": [
+            "path",
+            "target",
+            "working_directory",
+            "arguments",
+            "icon",
+            "hotkey"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.environment.configuration",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "policy.environment_variable",
+          "name": "环境变量",
+          "category": "policy",
+          "fields": [
+            "name",
+            "scope",
+            "value"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "shell.file_association",
+          "name": "文件关联",
+          "category": "shell",
+          "fields": [
+            "extension",
+            "prog_id",
+            "command"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.application",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": []
+    },
+    {
+      "source": "pcscope.eventlog.import",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": []
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-applocker/exe and dll",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": []
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-applocker/msi and script",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": []
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "software.appx_package",
+          "name": "AppX 包",
+          "category": "software",
+          "fields": [
+            "name",
+            "version",
+            "publisher",
+            "install_location",
+            "status"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-backup",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": []
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-bitlocker/bitlocker management",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "security.bitlocker_configuration",
+          "name": "BitLocker 配置",
+          "category": "security",
+          "fields": [
+            "mount_point",
+            "volume_status",
+            "protection_status",
+            "encryption_method",
+            "protector_types"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-codeintegrity/operational",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "file.watched_file",
+          "name": "监控文件",
+          "category": "file",
+          "fields": [
+            "path",
+            "exists",
+            "size",
+            "creation_time",
+            "last_write",
+            "attributes",
+            "owner",
+            "dacl",
+            "sha256"
+          ],
+          "actions": [
+            "files.created",
+            "files.deleted",
+            "files.deleted_archived",
+            "files.creation_time_changed",
+            "files.executable_detected",
+            "files.executable_blocked",
+            "files.shredding_blocked",
+            "files.usn_changed",
+            "files.access_audit"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-driverframeworks-usermode/operational",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "hardware.device",
+          "name": "设备",
+          "category": "hardware",
+          "fields": [
+            "device_id",
+            "name",
+            "class",
+            "manufacturer",
+            "service",
+            "status",
+            "config_error"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-grouppolicy/operational",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "policy.os_configuration",
+          "name": "操作系统配置与状态",
+          "category": "policy",
+          "fields": [
+            "path",
+            "caption",
+            "version",
+            "build",
+            "install_time",
+            "boot_time",
+            "reboot_pending"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-hyper-v-vmms/admin",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "virtualization.virtual_machine",
+          "name": "虚拟机",
+          "category": "virtualization",
+          "fields": [
+            "vm_id",
+            "name",
+            "state",
+            "generation",
+            "cpu",
+            "memory"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-networkprofile/operational",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "network.connection_profile",
+          "name": "网络连接配置文件",
+          "category": "network",
+          "fields": [
+            "name",
+            "category",
+            "ipv4_connectivity",
+            "ipv6_connectivity"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-powershell/operational",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": []
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-printservice/operational",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "desktop.print_job",
+          "name": "打印作业",
+          "category": "desktop",
+          "fields": [
+            "printer",
+            "job_id",
+            "submitted_at",
+            "size",
+            "pages",
+            "status"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "runtime.process",
+          "name": "进程",
+          "category": "runtime",
+          "fields": [
+            "pid",
+            "image",
+            "parent_pid",
+            "session",
+            "created_at",
+            "command_line"
+          ],
+          "actions": [
+            "execution.process_started",
+            "execution.process_stopped",
+            "execution.remote_thread",
+            "execution.process_access",
+            "execution.process_tampering",
+            "execution.pipe_created",
+            "execution.pipe_connected"
+          ]
+        },
+        {
+          "type_id": "runtime.module_instance",
+          "name": "模块加载实例",
+          "category": "runtime",
+          "fields": [
+            "process",
+            "process_start",
+            "process_name",
+            "session",
+            "user_sid",
+            "module_path",
+            "module_base",
+            "size",
+            "version",
+            "signature_status",
+            "module_origin"
+          ],
+          "actions": [
+            "execution.module_loaded"
+          ]
+        },
+        {
+          "type_id": "hardware.driver_service",
+          "name": "驱动服务",
+          "category": "hardware",
+          "fields": [
+            "name",
+            "driver_path",
+            "service_type",
+            "start_mode",
+            "state"
+          ],
+          "actions": [
+            "execution.driver_loaded"
+          ]
+        },
+        {
+          "type_id": "network.endpoint",
+          "name": "网络连接与监听端点",
+          "category": "network",
+          "fields": [
+            "protocol",
+            "local_address",
+            "local_port",
+            "remote_address",
+            "remote_port",
+            "state",
+            "owning_pid",
+            "creation_time"
+          ],
+          "actions": [
+            "network.connection_observed",
+            "network.connection_allowed",
+            "network.connection_blocked"
+          ]
+        },
+        {
+          "type_id": "file.watched_file",
+          "name": "监控文件",
+          "category": "file",
+          "fields": [
+            "path",
+            "exists",
+            "size",
+            "creation_time",
+            "last_write",
+            "attributes",
+            "owner",
+            "dacl",
+            "sha256"
+          ],
+          "actions": [
+            "files.created",
+            "files.deleted",
+            "files.deleted_archived",
+            "files.creation_time_changed",
+            "files.executable_detected",
+            "files.executable_blocked",
+            "files.shredding_blocked",
+            "files.usn_changed",
+            "files.access_audit"
+          ]
+        },
+        {
+          "type_id": "file.alternate_data_stream",
+          "name": "备用数据流",
+          "category": "file",
+          "fields": [
+            "stream_name",
+            "size"
+          ],
+          "actions": [
+            "files.stream_created"
+          ]
+        },
+        {
+          "type_id": "policy.os_configuration",
+          "name": "操作系统配置与状态",
+          "category": "policy",
+          "fields": [
+            "path",
+            "caption",
+            "version",
+            "build",
+            "install_time",
+            "boot_time",
+            "reboot_pending"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "startup.wmi_filter",
+          "name": "WMI 订阅筛选器",
+          "category": "startup",
+          "fields": [
+            "name",
+            "namespace",
+            "query_language",
+            "query"
+          ],
+          "actions": [
+            "execution.wmi_filter"
+          ]
+        },
+        {
+          "type_id": "startup.wmi_consumer",
+          "name": "WMI 订阅消费者",
+          "category": "startup",
+          "fields": [
+            "name",
+            "namespace",
+            "consumer_type",
+            "script_engine",
+            "program"
+          ],
+          "actions": [
+            "execution.wmi_consumer"
+          ]
+        },
+        {
+          "type_id": "startup.wmi_binding",
+          "name": "WMI 订阅绑定",
+          "category": "startup",
+          "fields": [
+            "namespace",
+            "filter",
+            "consumer",
+            "security_context"
+          ],
+          "actions": [
+            "execution.wmi_binding"
+          ]
+        },
+        {
+          "type_id": "hardware.disk",
+          "name": "磁盘",
+          "category": "hardware",
+          "fields": [
+            "number",
+            "bus_type",
+            "partition_style",
+            "size",
+            "is_boot",
+            "is_system",
+            "health",
+            "operational_status"
+          ],
+          "actions": [
+            "storage.raw_read"
+          ]
+        },
+        {
+          "type_id": "desktop.shell_configuration",
+          "name": "桌面与资源管理器配置",
+          "category": "desktop",
+          "fields": [
+            "path",
+            "name",
+            "value"
+          ],
+          "actions": [
+            "execution.clipboard_changed"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "startup.scheduled_task",
+          "name": "计划任务",
+          "category": "startup",
+          "fields": [
+            "path",
+            "name",
+            "enabled",
+            "principal",
+            "actions",
+            "triggers",
+            "next_run",
+            "last_run",
+            "last_result"
+          ],
+          "actions": [
+            "startup.task_created",
+            "startup.task_deleted",
+            "startup.task_updated",
+            "startup.task_started",
+            "startup.task_ended"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-terminalservices-localsessionmanager/operational",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "runtime.terminal_session",
+          "name": "终端会话",
+          "category": "runtime",
+          "fields": [
+            "session_id",
+            "station",
+            "user",
+            "domain",
+            "state"
+          ],
+          "actions": [
+            "identity.session_locked",
+            "identity.session_unlocked",
+            "identity.session_reconnected",
+            "identity.session_disconnected"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-terminalservices-remoteconnectionmanager/operational",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "runtime.terminal_session",
+          "name": "终端会话",
+          "category": "runtime",
+          "fields": [
+            "session_id",
+            "station",
+            "user",
+            "domain",
+            "state"
+          ],
+          "actions": [
+            "identity.session_locked",
+            "identity.session_unlocked",
+            "identity.session_reconnected",
+            "identity.session_disconnected"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-windows defender/operational",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "security.protection",
+          "name": "防护配置与状态",
+          "category": "security",
+          "fields": [
+            "name",
+            "engine_version",
+            "signature_version",
+            "real_time",
+            "real_time_configured",
+            "tamper_protected",
+            "scan_time"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "file.watched_file",
+          "name": "监控文件",
+          "category": "file",
+          "fields": [
+            "path",
+            "exists",
+            "size",
+            "creation_time",
+            "last_write",
+            "attributes",
+            "owner",
+            "dacl",
+            "sha256"
+          ],
+          "actions": [
+            "files.created",
+            "files.deleted",
+            "files.deleted_archived",
+            "files.creation_time_changed",
+            "files.executable_detected",
+            "files.executable_blocked",
+            "files.shredding_blocked",
+            "files.usn_changed",
+            "files.access_audit"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-windowsupdateclient/operational",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "software.system_update",
+          "name": "系统更新组件",
+          "category": "software",
+          "fields": [
+            "hotfix_id",
+            "installed_on",
+            "description"
+          ],
+          "actions": [
+            "software.update_history"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-wlan-autoconfig/operational",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "network.connection_profile",
+          "name": "网络连接配置文件",
+          "category": "network",
+          "fields": [
+            "name",
+            "category",
+            "ipv4_connectivity",
+            "ipv6_connectivity"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-wmi-activity/operational",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "startup.wmi_filter",
+          "name": "WMI 订阅筛选器",
+          "category": "startup",
+          "fields": [
+            "name",
+            "namespace",
+            "query_language",
+            "query"
+          ],
+          "actions": [
+            "execution.wmi_filter"
+          ]
+        },
+        {
+          "type_id": "startup.wmi_consumer",
+          "name": "WMI 订阅消费者",
+          "category": "startup",
+          "fields": [
+            "name",
+            "namespace",
+            "consumer_type",
+            "script_engine",
+            "program"
+          ],
+          "actions": [
+            "execution.wmi_consumer"
+          ]
+        },
+        {
+          "type_id": "startup.wmi_binding",
+          "name": "WMI 订阅绑定",
+          "category": "startup",
+          "fields": [
+            "namespace",
+            "filter",
+            "consumer",
+            "security_context"
+          ],
+          "actions": [
+            "execution.wmi_binding"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.security",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "account.user",
+          "name": "用户",
+          "category": "account",
+          "fields": [
+            "name",
+            "enabled",
+            "last_logon",
+            "password_required"
+          ],
+          "actions": [
+            "identity.account_created",
+            "identity.account_deleted",
+            "identity.account_changed",
+            "identity.account_renamed",
+            "identity.account_enabled",
+            "identity.account_disabled",
+            "identity.account_locked",
+            "identity.account_unlocked",
+            "identity.logon_failed"
+          ]
+        },
+        {
+          "type_id": "account.group_membership",
+          "name": "组成员登记",
+          "category": "account",
+          "fields": [
+            "group",
+            "member"
+          ],
+          "actions": [
+            "identity.group_member_added",
+            "identity.group_member_removed"
+          ]
+        },
+        {
+          "type_id": "runtime.logon_session",
+          "name": "登录会话",
+          "category": "runtime",
+          "fields": [
+            "logon_id",
+            "logon_type",
+            "start_time",
+            "authentication_package"
+          ],
+          "actions": [
+            "identity.logon",
+            "identity.logoff",
+            "identity.special_privileges"
+          ]
+        },
+        {
+          "type_id": "runtime.terminal_session",
+          "name": "终端会话",
+          "category": "runtime",
+          "fields": [
+            "session_id",
+            "station",
+            "user",
+            "domain",
+            "state"
+          ],
+          "actions": [
+            "identity.session_locked",
+            "identity.session_unlocked",
+            "identity.session_reconnected",
+            "identity.session_disconnected"
+          ]
+        },
+        {
+          "type_id": "runtime.process",
+          "name": "进程",
+          "category": "runtime",
+          "fields": [
+            "pid",
+            "image",
+            "parent_pid",
+            "session",
+            "created_at",
+            "command_line"
+          ],
+          "actions": [
+            "execution.process_started",
+            "execution.process_stopped",
+            "execution.remote_thread",
+            "execution.process_access",
+            "execution.process_tampering",
+            "execution.pipe_created",
+            "execution.pipe_connected"
+          ]
+        },
+        {
+          "type_id": "file.watched_file",
+          "name": "监控文件",
+          "category": "file",
+          "fields": [
+            "path",
+            "exists",
+            "size",
+            "creation_time",
+            "last_write",
+            "attributes",
+            "owner",
+            "dacl",
+            "sha256"
+          ],
+          "actions": [
+            "files.created",
+            "files.deleted",
+            "files.deleted_archived",
+            "files.creation_time_changed",
+            "files.executable_detected",
+            "files.executable_blocked",
+            "files.shredding_blocked",
+            "files.usn_changed",
+            "files.access_audit"
+          ]
+        },
+        {
+          "type_id": "file.acl_entry",
+          "name": "文件系统权限登记",
+          "category": "file",
+          "fields": [
+            "trustee",
+            "access",
+            "inherited"
+          ],
+          "actions": [
+            "files.permissions_audit"
+          ]
+        },
+        {
+          "type_id": "policy.os_configuration",
+          "name": "操作系统配置与状态",
+          "category": "policy",
+          "fields": [
+            "path",
+            "caption",
+            "version",
+            "build",
+            "install_time",
+            "boot_time",
+            "reboot_pending"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "startup.service",
+          "name": "服务",
+          "category": "startup",
+          "fields": [
+            "name",
+            "display_name",
+            "state",
+            "start_mode",
+            "account",
+            "binary_path"
+          ],
+          "actions": [
+            "startup.service_installed",
+            "startup.service_state_changed"
+          ]
+        },
+        {
+          "type_id": "startup.scheduled_task",
+          "name": "计划任务",
+          "category": "startup",
+          "fields": [
+            "path",
+            "name",
+            "enabled",
+            "principal",
+            "actions",
+            "triggers",
+            "next_run",
+            "last_run",
+            "last_result"
+          ],
+          "actions": [
+            "startup.task_created",
+            "startup.task_deleted",
+            "startup.task_updated",
+            "startup.task_started",
+            "startup.task_ended"
+          ]
+        },
+        {
+          "type_id": "network.endpoint",
+          "name": "网络连接与监听端点",
+          "category": "network",
+          "fields": [
+            "protocol",
+            "local_address",
+            "local_port",
+            "remote_address",
+            "remote_port",
+            "state",
+            "owning_pid",
+            "creation_time"
+          ],
+          "actions": [
+            "network.connection_observed",
+            "network.connection_allowed",
+            "network.connection_blocked"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.eventlog.system",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "startup.service",
+          "name": "服务",
+          "category": "startup",
+          "fields": [
+            "name",
+            "display_name",
+            "state",
+            "start_mode",
+            "account",
+            "binary_path"
+          ],
+          "actions": [
+            "startup.service_installed",
+            "startup.service_state_changed"
+          ]
+        },
+        {
+          "type_id": "policy.os_configuration",
+          "name": "操作系统配置与状态",
+          "category": "policy",
+          "fields": [
+            "path",
+            "caption",
+            "version",
+            "build",
+            "install_time",
+            "boot_time",
+            "reboot_pending"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.execution.module-file-state",
+      "destination": "coverage",
+      "handling": "source_reading",
+      "types": [
+        {
+          "type_id": "file.watched_file",
+          "name": "监控文件",
+          "category": "file",
+          "fields": [
+            "path",
+            "exists",
+            "size",
+            "creation_time",
+            "last_write",
+            "attributes",
+            "owner",
+            "dacl",
+            "sha256"
+          ],
+          "actions": [
+            "files.created",
+            "files.deleted",
+            "files.deleted_archived",
+            "files.creation_time_changed",
+            "files.executable_detected",
+            "files.executable_blocked",
+            "files.shredding_blocked",
+            "files.usn_changed",
+            "files.access_audit"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.execution.module-scan-status",
+      "destination": "coverage",
+      "handling": "source_reading",
+      "types": []
+    },
+    {
+      "source": "pcscope.execution.modules",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "runtime.module_instance",
+          "name": "模块加载实例",
+          "category": "runtime",
+          "fields": [
+            "process",
+            "process_start",
+            "process_name",
+            "session",
+            "user_sid",
+            "module_path",
+            "module_base",
+            "size",
+            "version",
+            "signature_status",
+            "module_origin"
+          ],
+          "actions": [
+            "execution.module_loaded"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.execution.processes",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "runtime.process",
+          "name": "进程",
+          "category": "runtime",
+          "fields": [
+            "pid",
+            "image",
+            "parent_pid",
+            "session",
+            "created_at",
+            "command_line"
+          ],
+          "actions": [
+            "execution.process_started",
+            "execution.process_stopped",
+            "execution.remote_thread",
+            "execution.process_access",
+            "execution.process_tampering",
+            "execution.pipe_created",
+            "execution.pipe_connected"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.execution.resources",
+      "destination": "sampling",
+      "handling": "source_reading",
+      "types": []
+    },
+    {
+      "source": "pcscope.files.directory-security",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "file.watched_directory",
+          "name": "监控目录",
+          "category": "file",
+          "fields": [
+            "path",
+            "exists",
+            "attributes",
+            "owner",
+            "dacl",
+            "entries",
+            "last_write"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.files.metadata-security",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "file.watched_file",
+          "name": "监控文件",
+          "category": "file",
+          "fields": [
+            "path",
+            "exists",
+            "size",
+            "creation_time",
+            "last_write",
+            "attributes",
+            "owner",
+            "dacl",
+            "sha256"
+          ],
+          "actions": [
+            "files.created",
+            "files.deleted",
+            "files.deleted_archived",
+            "files.creation_time_changed",
+            "files.executable_detected",
+            "files.executable_blocked",
+            "files.shredding_blocked",
+            "files.usn_changed",
+            "files.access_audit"
+          ]
+        },
+        {
+          "type_id": "file.acl_entry",
+          "name": "文件系统权限登记",
+          "category": "file",
+          "fields": [
+            "trustee",
+            "access",
+            "inherited"
+          ],
+          "actions": [
+            "files.permissions_audit"
+          ]
+        },
+        {
+          "type_id": "file.alternate_data_stream",
+          "name": "备用数据流",
+          "category": "file",
+          "fields": [
+            "stream_name",
+            "size"
+          ],
+          "actions": [
+            "files.stream_created"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.hardware.battery",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "hardware.battery",
+          "name": "电池",
+          "category": "hardware",
+          "fields": [
+            "name",
+            "chemistry",
+            "charge",
+            "estimated_time"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.hardware.devices",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "hardware.device",
+          "name": "设备",
+          "category": "hardware",
+          "fields": [
+            "device_id",
+            "name",
+            "class",
+            "manufacturer",
+            "service",
+            "status",
+            "config_error"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.hardware.disk-health",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "hardware.disk",
+          "name": "磁盘",
+          "category": "hardware",
+          "fields": [
+            "number",
+            "bus_type",
+            "partition_style",
+            "size",
+            "is_boot",
+            "is_system",
+            "health",
+            "operational_status"
+          ],
+          "actions": [
+            "storage.raw_read"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.hardware.driver-bindings",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "hardware.driver_binding",
+          "name": "设备驱动绑定",
+          "category": "hardware",
+          "fields": [
+            "device",
+            "driver_version",
+            "driver_date",
+            "provider",
+            "inf",
+            "signed"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.hardware.driver-packages",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "hardware.driver_package",
+          "name": "驱动包",
+          "category": "hardware",
+          "fields": [
+            "name",
+            "provider",
+            "version",
+            "inf",
+            "signed"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.hardware.driver-services",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "hardware.driver_service",
+          "name": "驱动服务",
+          "category": "hardware",
+          "fields": [
+            "name",
+            "driver_path",
+            "service_type",
+            "start_mode",
+            "state"
+          ],
+          "actions": [
+            "execution.driver_loaded"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.hardware.firmware",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "hardware.firmware",
+          "name": "固件",
+          "category": "hardware",
+          "fields": [
+            "manufacturer",
+            "bios_version",
+            "smbios_version",
+            "release_date"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.identity.accounts",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "account.user",
+          "name": "用户",
+          "category": "account",
+          "fields": [
+            "name",
+            "enabled",
+            "last_logon",
+            "password_required"
+          ],
+          "actions": [
+            "identity.account_created",
+            "identity.account_deleted",
+            "identity.account_changed",
+            "identity.account_renamed",
+            "identity.account_enabled",
+            "identity.account_disabled",
+            "identity.account_locked",
+            "identity.account_unlocked",
+            "identity.logon_failed"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.identity.assigned-rights",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "account.right_assignment",
+          "name": "账户权限分配",
+          "category": "account",
+          "fields": [
+            "privilege"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.identity.groups",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "account.group",
+          "name": "用户组",
+          "category": "account",
+          "fields": [
+            "name",
+            "members"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "account.group_membership",
+          "name": "组成员登记",
+          "category": "account",
+          "fields": [
+            "group",
+            "member"
+          ],
+          "actions": [
+            "identity.group_member_added",
+            "identity.group_member_removed"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.identity.interactive-sessions",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "runtime.terminal_session",
+          "name": "终端会话",
+          "category": "runtime",
+          "fields": [
+            "session_id",
+            "station",
+            "user",
+            "domain",
+            "state"
+          ],
+          "actions": [
+            "identity.session_locked",
+            "identity.session_unlocked",
+            "identity.session_reconnected",
+            "identity.session_disconnected"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.identity.logon-sessions",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "runtime.logon_session",
+          "name": "登录会话",
+          "category": "runtime",
+          "fields": [
+            "logon_id",
+            "logon_type",
+            "start_time",
+            "authentication_package"
+          ],
+          "actions": [
+            "identity.logon",
+            "identity.logoff",
+            "identity.special_privileges"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.identity.machine",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "account.machine_identity",
+          "name": "计算机身份与域信息",
+          "category": "account",
+          "fields": [
+            "name",
+            "domain",
+            "role",
+            "manufacturer",
+            "model",
+            "uuid"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.identity.profiles",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "account.user_profile",
+          "name": "用户配置文件",
+          "category": "account",
+          "fields": [
+            "path",
+            "loaded",
+            "last_use"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.access",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.proxy_configuration",
+          "name": "代理配置",
+          "category": "network",
+          "fields": [
+            "scope",
+            "path",
+            "enabled",
+            "server",
+            "bypass"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "network.vpn_configuration",
+          "name": "VPN 配置",
+          "category": "network",
+          "fields": [
+            "name",
+            "server",
+            "tunnel_type",
+            "status"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "network.remote_access_configuration",
+          "name": "远程访问配置",
+          "category": "network",
+          "fields": [
+            "service",
+            "path",
+            "values"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.adapters",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.adapter",
+          "name": "网络适配器",
+          "category": "network",
+          "fields": [
+            "guid",
+            "name",
+            "status",
+            "mac",
+            "speed",
+            "driver_version",
+            "hidden"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.addresses",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.address_configuration",
+          "name": "IP 地址配置",
+          "category": "network",
+          "fields": [
+            "interface",
+            "address",
+            "prefix_length",
+            "family",
+            "state"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.dns-cache",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.dns_cache_entry",
+          "name": "DNS 缓存项",
+          "category": "network",
+          "fields": [
+            "name",
+            "record_type",
+            "data"
+          ],
+          "actions": [
+            "network.dns_query"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.dns-configuration",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.dns_configuration",
+          "name": "DNS 配置",
+          "category": "network",
+          "fields": [
+            "interface",
+            "servers",
+            "search_list"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.firewall-profiles",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.firewall_profile",
+          "name": "防火墙配置集",
+          "category": "network",
+          "fields": [
+            "name",
+            "inbound",
+            "outbound",
+            "enabled",
+            "log_path"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.firewall-rules",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.firewall_rule",
+          "name": "防火墙规则",
+          "category": "network",
+          "fields": [
+            "name",
+            "direction",
+            "action",
+            "enabled",
+            "profile",
+            "instance_id"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.hosts",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.hosts_entry",
+          "name": "hosts 静态映射",
+          "category": "network",
+          "fields": [
+            "address",
+            "names"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.ipsec",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.ipsec_rule",
+          "name": "IPsec 规则",
+          "category": "network",
+          "fields": [
+            "name",
+            "security_mode",
+            "policy_source"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.mapped-drives",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.smb_mapping",
+          "name": "SMB 驱动器映射",
+          "category": "network",
+          "fields": [
+            "local_name",
+            "remote_path",
+            "status"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.profiles",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.connection_profile",
+          "name": "网络连接配置文件",
+          "category": "network",
+          "fields": [
+            "name",
+            "category",
+            "ipv4_connectivity",
+            "ipv6_connectivity"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.routes",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.route",
+          "name": "路由",
+          "category": "network",
+          "fields": [
+            "interface",
+            "destination",
+            "next_hop",
+            "metric",
+            "policy_source"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.share-sessions",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.smb_session",
+          "name": "SMB 客户端会话",
+          "category": "network",
+          "fields": [
+            "client",
+            "user",
+            "server",
+            "open_count",
+            "protocol",
+            "encrypted"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.shares",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.smb_share",
+          "name": "SMB 共享",
+          "category": "network",
+          "fields": [
+            "name",
+            "path",
+            "share_acl",
+            "special"
+          ],
+          "actions": [
+            "network.share_access"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.tcp",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.endpoint",
+          "name": "网络连接与监听端点",
+          "category": "network",
+          "fields": [
+            "protocol",
+            "local_address",
+            "local_port",
+            "remote_address",
+            "remote_port",
+            "state",
+            "owning_pid",
+            "creation_time"
+          ],
+          "actions": [
+            "network.connection_observed",
+            "network.connection_allowed",
+            "network.connection_blocked"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.udp",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.endpoint",
+          "name": "网络连接与监听端点",
+          "category": "network",
+          "fields": [
+            "protocol",
+            "local_address",
+            "local_port",
+            "remote_address",
+            "remote_port",
+            "state",
+            "owning_pid",
+            "creation_time"
+          ],
+          "actions": [
+            "network.connection_observed",
+            "network.connection_allowed",
+            "network.connection_blocked"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.network.winrm-configuration",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "network.remote_access_configuration",
+          "name": "远程访问配置",
+          "category": "network",
+          "fields": [
+            "service",
+            "path",
+            "values"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.policy.configuration",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "policy.uac_policy",
+          "name": "UAC 策略",
+          "category": "policy",
+          "fields": [
+            "path",
+            "name",
+            "value"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "policy.software_restriction_policy",
+          "name": "软件限制策略",
+          "category": "policy",
+          "fields": [
+            "path",
+            "name",
+            "value"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.power.configuration",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "policy.power_plan",
+          "name": "电源计划",
+          "category": "policy",
+          "fields": [
+            "guid",
+            "name",
+            "active",
+            "power_source"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.security.certificates.currentuser",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "security.certificate_registration",
+          "name": "证书登记",
+          "category": "security",
+          "fields": [
+            "store",
+            "location",
+            "thumbprint",
+            "subject",
+            "issuer",
+            "not_before",
+            "not_after",
+            "has_private_key"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.security.certificates.localmachine",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "security.certificate_registration",
+          "name": "证书登记",
+          "category": "security",
+          "fields": [
+            "store",
+            "location",
+            "thumbprint",
+            "subject",
+            "issuer",
+            "not_before",
+            "not_after",
+            "has_private_key"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.security.detections",
+      "destination": "action_evidence",
+      "handling": "action_adapter",
+      "types": [
+        {
+          "type_id": "security.protection",
+          "name": "防护配置与状态",
+          "category": "security",
+          "fields": [
+            "name",
+            "engine_version",
+            "signature_version",
+            "real_time",
+            "real_time_configured",
+            "tamper_protected",
+            "scan_time"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.security.deviceguard",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "security.device_guard_configuration",
+          "name": "Device Guard 配置",
+          "category": "security",
+          "fields": [
+            "vbs_status",
+            "services_configured",
+            "services_running",
+            "available_properties"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.security.encryption",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "security.bitlocker_configuration",
+          "name": "BitLocker 配置",
+          "category": "security",
+          "fields": [
+            "mount_point",
+            "volume_status",
+            "protection_status",
+            "encryption_method",
+            "protector_types"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.security.key-metadata",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "security.key_metadata",
+          "name": "密钥元数据对象",
+          "category": "security",
+          "fields": [
+            "provider",
+            "name",
+            "algorithm",
+            "legacy_key_spec"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.security.products",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "security.security_product",
+          "name": "安全产品登记",
+          "category": "security",
+          "fields": [
+            "name",
+            "instance_id",
+            "product_state"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.security.protection",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "security.protection",
+          "name": "防护配置与状态",
+          "category": "security",
+          "fields": [
+            "name",
+            "engine_version",
+            "signature_version",
+            "real_time",
+            "real_time_configured",
+            "tamper_protected",
+            "scan_time"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.security.protection-policy",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "security.protection",
+          "name": "防护配置与状态",
+          "category": "security",
+          "fields": [
+            "name",
+            "engine_version",
+            "signature_version",
+            "real_time",
+            "real_time_configured",
+            "tamper_protected",
+            "scan_time"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "security.exclusion",
+          "name": "防护排除项",
+          "category": "security",
+          "fields": [
+            "product",
+            "exclusion_type",
+            "value"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.security.secureboot",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "security.secure_boot_configuration",
+          "name": "安全启动配置",
+          "category": "security",
+          "fields": [
+            "enabled"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.security.ssh-public-keys",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "security.ssh_public_key",
+          "name": "SSH 公钥登记",
+          "category": "security",
+          "fields": [
+            "path",
+            "algorithm",
+            "fingerprint"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.security.tpm",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "hardware.tpm",
+          "name": "TPM",
+          "category": "hardware",
+          "fields": [
+            "present",
+            "ready",
+            "enabled",
+            "activated",
+            "manufacturer",
+            "version",
+            "locked_out"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.shell.registrations",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "shell.preview_handler",
+          "name": "预览处理程序",
+          "category": "shell",
+          "fields": [
+            "name",
+            "hive",
+            "view",
+            "clsid"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "shell.icon_overlay_handler",
+          "name": "图标覆盖处理程序",
+          "category": "shell",
+          "fields": [
+            "name",
+            "hive",
+            "view",
+            "clsid"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "shell.shell_extension",
+          "name": "Shell 扩展登记",
+          "category": "shell",
+          "fields": [
+            "name",
+            "hive",
+            "view",
+            "approved"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "shell.namespace_extension",
+          "name": "命名空间扩展",
+          "category": "shell",
+          "fields": [
+            "name",
+            "hive",
+            "view",
+            "clsid"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "shell.context_menu_registration",
+          "name": "右键菜单登记",
+          "category": "shell",
+          "fields": [
+            "path",
+            "command",
+            "default_icon"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "shell.file_association",
+          "name": "文件关联",
+          "category": "shell",
+          "fields": [
+            "extension",
+            "prog_id",
+            "command"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "shell.com_registration",
+          "name": "COM 注册",
+          "category": "shell",
+          "fields": [
+            "clsid",
+            "hive",
+            "view",
+            "name",
+            "server_path",
+            "local_server_command",
+            "file_version",
+            "sha256"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.software",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "software.installation_registration",
+          "name": "软件安装登记",
+          "category": "software",
+          "fields": [
+            "display_name",
+            "display_version",
+            "publisher",
+            "install_location",
+            "uninstall_command"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.software.appx-user",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "software.appx_package",
+          "name": "AppX 包",
+          "category": "software",
+          "fields": [
+            "name",
+            "version",
+            "publisher",
+            "install_location",
+            "status"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.software.optional-features",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "software.optional_feature",
+          "name": "Windows 可选组件",
+          "category": "software",
+          "fields": [
+            "name",
+            "state"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.software.portable",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "software.portable_registration",
+          "name": "便携程序登记",
+          "category": "software",
+          "fields": [
+            "path",
+            "version",
+            "company",
+            "size",
+            "sha256"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.software.provisioned",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "software.provisioned_package",
+          "name": "预配包",
+          "category": "software",
+          "fields": [
+            "name",
+            "version",
+            "publisher",
+            "install_location"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.software.user-inventory",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "software.installation_registration",
+          "name": "软件安装登记",
+          "category": "software",
+          "fields": [
+            "display_name",
+            "display_version",
+            "publisher",
+            "install_location",
+            "uninstall_command"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.startup.advanced-extensions",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "startup.ifeo_configuration",
+          "name": "IFEO 与注入入口",
+          "category": "startup",
+          "fields": [
+            "path",
+            "values"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.startup.logon",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "startup.logon_startup_entry",
+          "name": "登录启动项",
+          "category": "startup",
+          "fields": [
+            "location",
+            "value_name",
+            "command"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.startup.service-configuration",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "startup.service",
+          "name": "服务",
+          "category": "startup",
+          "fields": [
+            "name",
+            "display_name",
+            "state",
+            "start_mode",
+            "account",
+            "binary_path"
+          ],
+          "actions": [
+            "startup.service_installed",
+            "startup.service_state_changed"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.startup.services",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "startup.service",
+          "name": "服务",
+          "category": "startup",
+          "fields": [
+            "name",
+            "display_name",
+            "state",
+            "start_mode",
+            "account",
+            "binary_path"
+          ],
+          "actions": [
+            "startup.service_installed",
+            "startup.service_state_changed"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.startup.session-hooks",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "startup.logon_initialization",
+          "name": "登录初始化配置",
+          "category": "startup",
+          "fields": [
+            "path",
+            "values"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.startup.task-details",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "startup.scheduled_task",
+          "name": "计划任务",
+          "category": "startup",
+          "fields": [
+            "path",
+            "name",
+            "enabled",
+            "principal",
+            "actions",
+            "triggers",
+            "next_run",
+            "last_run",
+            "last_result"
+          ],
+          "actions": [
+            "startup.task_created",
+            "startup.task_deleted",
+            "startup.task_updated",
+            "startup.task_started",
+            "startup.task_ended"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.startup.tasks",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "startup.scheduled_task",
+          "name": "计划任务",
+          "category": "startup",
+          "fields": [
+            "path",
+            "name",
+            "enabled",
+            "principal",
+            "actions",
+            "triggers",
+            "next_run",
+            "last_run",
+            "last_result"
+          ],
+          "actions": [
+            "startup.task_created",
+            "startup.task_deleted",
+            "startup.task_updated",
+            "startup.task_started",
+            "startup.task_ended"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.startup.wmi-bindings",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "startup.wmi_binding",
+          "name": "WMI 订阅绑定",
+          "category": "startup",
+          "fields": [
+            "namespace",
+            "filter",
+            "consumer",
+            "security_context"
+          ],
+          "actions": [
+            "execution.wmi_binding"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.startup.wmi-consumers",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "startup.wmi_consumer",
+          "name": "WMI 订阅消费者",
+          "category": "startup",
+          "fields": [
+            "name",
+            "namespace",
+            "consumer_type",
+            "script_engine",
+            "program"
+          ],
+          "actions": [
+            "execution.wmi_consumer"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.startup.wmi-filters",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "startup.wmi_filter",
+          "name": "WMI 订阅筛选器",
+          "category": "startup",
+          "fields": [
+            "name",
+            "namespace",
+            "query_language",
+            "query"
+          ],
+          "actions": [
+            "execution.wmi_filter"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.storage.disks",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "hardware.disk",
+          "name": "磁盘",
+          "category": "hardware",
+          "fields": [
+            "number",
+            "bus_type",
+            "partition_style",
+            "size",
+            "is_boot",
+            "is_system",
+            "health",
+            "operational_status"
+          ],
+          "actions": [
+            "storage.raw_read"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.storage.partitions",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "hardware.partition",
+          "name": "分区",
+          "category": "hardware",
+          "fields": [
+            "disk_number",
+            "partition_number",
+            "guid",
+            "offset",
+            "size",
+            "access_paths"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.storage.volumes",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "hardware.volume",
+          "name": "卷",
+          "category": "hardware",
+          "fields": [
+            "volume_id",
+            "drive_letter",
+            "filesystem",
+            "size",
+            "volume_type"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.system.boot-state",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "policy.os_configuration",
+          "name": "操作系统配置与状态",
+          "category": "policy",
+          "fields": [
+            "path",
+            "caption",
+            "version",
+            "build",
+            "install_time",
+            "boot_time",
+            "reboot_pending"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.system.clock",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "policy.time_sync_configuration",
+          "name": "时间同步配置",
+          "category": "policy",
+          "fields": [
+            "path",
+            "time_zone",
+            "values"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.system.hotfixes",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "software.system_update",
+          "name": "系统更新组件",
+          "category": "software",
+          "fields": [
+            "hotfix_id",
+            "installed_on",
+            "description"
+          ],
+          "actions": [
+            "software.update_history"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.system.reboot-pending",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "policy.os_configuration",
+          "name": "操作系统配置与状态",
+          "category": "policy",
+          "fields": [
+            "path",
+            "caption",
+            "version",
+            "build",
+            "install_time",
+            "boot_time",
+            "reboot_pending"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.system.restore-points",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "policy.system_restore_point",
+          "name": "系统还原点",
+          "category": "policy",
+          "fields": [
+            "sequence",
+            "description",
+            "creation_time",
+            "type"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.system.update-history",
+      "destination": "action_evidence",
+      "handling": "action_adapter",
+      "types": [
+        {
+          "type_id": "software.system_update",
+          "name": "系统更新组件",
+          "category": "software",
+          "fields": [
+            "hotfix_id",
+            "installed_on",
+            "description"
+          ],
+          "actions": [
+            "software.update_history"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.system.version",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "policy.os_configuration",
+          "name": "操作系统配置与状态",
+          "category": "policy",
+          "fields": [
+            "path",
+            "caption",
+            "version",
+            "build",
+            "install_time",
+            "boot_time",
+            "reboot_pending"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.usn.{drive}",
+      "destination": "action_evidence",
+      "handling": "event_adapter",
+      "types": [
+        {
+          "type_id": "file.watched_file",
+          "name": "监控文件",
+          "category": "file",
+          "fields": [
+            "path",
+            "exists",
+            "size",
+            "creation_time",
+            "last_write",
+            "attributes",
+            "owner",
+            "dacl",
+            "sha256"
+          ],
+          "actions": [
+            "files.created",
+            "files.deleted",
+            "files.deleted_archived",
+            "files.creation_time_changed",
+            "files.executable_detected",
+            "files.executable_blocked",
+            "files.shredding_blocked",
+            "files.usn_changed",
+            "files.access_audit"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.usn.changes",
+      "destination": "action_evidence",
+      "handling": "virtual_group",
+      "types": [
+        {
+          "type_id": "file.watched_file",
+          "name": "监控文件",
+          "category": "file",
+          "fields": [
+            "path",
+            "exists",
+            "size",
+            "creation_time",
+            "last_write",
+            "attributes",
+            "owner",
+            "dacl",
+            "sha256"
+          ],
+          "actions": [
+            "files.created",
+            "files.deleted",
+            "files.deleted_archived",
+            "files.creation_time_changed",
+            "files.executable_detected",
+            "files.executable_blocked",
+            "files.shredding_blocked",
+            "files.usn_changed",
+            "files.access_audit"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "pcscope.usn.volumes",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "hardware.volume",
+          "name": "卷",
+          "category": "hardware",
+          "fields": [
+            "volume_id",
+            "drive_letter",
+            "filesystem",
+            "size",
+            "volume_type"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.usn.watch-list",
+      "destination": "coverage",
+      "handling": "source_reading",
+      "types": []
+    },
+    {
+      "source": "pcscope.virtualization.docker",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "virtualization.container",
+          "name": "容器",
+          "category": "virtualization",
+          "fields": [
+            "container_id",
+            "names",
+            "image",
+            "state",
+            "status"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "virtualization.image",
+          "name": "容器镜像",
+          "category": "virtualization",
+          "fields": [
+            "repository",
+            "tag",
+            "image_id"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "virtualization.container_volume",
+          "name": "容器卷",
+          "category": "virtualization",
+          "fields": [
+            "name",
+            "driver"
+          ],
+          "actions": []
+        },
+        {
+          "type_id": "virtualization.container_network",
+          "name": "容器网络",
+          "category": "virtualization",
+          "fields": [
+            "network_id",
+            "name",
+            "driver",
+            "scope"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-checkpoints",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "virtualization.checkpoint",
+          "name": "虚拟机检查点",
+          "category": "virtualization",
+          "fields": [
+            "checkpoint_id",
+            "name",
+            "creation_time",
+            "type",
+            "parent"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-disks",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "virtualization.disk_attachment",
+          "name": "虚拟磁盘连接",
+          "category": "virtualization",
+          "fields": [
+            "vm",
+            "path",
+            "controller_type",
+            "controller_number",
+            "controller_location"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-switches",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "virtualization.virtual_switch",
+          "name": "虚拟交换机",
+          "category": "virtualization",
+          "fields": [
+            "switch_id",
+            "name",
+            "type",
+            "adapter"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-vms",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "virtualization.virtual_machine",
+          "name": "虚拟机",
+          "category": "virtualization",
+          "fields": [
+            "vm_id",
+            "name",
+            "state",
+            "generation",
+            "cpu",
+            "memory"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.virtualization.platform",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "virtualization.platform_capability",
+          "name": "虚拟化能力与平台",
+          "category": "virtualization",
+          "fields": [
+            "hypervisor_present",
+            "firmware_virtualization",
+            "monitor_extensions",
+            "slat"
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "source": "pcscope.virtualization.wsl-registration",
+      "destination": "observation",
+      "handling": "object_adapter",
+      "types": [
+        {
+          "type_id": "virtualization.wsl_distribution",
+          "name": "WSL 发行版",
+          "category": "virtualization",
+          "fields": [
+            "name",
+            "version",
+            "location",
+            "default_uid"
+          ],
+          "actions": []
+        }
+      ]
+    }
+  ]
+}

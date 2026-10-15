@@ -1,0 +1,41 @@
+{
+  "name": "06-sensitive-value-and-mask",
+  "description": "敏感字段的真实值正常保留；来源把显示遮罩当作值提交时被拒绝。",
+  "machine_id": "example-machine",
+  "installation_id": "example-install",
+  "collected_scope": "install:example-install",
+  "configured": true,
+  "complete": true,
+  "assertions": [
+    {
+      "what": "敏感字段的真实值作为已知值保留",
+      "path": "current_values",
+      "contains": { "field_id": "principal", "selection": { "state": "known", "value": "示例账户" } },
+      "basis": "遮罩是显示转换，不是存储状态；入库的是真实值"
+    },
+    {
+      "what": "把遮罩当作值提交的观察被拒绝",
+      "path": "current_values",
+      "contains": { "field_id": "principal", "selection": { "state": "refused" } },
+      "basis": "遮罩字符串不得作为持久值"
+    },
+    {
+      "what": "被拒绝的原因指出遮罩不得作为值",
+      "path": "current_values",
+      "contains": { "field_id": "principal", "selection": { "reason": "来源 pcscope.startup.tasks 提交了显示遮罩作为值；遮罩是显示转换，任何情况下都不得作为持久值或参与比较" } },
+      "basis": "拒绝必须说明原因，便于定位是哪个来源提交的"
+    },
+    {
+      "what": "遮罩字符串从未成为被选中的值",
+      "path": "current_values",
+      "none": { "selection": { "state": "known", "value": "******" } },
+      "basis": "遮罩若被存成值，会污染身份匹配与变化比较"
+    },
+    {
+      "what": "两个任务仍是两个实例，遮罩被拒绝不影响身份",
+      "path": "instances.length",
+      "equals": 2,
+      "basis": "身份键是完整任务路径，与字段值是否可用无关"
+    }
+  ]
+}

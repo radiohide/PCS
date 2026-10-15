@@ -1,0 +1,47 @@
+{
+  "name": "02-same-name-different-path-and-recreated",
+  "description": "同名不同路径的两个任务，其中一个被来源明确删除后又重建。",
+  "machine_id": "example-machine",
+  "installation_id": "example-install",
+  "collected_scope": "install:example-install",
+  "configured": true,
+  "complete": true,
+  "assertions": [
+    {
+      "what": "同名不同路径是两个实例，不是同一个",
+      "path": "instances.length",
+      "equals": 3,
+      "basis": "两个同名任务各占一个实例；被删除后又重建的那个是第三代实例，共三个"
+    },
+    {
+      "what": "删除是来源明确声明的动作",
+      "path": "actions",
+      "contains": { "action_id": "startup.task_deleted", "result": "succeeded" },
+      "basis": "事件 4699 由来源记录，不是由缺失推断"
+    },
+    {
+      "what": "声明删除产生一次已删除转换",
+      "path": "transitions",
+      "contains": { "kind": "removed_stated" },
+      "basis": "只有来源明确声明才进入已删除"
+    },
+    {
+      "what": "重建被识别为新一代，而不是续接旧实例",
+      "path": "transitions",
+      "contains": { "kind": "reincarnated" },
+      "basis": "同一完整任务路径在已删除后重新出现，属于新代际"
+    },
+    {
+      "what": "重新出现的实例带新的代际编号",
+      "path": "instances",
+      "contains": { "identity_status": "confirmed" },
+      "basis": "重建后的任务身份键完整"
+    },
+    {
+      "what": "另一个同名任务不受影响",
+      "path": "actions",
+      "none": { "action_id": "startup.task_deleted", "target_alias": null },
+      "basis": "删除事件只指向被删除的那个任务路径"
+    }
+  ]
+}

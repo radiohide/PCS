@@ -1,0 +1,13 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "PCScope",
+  "version": "0.2.1",
+  "identifier": "local.pcscope.desktop",
+  "build": { "frontendDist": "../ui" },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [{ "title": "PCScope", "width": 1320, "height": 860, "minWidth": 960, "minHeight": 640 }],
+    "security": { "csp": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost" }
+  },
+  "bundle": { "active": false }
+}

@@ -1,0 +1,15 @@
+[package]
+name = "pcscope-ipc"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+pcscope-contracts = { path = "../contracts" }
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+sha2 = "0.10"
+tokio = { version = "1.53", features = ["net", "io-util", "time", "rt-multi-thread", "macros", "sync"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Authorization", "Win32_Storage_FileSystem", "Win32_System_Threading", "Win32_System_Registry", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }

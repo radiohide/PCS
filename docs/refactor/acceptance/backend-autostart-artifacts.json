@@ -1,0 +1,151 @@
+{
+  "bundle": "dist/backend-autostart",
+  "created_at": "2026-10-14T09:24:13.3489803+08:00",
+  "files": [
+    {
+      "path": "channels.json",
+      "bytes": 1042,
+      "sha256": "F7EA3AC8F299C3F9D75A97148949AF0E8BCDCB1E08C0DB5C44AF1D71FBF58DC1"
+    },
+    {
+      "path": "collect-domain.ps1",
+      "bytes": 4764,
+      "sha256": "FEC848BC9CB779335B586AED0CAA5FDC05BD37BFD82895512F0FFF660F19005C"
+    },
+    {
+      "path": "collect-eventlog.ps1",
+      "bytes": 8777,
+      "sha256": "DAC25DC8F20B90AA64FABC79EDD099C587B8ABDB745D4C70A841C78B8B92B959"
+    },
+    {
+      "path": "collect-system.ps1",
+      "bytes": 14775,
+      "sha256": "57E4E5C3092A8A429A633CF8FC6EA2FF37438E674E0A7C9DBEE24AA44FB973F9"
+    },
+    {
+      "path": "collector-options.json",
+      "bytes": 248,
+      "sha256": "336DBD1C8B70E2FC0B88FBFAA77DFE55EF533B7E6CE642FCC8E48ACF2C9D032D"
+    },
+    {
+      "path": "domains/applications.ps1",
+      "bytes": 7179,
+      "sha256": "B83EAA9F33644106770AA0D82C0CCC4ECA4BCFC58908D4965E5256733C90441E"
+    },
+    {
+      "path": "domains/desktop.ps1",
+      "bytes": 3877,
+      "sha256": "91AFBE310A5B31DC0F85018793A901F9F6A4AEB5CB44F0763D2A11BAE7E3F428"
+    },
+    {
+      "path": "domains/IdentityNative.cs",
+      "bytes": 4092,
+      "sha256": "48E9DFAB5EEC9CDB625A06777F14D97840291F466CFA54BFE68FDB21B1E225FA"
+    },
+    {
+      "path": "domains/MetadataNative.cs",
+      "bytes": 4972,
+      "sha256": "F75FD55007D2365E37B549369296EE246F5DEB96E8F4CEC16E07642FA002FA9B"
+    },
+    {
+      "path": "domains/network.ps1",
+      "bytes": 5635,
+      "sha256": "4DA9F40E81C7B6ADB862407BA03C56E30A730B41A1D5BC8FCCA758B5C07766EB"
+    },
+    {
+      "path": "domains/scoped.ps1",
+      "bytes": 11980,
+      "sha256": "DDB452C9C1B57B3B499534FF1865BA5645CEC131517DF6F20D79C52D9BCFE7BC"
+    },
+    {
+      "path": "domains/security.ps1",
+      "bytes": 7230,
+      "sha256": "98E95CD472AD2C143C02DDCC23E7DF43D49C0F77585C11632F6E4EB86C07C099"
+    },
+    {
+      "path": "domains/startup.ps1",
+      "bytes": 3348,
+      "sha256": "FB8C3EC1181E8AF3AD9B5BADA901B06E22A89F716F641E4C2DF07F808EFDFB7D"
+    },
+    {
+      "path": "domains/storage.ps1",
+      "bytes": 2510,
+      "sha256": "007FD10DF3432DB2CC21BB3D5A5B8DE9C45F0F84732412D8E357E7AE55391DAB"
+    },
+    {
+      "path": "domains/system.ps1",
+      "bytes": 5551,
+      "sha256": "5CDA7D105BE46F58D0C8BA24D767097460AECBF488AB44543A79E36E67148E6B"
+    },
+    {
+      "path": "domains/virtualization.ps1",
+      "bytes": 1177,
+      "sha256": "AD5EC0982AB8DA9FB124078CD4D792C0BFCF536DE4F7A3687CEB867E79655913"
+    },
+    {
+      "path": "event-schema.ps1",
+      "bytes": 6368,
+      "sha256": "E986F7D4240B2FF0E0DC514D474AA9EC1A7DD45F04D774ED4530A47696E9A46D"
+    },
+    {
+      "path": "evidence.ps1",
+      "bytes": 3336,
+      "sha256": "41B9A94A25CBA058B16605AB0BA115C69EE61D7C2F0DCDB8971C09EBF45F9843"
+    },
+    {
+      "path": "pcscope-cli.exe",
+      "bytes": 43493823,
+      "sha256": "A365A34E1B07D7B81B5B5CD18738604D38CD097C4A0A976C7DA3D11AD0447B18"
+    },
+    {
+      "path": "pcscope-desktop.exe",
+      "bytes": 232794922,
+      "sha256": "71558738B64C761EAF71B5E2D5BDB62E353D2EEABB8A4A7BBB9B33870224357E"
+    },
+    {
+      "path": "pcscope-eventlog-native.exe",
+      "bytes": 22528,
+      "sha256": "936877FC65A75FEB99C581DC77324ECC8F2B683E638A21805E3CD090180BC41A"
+    },
+    {
+      "path": "pcscope-eventlog.exe",
+      "bytes": 21131515,
+      "sha256": "51110A2B4F296942CCAA89FC78A9033FEC0BD20812DC2E0EFF8F82195295124C"
+    },
+    {
+      "path": "pcscope-platform-native.exe",
+      "bytes": 72704,
+      "sha256": "D8B787E3153128E7C11C7CF16F49CE125EA429615027E9C5645ED4D9EF7E17BD"
+    },
+    {
+      "path": "pcscope-powershell-adapter.exe",
+      "bytes": 22923079,
+      "sha256": "7CC06DFA95685A6E4FB6F68B3455F60676A1C541778E70B6919B9AADAFC3F4BE"
+    },
+    {
+      "path": "pcscope-probe.exe",
+      "bytes": 31809548,
+      "sha256": "34474D8DEC6D8C327092299BA13E41D941CEDAAB20AFA1C7D87AD1F2EEEE8784"
+    },
+    {
+      "path": "pcscope-service.exe",
+      "bytes": 76040560,
+      "sha256": "89DCD941159957939F34F08E9BA615069008E89422595F378116B3BBB26A4845"
+    },
+    {
+      "path": "pcscope-software.exe",
+      "bytes": 21493257,
+      "sha256": "25766879F4AAC15DFEC8008212304C3C2486B839BF2F6ACC8E4330D77EC215EC"
+    },
+    {
+      "path": "pcscope-usn.exe",
+      "bytes": 21158795,
+      "sha256": "A6EE173AF76F6C930032DAE361B4C9413592150BBE6EA4DD74F5150B75D64273"
+    },
+    {
+      "path": "WebView2Loader.dll",
+      "bytes": 160320,
+      "sha256": "8427B1FC58EC707813E5C0A51EB5D69397BB333250A7B891BE4D3B123F1E0F1C"
+    }
+  ]
+}

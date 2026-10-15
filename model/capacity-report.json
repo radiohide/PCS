@@ -1,0 +1,56 @@
+{
+  "generated_by": "crates/storage/examples/model-capacity.rs",
+  "insufficient_space": {
+    "bytes_live": 9240576,
+    "message": "已达到配置的容量上限，本批材料未能保存；采集端可以重发。请在设置页「历史存储」提高配额，或改用无限增长模式。",
+    "message_is_the_engine_error": false,
+    "message_names_a_way_out": true,
+    "message_names_the_limit": true,
+    "refused": true
+  },
+  "note": "对象模型自身的开销与容量行为。在临时目录的库上测得；未在真实盘、真实采集负载或长跑下测过。",
+  "rolling_cleanup": {
+    "bytes_live": 22011904,
+    "dangling_references": 0,
+    "earliest_retained": "2026-09-12T00:00:00Z",
+    "pruned_references": 600,
+    "quota_bytes": 67108864,
+    "references_without_a_reason": 0,
+    "rounds_attempted": 100,
+    "rounds_ingested": 52,
+    "rounds_refused": 48,
+    "within_quota": true
+  },
+  "steady_state": {
+    "actions_after": 0,
+    "actions_unchanged": true,
+    "bytes_after": 30134272,
+    "bytes_growth": 28663808,
+    "bytes_growth_per_round": 286638,
+    "bytes_settled": 1470464,
+    "components_bytes": {
+      "database": 30052352,
+      "shm": 32768,
+      "wal": 1680992
+    },
+    "counts_settled": {
+      "actions": 0,
+      "evidence": 200,
+      "facts": 1200,
+      "queue": 200
+    },
+    "elapsed_ms": 15560,
+    "elapsed_ms_per_round": 155,
+    "facts_after": 1200,
+    "facts_unchanged": true,
+    "items_per_round": 200,
+    "rounds": 100
+  },
+  "unlimited_retention": {
+    "all_rounds_retained": true,
+    "bytes_live": 11055104,
+    "pruned_units": 0,
+    "rounds": 50,
+    "snapshots_retained": 50
+  }
+}

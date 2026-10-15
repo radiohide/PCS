@@ -1,0 +1,2 @@
+{"protocol_version":1,"request_id":"fixture-gap-0029","type":"gap","source":"pcscope.security.encryption","reason":"Source unavailable; previous state retained: 访问被拒绝。","observed_at":"2026-09-10T01:00:00Z"}
+{"protocol_version":1,"request_id":"fixture-gap-0030","type":"gap","source":"pcscope.network.firewall-rules","reason":"Source unavailable; previous state retained: ActiveStore 读取被拒绝。","observed_at":"2026-09-10T01:00:00Z"}

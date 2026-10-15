@@ -1,0 +1,24 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),p=require('../apps/desktop/ui/event-presentation.js');
+const row=(id,f={},provider='Microsoft-Windows-Security-Auditing',source='pcscope.eventlog.security')=>({source,kind:'windows.event',data:{event_id:id,provider,fields:f}});
+let m=p.model(row(5058,{KeyName:'ChromeMetricsTestKey',Operation:'%%2457',ClientProcessId:7096,ReturnCode:'0x0'}));
+assert.equal(m.title,'删除密钥文件 · ChromeMetricsTestKey');assert.equal(m.result.label,'成功');assert.match(m.summary,/未关联 · PID 7096/);assert.doesNotMatch(m.summary,/%%|不能|不代表|需要结合/);
+assert.equal(p.outcome(row(5379,{ReturnCode:'3221226021'})).label,'失败');
+assert.equal(p.outcome(row(5058,{ReturnCode:'0'})).label,'成功');assert.equal(p.outcome(row(5058,{})).label,'未记录');assert.equal(p.outcome(row(5058,{ReturnCode:'******'})).label,'已隐藏');
+assert.equal(p.outcome(row(5058,{ReturnCode:'0'},'Other')),null);assert.equal(p.outcome(row(5058,{ReturnCode:'0'},'Microsoft-Windows-Security-Auditing','pcscope.eventlog.application')),null);
+assert.equal(p.outcome(row(201,{ResultCode:'5'},'Microsoft-Windows-TaskScheduler','pcscope.eventlog.microsoft-windows-taskscheduler/operational')).label,'已结束');
+assert.equal(p.outcome(row(999,{ReturnCode:'0'})),null);
+assert.equal(p.model(row(4624,{TargetUserName:'demo',LogonType:'10',IpAddress:'127.0.0.1'})).groups.at(-1).fields.find(([k])=>k==='登录类型')[1],'远程交互登录');
+assert.match(p.model(row(4688,{NewProcessName:'child.exe',NewProcessId:'0x80',ProcessId:'0x40'})).summary,/child.exe · PID 0x80/);
+assert(!p.model(row(5058,{writer_process_id:1568})).summary.includes('1568'));
+assert.equal(p.model({source:'pcscope.eventlog.security',kind:'coverage.recovered',data:{}}),null);
+const executable=row(4688,{NewProcessName:'C:\\Program Files\\Demo\\child.exe',NewProcessId:'0x80'});
+const originalExecutable=JSON.stringify(executable),executableModel=p.model(executable);
+assert.equal(executableModel.title,'进程启动 · child.exe');
+assert.doesNotMatch(executableModel.summary,/Program Files/,'full program paths do not belong in the activity summary');
+assert.equal(JSON.stringify(executable),originalExecutable,'the original executable path is preserved for details');
+const unfamiliar=p.model(row(999,{},'Vendor-Private-Provider'));
+assert.equal(unfamiliar.action,'未识别事件');
+assert.doesNotMatch(unfamiliar.title,/Vendor-Private-Provider|999/,'unrecognized events use a readable fallback, retaining uncertainty');
+assert.equal(p.objectGroups({source:'pcscope.software.inventory',data:{values:{DisplayName:{value:'Demo'},DisplayVersion:{value:'1'}}}})[0].fields[0][1],'Demo');
+const auditPath=process.argv[2];if(auditPath){const records=JSON.parse(fs.readFileSync(auditPath,'utf8').replace(/^\uFEFF/,'')),pending=[];for(const r of records){const m=p.model({source:r.source,kind:'windows.event',data:r});assert(m.title);assert.doesNotMatch(m.summary,/不能|不代表|需要结合|不是模型推测/);if(m.unknown)pending.push({source:r.source,provider:r.provider,event_id:r.event_id,count:r.count});}fs.writeFileSync('target/presentation-unmapped.json',JSON.stringify(pending,null,2));console.log('Historical presentation audit: '+records.length+' types, '+pending.length+' unrecognized');}
+console.log('PASS: titles, result semantics, provider isolation, caller PID, login types, snapshot profiles and explicit missing states');

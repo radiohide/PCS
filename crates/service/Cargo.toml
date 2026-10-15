@@ -1,0 +1,22 @@
+[package]
+name = "pcscope-service"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+pcscope-ipc = { path = "../ipc" }
+pcscope-supervisor = { path = "../supervisor" }
+pcscope-storage.workspace = true
+pcscope-contracts.workspace = true
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+serde_json.workspace = true
+serde.workspace = true
+anyhow.workspace = true
+tokio = { version = "1.53", features = ["net", "io-util", "time", "rt-multi-thread", "macros", "sync", "signal"] }
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.56"
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Threading", "Win32_Devices_DeviceAndDriverInstallation", "Win32_NetworkManagement_IpHelper", "Win32_NetworkManagement_Ndis", "Win32_Networking_WinSock"] }
+
+[dev-dependencies]
+rusqlite.workspace = true

@@ -1,0 +1,122 @@
+{
+  "generated_by": "S01 (docs/full-object-refactor-plan.md §S01 步骤 4)",
+  "note": "既有功能回归清单。来源为重构计划 2.2 节与当前用户配置项。current_value 记录取值位置，实际取值在 S02 建立基线时写入 docs/refactor/acceptance/S02-baseline.md，本清单不预填未实测的值。",
+  "runtime": {
+    "data_directory": "PCSCOPE_DATA_DIR，未设置时为 Tauri app_local_data_dir（apps/desktop/src-tauri/src/main.rs:54）",
+    "database": "<data>/history.db",
+    "settings_table": "settings(key,value)",
+    "collector_options": "dist/dev/collector-options.json"
+  },
+  "items": [
+    {
+      "id": "R01",
+      "feature": "Rust + Tauri、本地运行、本地数据保存",
+      "config_keys": [],
+      "verify": ["build.ps1 -CargoArgs @('build','--workspace')", "apps/desktop/src-tauri 独立构建（GNU target）"],
+      "code": ["Cargo.toml", "apps/desktop/src-tauri/tauri.conf.json", "crates/storage/src/lib.rs"],
+      "check": null
+    },
+    {
+      "id": "R02",
+      "feature": "黑白主题、直角风格、当前行展开",
+      "config_keys": [],
+      "verify": ["node scripts/check-readable-details.cjs"],
+      "code": ["apps/desktop/ui/style.css", "apps/desktop/ui/app.js"],
+      "check": "check-readable-details.cjs"
+    },
+    {
+      "id": "R03",
+      "feature": "易读说明与原始数据分开，原始数据可复制",
+      "config_keys": [],
+      "verify": ["node scripts/check-readable-details.cjs", "node scripts/check-evidence.cjs"],
+      "code": ["apps/desktop/ui/object-details.js", "apps/desktop/ui/evidence-explanations.js"],
+      "check": "check-readable-details.cjs"
+    },
+    {
+      "id": "R04",
+      "feature": "前后值并排、差异高亮与已有同步阅读能力",
+      "config_keys": [],
+      "verify": ["node scripts/check-snapshot-diff.cjs"],
+      "code": ["apps/desktop/ui/snapshot-diff.js"],
+      "check": "check-snapshot-diff.cjs"
+    },
+    {
+      "id": "R05",
+      "feature": "前端自动刷新/暂停与载入最新不控制后台采集",
+      "config_keys": [],
+      "verify": ["node scripts/check-front-refresh.cjs"],
+      "code": ["apps/desktop/ui/app.js"],
+      "check": "check-front-refresh.cjs"
+    },
+    {
+      "id": "R06",
+      "feature": "插件总开关、单个采集项开关、周期配置和手动触发",
+      "config_keys": ["plugin_schedule", "item_settings"],
+      "verify": ["node scripts/check-item-controls.cjs", "node scripts/check-monitoring-ui.cjs", "cargo test -p pcscope-service", "dist/dev/pcscope-probe.exe plugin-control"],
+      "code": ["crates/service/src/schedule.rs", "crates/storage/src/item_controls.rs", "apps/desktop/ui/plugin-manager.js"],
+      "check": "check-item-controls.cjs"
+    },
+    {
+      "id": "R07",
+      "feature": "文件监控只采用户配置名单，默认名单为空",
+      "config_keys": ["file_watch"],
+      "verify": ["powershell scripts/test-scoped.ps1", "powershell scripts/test-file-watch-events.ps1", "node scripts/check-item-controls.cjs"],
+      "code": ["plugins/powershell-adapter/domains/scoped.ps1", "dist/dev/collector-options.json"],
+      "check": "test-scoped.ps1",
+      "current_value": "collector-options.json: file_roots/portable_roots/module_process_names 均为空数组，hash_files/docker_metadata/mihomo_metadata 均为 false"
+    },
+    {
+      "id": "R08",
+      "feature": "现有权限模式、首次启动检测和系统配置入口",
+      "config_keys": ["monitoring"],
+      "verify": ["node scripts/check-monitoring-ui.cjs"],
+      "code": ["crates/storage/src/lib.rs (monitoring)", "crates/service/src/main.rs (--replace)", "apps/desktop/ui/monitoring.js", "apps/desktop/ui/settings.js"],
+      "check": "check-monitoring-ui.cjs",
+      "reference": "docs/startup-monitoring.md"
+    },
+    {
+      "id": "R09",
+      "feature": "敏感值加密与显示遮罩、自身活动识别及过滤",
+      "config_keys": ["show_sensitive"],
+      "verify": ["cargo test -p pcscope-contracts", "cargo test -p pcscope-storage", "node scripts/check-evidence.cjs"],
+      "code": ["crates/contracts/src/sensitive.rs", "crates/storage/src/self_activity.rs"],
+      "check": "check-evidence.cjs",
+      "reference": "docs/sensitive-display.md, docs/self-activity.md"
+    },
+    {
+      "id": "R10",
+      "feature": "历史默认 5 GB、滚动删除最旧数据；用户可选择无限增长",
+      "config_keys": ["retention_mode", "quota_bytes", "pruned_units"],
+      "verify": ["cargo test -p pcscope-storage", "crates/storage/examples/query-benchmark.rs"],
+      "code": ["crates/storage/src/lib.rs (retention, DEFAULT_QUOTA=5000000000)"],
+      "check": null,
+      "current_value": "默认值来自 crates/storage/src/lib.rs:58；实际库值需在 S02 基线中读取"
+    },
+    {
+      "id": "R11",
+      "feature": "来源断点、批次幂等、不完整快照保护、缺口状态转换去重",
+      "config_keys": [],
+      "verify": ["cargo test -p pcscope-storage", "powershell scripts/test-daemon.ps1", "powershell scripts/test-collector-audit.ps1", "powershell scripts/test-event-schema.ps1"],
+      "code": ["crates/storage/src/lib.rs (checkpoint, ingest)", "crates/storage/src/coverage.rs"],
+      "check": "test-daemon.ps1",
+      "reference": "docs/coverage-transitions.md, docs/protocol-v1.md"
+    },
+    {
+      "id": "R12",
+      "feature": "事件分类与展示语义（重构后仍需保留可读解释）",
+      "config_keys": [],
+      "verify": ["node scripts/check-event-semantics.cjs", "node scripts/check-event-presentation.cjs", "node scripts/check-wmi-presentation.cjs"],
+      "code": ["apps/desktop/ui/event-semantics.js", "apps/desktop/ui/event-presentation.js"],
+      "check": "check-event-semantics.cjs",
+      "reference": "docs/event-classification.md"
+    },
+    {
+      "id": "R13",
+      "feature": "来源目录与界面分类一致性",
+      "config_keys": [],
+      "verify": ["node scripts/check-source-inventory.cjs", "node scripts/check-plugin-sources.cjs", "node scripts/check-collection-view.cjs"],
+      "code": ["apps/desktop/ui/plugin-sources.js", "apps/desktop/ui/collection-catalog.json", "apps/desktop/ui/collection-controls.json"],
+      "check": "check-source-inventory.cjs"
+    }
+  ]
+}

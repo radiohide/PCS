@@ -1,0 +1,3438 @@
+{
+  "generated_by": "scripts/build-native-migration.cjs",
+  "collector_digest": "aef4ed8a4b702f9f873c0c72699f19716d626f381678e790ca2849561b1b6754",
+  "note": "Native-first requirement applies to all sources. Pending is implementation work, not evidence that the API requires PowerShell. Native failures never trigger automatic PowerShell fallback. Existing API descriptions are legacy catalog inputs, not native implementation claims. Plan fields identify targets and remaining validation, never completed migrations.",
+  "counts": {
+    "native": 127,
+    "virtual": 2,
+    "powershell_compatibility": 4
+  },
+  "planned_modes": {
+    "state": 101,
+    "capability": 1,
+    "configuration": 2,
+    "event_history": 23,
+    "virtual": 2,
+    "change_tracking": 1,
+    "retained_history": 2,
+    "change_journal": 1
+  },
+  "pending_priorities": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 4
+  },
+  "sources": [
+    {
+      "source": "pcscope.apps.browser-policies",
+      "name": "Chrome、Edge 与 Firefox 策略",
+      "execution_units": [
+        "applications"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "注册表 · HKLM/HKCU\\Software\\Policies\\Google\\Chrome、Microsoft\\Edge、Mozilla\\Firefox"
+      ],
+      "scope": [
+        "递归最多 2 层；指定策略原值与其他内容摘要"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.apps.chromium-extensions",
+      "name": "Chrome / Edge 扩展",
+      "execution_units": [
+        "applications"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "文件系统 · %LOCALAPPDATA%\\Google\\Chrome\\User Data、Microsoft\\Edge\\User Data 下 Default / Profile N\\Extensions\\{ID}\\{版本}\\manifest.json"
+      ],
+      "scope": [
+        "解析名称、版本与权限清单；不判定是否启用，拒绝重解析目录"
+      ],
+      "plan": {
+        "group": "文件与应用登记",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译后端直接枚举文件、解析 JSON/文本、读取版本和计算摘要",
+        "boundary": "仅原允许目录、文件大小与层级；避免重解析点和自身数据目录。扩展安装清单不自动证明已启用；不读私钥。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.apps.dotnet-runtimes",
+      "name": ".NET 运行时登记",
+      "execution_units": [
+        "applications"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "注册表 · HKLM\\SOFTWARE\\dotnet\\Setup\\InstalledVersions；HKLM\\SOFTWARE\\Microsoft\\NET Framework Setup\\NDP"
+      ],
+      "scope": [
+        "读取 32/64 位视图，分别递归最多 4/3 层"
+      ],
+      "plan": {
+        "group": "已原生登记",
+        "priority": "保留",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主直接读取 Registry",
+        "boundary": "保留各来源现有视图和用户范围。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.apps.firefox-extensions",
+      "name": "Firefox 扩展",
+      "execution_units": [
+        "applications"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "文件系统 · %APPDATA%\\Mozilla\\Firefox\\Profiles\\{配置文件}\\extensions.json"
+      ],
+      "scope": [
+        "解析插件版本、启用/禁用、签名状态与安装/更新时间字段"
+      ],
+      "plan": {
+        "group": "文件与应用登记",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译后端直接枚举文件、解析 JSON/文本、读取版本和计算摘要",
+        "boundary": "仅原允许目录、文件大小与层级；避免重解析点和自身数据目录。扩展安装清单不自动证明已启用；不读私钥。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.apps.ide-extensions",
+      "name": "VS Code 扩展清单",
+      "execution_units": [
+        "applications"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "文件系统 · %USERPROFILE%\\.vscode\\extensions、.vscode-insiders\\extensions 下 package.json"
+      ],
+      "scope": [
+        "枚举扩展目录并解析包清单；读取名称、发布者、版本和引擎约束"
+      ],
+      "plan": {
+        "group": "文件与应用登记",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译后端直接枚举文件、解析 JSON/文本、读取版本和计算摘要",
+        "boundary": "仅原允许目录、文件大小与层级；避免重解析点和自身数据目录。扩展安装清单不自动证明已启用；不读私钥。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.apps.mihomo",
+      "name": "Mihomo 本地运行配置",
+      "execution_units": [
+        "scoped"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "HTTP API · GET http://127.0.0.1:{mihomo_port}/version、/configs；Invoke-RestMethod"
+      ],
+      "scope": [
+        "mihomo_metadata 开启才查询；默认端口 9090，支持 PCSCOPE_MIHOMO_TOKEN；不跟随重定向、不读取节点凭据"
+      ],
+      "plan": {
+        "group": "第三方产品",
+        "priority": "P2",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译后端 HTTP 客户端调用现有本机 /version、/configs API",
+        "boundary": "显式开启、固定回环地址、超时和大小限制；凭据保护，不修改代理配置。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.apps.npm-global-packages",
+      "name": "全局 npm 包清单",
+      "execution_units": [
+        "applications"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "文件系统 · %APPDATA%\\npm\\node_modules；%ProgramFiles%\\nodejs\\node_modules 下 package.json"
+      ],
+      "scope": [
+        "解析普通包与 scope 包清单；不运行 npm，自定义 prefix 不覆盖"
+      ],
+      "plan": {
+        "group": "文件与应用登记",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译后端直接枚举文件、解析 JSON/文本、读取版本和计算摘要",
+        "boundary": "仅原允许目录、文件大小与层级；避免重解析点和自身数据目录。扩展安装清单不自动证明已启用；不读私钥。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.apps.onedrive-registration",
+      "name": "OneDrive 账户与同步登记",
+      "execution_units": [
+        "applications"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "HKCU\\Software\\Microsoft\\OneDrive\\Accounts、Software\\SyncEngines\\Providers\\OneDrive；HKLM\\Software\\Policies\\Microsoft\\OneDrive"
+      ],
+      "scope": [
+        "注册表快照，读取指定账户、挂载与策略字段；不访问云端"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.collector.event-channel-coverage",
+      "name": "事件通道可读性",
+      "execution_units": [
+        "security"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-WinEvent -ListLog；随包 channels.json"
+      ],
+      "scope": [
+        "逐通道查询启用、容量、保留策略、记录数与错误；查询通道状态"
+      ],
+      "plan": {
+        "group": "采集能力",
+        "priority": "保留",
+        "mode": "capability",
+        "target": "compiled_backend",
+        "route": "EventLogConfiguration / EventLogSession / EventLogReader",
+        "boundary": "读取通道配置与首尾记录；不推断全部历史完整。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.collector.scoped-configuration",
+      "name": "指定范围配置",
+      "execution_units": [
+        "scoped"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "插件配置文件列表 + 本地 JSON · collector-options.json"
+      ],
+      "scope": [
+        "文件列表由后台持久保存并传给采集器；默认为空；其他可选运行时读取 JSON"
+      ],
+      "plan": {
+        "group": "采集配置",
+        "priority": "保留",
+        "mode": "configuration",
+        "target": "compiled_backend",
+        "route": "编译后端读取已配置名单与本地配置",
+        "boundary": "名单与日志元数据分开，不产生额外系统采集。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.desktop.clipboard",
+      "name": "剪贴板设置",
+      "execution_units": [
+        "desktop"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "HKCU\\Software\\Microsoft\\Clipboard；HKLM\\Software\\Policies\\Microsoft\\Windows\\System"
+      ],
+      "scope": [
+        "读取历史/同步开关与策略；不读取剪贴板正文"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.desktop.input",
+      "name": "键盘、输入法与过滤驱动配置",
+      "execution_units": [
+        "desktop"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "HKCU\\Keyboard Layout；HKLM\\SYSTEM\\CurrentControlSet\\Control\\Keyboard Layouts；HKLM\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e96b-e325-11ce-bfc1-08002be10318}"
+      ],
+      "scope": [
+        "注册表快照，读取布局文件、IME 文件和 UpperFilters/LowerFilters 等"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.desktop.print-jobs",
+      "name": "打印作业队列",
+      "execution_units": [
+        "desktop"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-Printer / Get-PrintJob -PrinterName"
+      ],
+      "scope": [
+        "逐打印机读取队列、提交时间、大小、页数和状态；不保存文档名/正文"
+      ],
+      "plan": {
+        "group": "打印",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "Winspool：EnumPrinters / EnumJobs / EnumPrinterDrivers / EnumPorts / GetPrinter",
+        "boundary": "保留用户连接打印机与队列；短暂完成作业的完整历史需要打印事件记录。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.desktop.printer-drivers",
+      "name": "打印驱动",
+      "execution_units": [
+        "desktop"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-PrinterDriver"
+      ],
+      "scope": [
+        "读取名称、环境、制造商、驱动/INF/配置文件路径"
+      ],
+      "plan": {
+        "group": "打印",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "Winspool：EnumPrinters / EnumJobs / EnumPrinterDrivers / EnumPorts / GetPrinter",
+        "boundary": "保留用户连接打印机与队列；短暂完成作业的完整历史需要打印事件记录。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.desktop.printer-ports",
+      "name": "打印端口",
+      "execution_units": [
+        "desktop"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-PrinterPort"
+      ],
+      "scope": [
+        "读取端口类型、主机地址、协议、端口号与 SNMP 配置"
+      ],
+      "plan": {
+        "group": "打印",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "Winspool：EnumPrinters / EnumJobs / EnumPrinterDrivers / EnumPorts / GetPrinter",
+        "boundary": "保留用户连接打印机与队列；短暂完成作业的完整历史需要打印事件记录。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.desktop.printing",
+      "name": "打印机清单",
+      "execution_units": [
+        "desktop"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-Printer"
+      ],
+      "scope": [
+        "枚举打印机、共享、驱动、端口与状态；依赖打印服务"
+      ],
+      "plan": {
+        "group": "打印",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "Winspool：EnumPrinters / EnumJobs / EnumPrinterDrivers / EnumPorts / GetPrinter",
+        "boundary": "保留用户连接打印机与队列；短暂完成作业的完整历史需要打印事件记录。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.desktop.shell-settings",
+      "name": "桌面与资源管理器设置",
+      "execution_units": [
+        "desktop"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced、User Shell Folders；HKCU\\Control Panel\\Desktop"
+      ],
+      "scope": [
+        "注册表快照，读取指定显示、壁纸与系统文件夹配置"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.desktop.shortcuts",
+      "name": "桌面与开始菜单快捷方式",
+      "execution_units": [
+        "desktop"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "COM · WScript.Shell.CreateShortcut；Environment.GetFolderPath(DesktopDirectory / CommonDesktopDirectory / StartMenu / CommonStartMenu)"
+      ],
+      "scope": [
+        "只读取现有 .lnk 目标、工作目录、图标与热键；不 Save、不执行目标；参数摘要"
+      ],
+      "plan": {
+        "group": "文件与应用登记",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主直接 COM 读取 WScript.Shell/CreateShortcut 现有元数据及 Known Folder；不启动脚本宿主",
+        "boundary": "固定读取属性，不调用 Run/Exec/Save 或目标程序；原描述读取 E_FAIL 保持空值，保持原接口语言。后续可换等价 IShellLinkW/IPersistFile。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.environment.configuration",
+      "name": "环境变量与默认文件关联",
+      "execution_units": [
+        "startup"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment；HKCU\\Environment、Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts、Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations"
+      ],
+      "scope": [
+        "注册表快照，读取指定环境变量及 ProgId/Application；其他内容摘要"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.application",
+      "name": "应用程序事件 / 软件安装事件",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Application；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 MsiInstaller；该提供程序的事件。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Application Error；该提供程序的事件。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Application Hang；该提供程序的事件。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 NVWMI；事件 ID 3。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 VSS；事件 ID 8224。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Windows Error Reporting；事件 ID 1001。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-Security-SPP；事件 ID 16384、16394。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-Defrag；事件 ID 258、264。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：未命中本来源已定义规则的事件，保留原始提供程序和事件编号。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.import",
+      "name": null,
+      "execution_units": [],
+      "backend": "virtual",
+      "status": "group_only",
+      "existing_api": [],
+      "scope": [],
+      "plan": {
+        "group": "虚拟分组",
+        "priority": "不采集",
+        "mode": "virtual",
+        "target": "none",
+        "route": "复用既有日志/USN 导入与分组",
+        "boundary": "这两项不单独启动采集器。",
+        "validation": "分组标识，不单独执行采集"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-applocker/exe and dll",
+      "name": "AppLocker 程序与 DLL 事件 / 来源采集状态",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-AppLocker/EXE and DLL；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：该通道的运行记录。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-applocker/msi and script",
+      "name": "AppLocker 安装包与脚本事件 / 来源采集状态",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-AppLocker/MSI and Script；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：该通道的运行记录。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational",
+      "name": "AppX 部署事件 / 应用包部署",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-AppXDeploymentServer/Operational；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-AppXDeployment-Server；事件 ID 404、603、613。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-AppXDeployment-Server；事件 ID 939、940、941、942。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：未命中本来源已定义规则的事件，保留原始提供程序和事件编号。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-backup",
+      "name": "Windows 备份事件 / 来源采集状态",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-Backup；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：该通道的运行记录。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-bitlocker/bitlocker management",
+      "name": "BitLocker 管理事件 / 来源采集状态",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-BitLocker/BitLocker Management；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：该通道的运行记录。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-codeintegrity/operational",
+      "name": "代码完整性事件 / 来源采集状态",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-CodeIntegrity/Operational；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：该通道的运行记录。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-driverframeworks-usermode/operational",
+      "name": "用户模式驱动事件 / 来源采集状态",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-DriverFrameworks-UserMode/Operational；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：该通道的运行记录。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-grouppolicy/operational",
+      "name": "组策略处理事件 / 组策略服务生命周期",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-GroupPolicy/Operational；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-GroupPolicy；事件 ID 4115、4116、5115、5116。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-GroupPolicy；事件 ID 4000、4001、4004、4005、8000、8001、8004、8005。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-GroupPolicy；事件 ID 4117、5117、5324、5325、5351、6339。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-GroupPolicy；事件 ID 4126、5126、5257、5312、5313。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-GroupPolicy；事件 ID 5311、5320、5321、5340。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：未命中本来源已定义规则的事件，保留原始提供程序和事件编号。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-hyper-v-vmms/admin",
+      "name": "Hyper-V 管理事件 / 来源采集状态",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-Hyper-V-VMMS/Admin；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：该通道的运行记录。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-networkprofile/operational",
+      "name": "网络配置文件事件 / 来源采集状态",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-NetworkProfile/Operational；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：该通道的运行记录。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-powershell/operational",
+      "name": "PowerShell 运行事件 / PowerShell 命令与脚本",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-PowerShell/Operational；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-PowerShell；事件 ID 4100、4103、4104。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-PowerShell；事件 ID 40961、40962、53504。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：未命中本来源已定义规则的事件，保留原始提供程序和事件编号。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-printservice/operational",
+      "name": "打印服务事件 / 来源采集状态",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-PrintService/Operational；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：该通道的运行记录。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+      "name": "Sysmon / 进程生命周期",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-Sysmon/Operational；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需已安装 Sysmon 并启用该通道。 分类规则：提供程序 Microsoft-Windows-Sysmon；事件 ID 1、5。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需已安装 Sysmon 并启用该通道。 分类规则：提供程序 Microsoft-Windows-Sysmon；事件 ID 8、10、25。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需已安装 Sysmon 并启用该通道。 分类规则：提供程序 Microsoft-Windows-Sysmon；事件 ID 3。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需已安装 Sysmon 并启用该通道。 分类规则：提供程序 Microsoft-Windows-Sysmon；事件 ID 22。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需已安装 Sysmon 并启用该通道。 分类规则：提供程序 Microsoft-Windows-Sysmon；事件 ID 2、11、15、23、26、27、28、29。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需已安装 Sysmon 并启用该通道。 分类规则：提供程序 Microsoft-Windows-Sysmon；事件 ID 12、13、14。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需已安装 Sysmon 并启用该通道。 分类规则：提供程序 Microsoft-Windows-Sysmon；事件 ID 6、7。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需已安装 Sysmon 并启用该通道。 分类规则：提供程序 Microsoft-Windows-Sysmon；事件 ID 19、20、21。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需已安装 Sysmon 并启用该通道。 分类规则：提供程序 Microsoft-Windows-Sysmon；事件 ID 17、18。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需已安装 Sysmon 并启用该通道。 分类规则：提供程序 Microsoft-Windows-Sysmon；事件 ID 9。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需已安装 Sysmon 并启用该通道。 分类规则：提供程序 Microsoft-Windows-Sysmon；事件 ID 24。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需已安装 Sysmon 并启用该通道。 分类规则：提供程序 Microsoft-Windows-Sysmon；事件 ID 4、16、255。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需已安装 Sysmon 并启用该通道。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需已安装 Sysmon 并启用该通道。 分类规则：未命中本来源已定义规则的事件，保留原始提供程序和事件编号。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+      "name": "计划任务执行事件 / 任务触发与执行过程",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-TaskScheduler/Operational；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-TaskScheduler；事件 ID 100、102、107、110、114、129、200、201、322、325、328。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-TaskScheduler；事件 ID 140。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：未命中本来源已定义规则的事件，保留原始提供程序和事件编号。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-terminalservices-localsessionmanager/operational",
+      "name": "终端会话登录、断开与注销 / 来源采集状态",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-TerminalServices-LocalSessionManager/Operational；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：该通道的运行记录。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-terminalservices-remoteconnectionmanager/operational",
+      "name": "远程连接管理事件 / 来源采集状态",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-TerminalServices-RemoteConnectionManager/Operational；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：该通道的运行记录。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-windows defender/operational",
+      "name": "Defender 防护事件 / Defender 健康与情报",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-Windows Defender/Operational；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-Windows Defender；事件 ID 1150、1151、2010。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：未命中本来源已定义规则的事件，保留原始提供程序和事件编号。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-windowsupdateclient/operational",
+      "name": "Windows 更新事件 / 更新检查",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-WindowsUpdateClient/Operational；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-WindowsUpdateClient；事件 ID 26。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：未命中本来源已定义规则的事件，保留原始提供程序和事件编号。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-wlan-autoconfig/operational",
+      "name": "无线网络连接事件 / 来源采集状态",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-WLAN-AutoConfig/Operational；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：该通道的运行记录。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-wmi-activity/operational",
+      "name": "WMI 活动事件 / WMI 提供程序与调用",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Microsoft-Windows-WMI-Activity/Operational；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-WMI-Activity；事件 ID 5857、5858。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：未命中本来源已定义规则的事件，保留原始提供程序和事件编号。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.security",
+      "name": "Windows 安全审计 / 登录、登出与会话",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · Security；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4624、4625、4634、4647、4800、4801、4778、4779。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4720、4722、4725、4726、4738、4740、4767、4781。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4732、4733。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4672。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4688、4689。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4663、4670。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4657。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4697。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4698、4699、4702。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4719。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 5140、5156、5157。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Eventlog；事件 ID 1102。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 5058、5059、5061。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 5056、5057、5060、5062、6417。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 5063、5064、5065、5066、5067、5068、5069、5070。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4692、4693、4694、4695。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4648、4797、5379、5382。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4798、4799。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4662。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4907。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4696。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 4608、4616、4826、4902。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Security-Auditing；事件 ID 5024、5033。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：提供程序 Microsoft-Windows-Eventlog；事件 ID 1100。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；扩展通道轮换查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；需相应审计策略和读取权限。 分类规则：未命中本来源已定义规则的事件，保留原始提供程序和事件编号。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.eventlog.system",
+      "name": "系统与服务事件 / 服务运行事件",
+      "execution_units": [
+        "eventlog"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Windows 事件日志 · System；.NET System.Diagnostics.Eventing.Reader.EventLogQuery / EventLogReader.ReadEvent / EventRecord.ToXml"
+      ],
+      "scope": [
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Service Control Manager；该提供程序的事件。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-Kernel-General；事件 ID 12、13。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-Kernel-Power；该提供程序的事件。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-Kernel-General；事件 ID 11、15。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：提供程序 Microsoft-Windows-Time-Service；事件 ID 37。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：本采集器报告的缺口、恢复及断点状态。",
+        "按持久化 RecordID 断点增量读取，每通道每轮最多 128 条；每轮查询。 首次自动读取正文，保存 System/EventData/UserData、脱敏/截断状态与 XML 摘要；通道需存在且可读取；禁用通道也尝试读取保留历史。 分类规则：未命中本来源已定义规则的事件，保留原始提供程序和事件编号。"
+      ],
+      "plan": {
+        "group": "Windows 事件日志",
+        "priority": "保留",
+        "mode": "event_history",
+        "target": "compiled_backend",
+        "route": "现有编译 EventLogReader（Windows Event Log API）；后续 EvtSubscribe 与书签补读",
+        "boundary": "事件提供程序/通道/ID/版本联合解释；只读已启用日志，按权限/安装组件区分，不通过快照猜造动作。",
+        "validation": "已原生路由；各日志的系统配置与事件解释分别验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.execution.module-file-state",
+      "name": "已观察模块的磁盘文件变化",
+      "execution_units": [
+        "scoped"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "原生文件身份 / ReadDirectoryChangesW / SHA256 / WinVerifyTrust"
+      ],
+      "scope": [
+        "由成功模块观察建立自动名单；稳定复核磁盘元数据、内容、签名和 ACL"
+      ],
+      "plan": {
+        "group": "模块文件变化",
+        "priority": "保留",
+        "mode": "change_tracking",
+        "target": "compiled_backend",
+        "route": "ReadDirectoryChangesW + 原生文件身份/摘要/签名检查",
+        "boundary": "共享目录监听、已知文件集合、去抖、稳定复核；不是文件操作的完整时间历史。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.execution.module-scan-status",
+      "name": "模块发现与读取范围",
+      "execution_units": [
+        "scoped"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "原生进程发现 / 账户与会话范围 / PSAPI 结果"
+      ],
+      "scope": [
+        "保留每个目标及实例的观察、未观察、读取失败、部分覆盖和原始错误码；记录进程发现及读取结果"
+      ],
+      "plan": {
+        "group": "进程模块",
+        "priority": "保留",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "PSAPI / OpenProcess / GetProcessTimes + 用户/会话过滤",
+        "boundary": "只跟踪实际观察模块；进程退出后基线保留，不宣称能发现首次启动即失败的未知模块。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.execution.modules",
+      "name": "指定进程加载模块",
+      "execution_units": [
+        "scoped"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "原生 PSAPI / OpenProcess / GetProcessTimes"
+      ],
+      "scope": [
+        "仅观察当前账户及会话的精确名称；按进程实例独立保存路径、基址、映像大小；不执行模块，验签独立处理"
+      ],
+      "plan": {
+        "group": "进程模块",
+        "priority": "保留",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "PSAPI / OpenProcess / GetProcessTimes + 用户/会话过滤",
+        "boundary": "只跟踪实际观察模块；进程退出后基线保留，不宣称能发现首次启动即失败的未知模块。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.execution.processes",
+      "name": "进程清单",
+      "execution_units": [
+        "system"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/cimv2: Win32_Process"
+      ],
+      "scope": [
+        "按 PID 与创建时间记录父 PID、程序路径、会话；保存脱敏命令行；来源未返回时标记原因"
+      ],
+      "plan": {
+        "group": "进程与后台",
+        "priority": "P0",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "Toolhelp / EnumProcesses / GetProcessTimes / QueryFullProcessImageName；Win32_Process 补充",
+        "boundary": "PID+建立时间区分实例；受保护进程拒绝访问不能当作退出。命令行沿用保护规则。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.execution.resources",
+      "name": "内存与 CPU 采样",
+      "execution_units": [
+        "system"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · Win32_OperatingSystem / Win32_PerfFormattedData_PerfOS_Processor"
+      ],
+      "scope": [
+        "读取内存总量/可用量与 CPU 百分比；时点采样，不是连续性能曲线"
+      ],
+      "plan": {
+        "group": "资源采样",
+        "priority": "保留",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主直接 WMI 查询 Win32_OperatingSystem / CPU 性能类",
+        "boundary": "当前已编译运行；CPU 采样区间、开销预算另验。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.files.directory-security",
+      "name": "指定目录与直接子项",
+      "execution_units": [
+        "scoped"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Get-Item / Get-ChildItem / Get-Acl / GetFileInformationByHandle"
+      ],
+      "scope": [
+        "只读用户配置目录的属性、Owner/DACL、直接子项和文件系统身份；不递归、不保存正文"
+      ],
+      "plan": {
+        "group": "文件状态",
+        "priority": "保留",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主文件/ACL/ADS API、SHA256、GetFileInformationByHandle",
+        "boundary": "保留指定名单、深度、大小与重解析点限制。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.files.metadata-security",
+      "name": "指定文件、ACL 与 ADS",
+      "execution_units": [
+        "scoped"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Get-Item -LiteralPath；FileSystemInfo.GetAccessControl；Get-Item -Stream *；SHA256"
+      ],
+      "scope": [
+        "仅逐项读取插件文件列表，忽略旧 file_roots，不扫描相邻文件；读取时间、属性、Owner/DACL、流名称/大小；hash_files 开启才计算限额内哈希，不保存正文"
+      ],
+      "plan": {
+        "group": "文件状态",
+        "priority": "保留",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主文件/ACL/ADS API、SHA256、GetFileInformationByHandle",
+        "boundary": "保留指定名单、深度、大小与重解析点限制。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.hardware.battery",
+      "name": "电池状态",
+      "execution_units": [
+        "storage"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/cimv2: Win32_Battery"
+      ],
+      "scope": [
+        "读取来源提供的容量、化学类型、余量与估算时间"
+      ],
+      "plan": {
+        "group": "系统提供程序",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主通过 WMI COM / System.Management 直接查询既有 Win32_* / SystemRestore 类",
+        "boundary": "保持各行现有类、命名空间、身份与字段；QFE 不是完整更新清单，登录会话是当前枚举，系统还原点有版本/权限限制。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.hardware.devices",
+      "name": "即插即用设备",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/cimv2: Win32_PnPEntity"
+      ],
+      "scope": [
+        "枚举设备 ID、类别、制造商、服务、状态与配置错误码"
+      ],
+      "plan": {
+        "group": "网卡与设备",
+        "priority": "P0",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "SetupDiGetClassDevs / SetupDiEnumDeviceInfo / CM_Get_DevNode_Status；直接 WMI 补充字段",
+        "boundary": "覆盖设备登记与当前存在状态；移除、禁用、断开分别记录，失败不提交空快照。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.hardware.disk-health",
+      "name": "物理磁盘健康",
+      "execution_units": [
+        "storage"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-PhysicalDisk"
+      ],
+      "scope": [
+        "读取固件版本、介质类型、健康与操作状态；不是完整 SMART 原始属性"
+      ],
+      "plan": {
+        "group": "磁盘与分区",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接查询 root/Microsoft/Windows/Storage：MSFT_Disk / MSFT_Partition / MSFT_PhysicalDisk",
+        "boundary": "保留 ObjectId、UniqueId、访问路径、磁盘健康和关联；存储提供程序不存在时报告能力不可用。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.hardware.driver-bindings",
+      "name": "设备驱动绑定",
+      "execution_units": [
+        "storage"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/cimv2: Win32_PnPSignedDriver"
+      ],
+      "scope": [
+        "读取设备与驱动版本、日期、提供方、INF 及来源签名标志"
+      ],
+      "plan": {
+        "group": "系统提供程序",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主通过 WMI COM / System.Management 直接查询既有 Win32_* / SystemRestore 类",
+        "boundary": "保持各行现有类、命名空间、身份与字段；QFE 不是完整更新清单，登录会话是当前枚举，系统还原点有版本/权限限制。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.hardware.driver-packages",
+      "name": "驱动仓库包",
+      "execution_units": [
+        "storage"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-WindowsDriver -Online -All（DISM）"
+      ],
+      "scope": [
+        "枚举本机仓库中的全部包，保留发布 INF、原 INF、提供方、版本与签名描述；不安装驱动"
+      ],
+      "plan": {
+        "group": "驱动仓库",
+        "priority": "保留",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "DISM API DismGetDrivers",
+        "boundary": "INF+仓库路径区分包；732 包只读验收已通过。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.hardware.driver-services",
+      "name": "驱动服务",
+      "execution_units": [
+        "storage"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/cimv2: Win32_SystemDriver"
+      ],
+      "scope": [
+        "读取驱动路径、服务类型、启动模式与运行状态"
+      ],
+      "plan": {
+        "group": "进程与后台",
+        "priority": "P0",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "OpenSCManager / EnumServicesStatusEx / QueryServiceConfig；直接 WMI 补齐派生字段",
+        "boundary": "同时覆盖 Win32 服务与驱动服务，按原来源分开；不以服务运行证明驱动文件完整。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.hardware.firmware",
+      "name": "BIOS 固件",
+      "execution_units": [
+        "storage"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/cimv2: Win32_BIOS"
+      ],
+      "scope": [
+        "读取制造商、BIOS/SMBIOS 版本与发布日期"
+      ],
+      "plan": {
+        "group": "系统提供程序",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主通过 WMI COM / System.Management 直接查询既有 Win32_* / SystemRestore 类",
+        "boundary": "保持各行现有类、命名空间、身份与字段；QFE 不是完整更新清单，登录会话是当前枚举，系统还原点有版本/权限限制。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.identity.accounts",
+      "name": "本机用户账户",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-LocalUser"
+      ],
+      "scope": [
+        "枚举账户、SID、启用状态、最近登录及密码策略；来源不提供建立时间"
+      ],
+      "plan": {
+        "group": "账户",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "NetUserEnum / NetUserGetInfo / NetLocalGroupEnum / NetLocalGroupGetMembers / LookupAccountSid",
+        "boundary": "SID 做身份；域不可达或成员解析失败不能提交成员全空。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.identity.assigned-rights",
+      "name": "账户权限分配",
+      "execution_units": [
+        "system"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Win32 API · advapi32!LsaOpenPolicy / LsaEnumerateAccountsWithUserRight / LsaEnumerateAccountRights"
+      ],
+      "scope": [
+        "通过 IdentityNative.cs 读取 SID 的 LSA 权限分配；需策略读取权限，非有效访问判定"
+      ],
+      "plan": {
+        "group": "账户",
+        "priority": "保留",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "LSA：LsaEnumerateAccountsWithUserRight / LsaEnumerateAccountRights",
+        "boundary": "按 SID，区分机器权限和用户会话。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.identity.groups",
+      "name": "本机用户组与成员",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-LocalGroup / Get-LocalGroupMember -SID"
+      ],
+      "scope": [
+        "按组 SID 枚举成员 SID；快照对比，不计算全部有效权限"
+      ],
+      "plan": {
+        "group": "账户",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "NetUserEnum / NetUserGetInfo / NetLocalGroupEnum / NetLocalGroupGetMembers / LookupAccountSid",
+        "boundary": "SID 做身份；域不可达或成员解析失败不能提交成员全空。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.identity.interactive-sessions",
+      "name": "交互式终端会话",
+      "execution_units": [
+        "system"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Win32 API · wtsapi32!WTSEnumerateSessionsW / WTSQuerySessionInformationW"
+      ],
+      "scope": [
+        "通过 IdentityNative.cs P/Invoke 枚举会话、站点、用户、域与状态码"
+      ],
+      "plan": {
+        "group": "会话",
+        "priority": "保留",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "WTS：WTSEnumerateSessions / WTSQuerySessionInformation",
+        "boundary": "当前会话范围，过去登录动作依赖事件。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.identity.logon-sessions",
+      "name": "登录会话",
+      "execution_units": [
+        "system"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/cimv2: Win32_LogonSession"
+      ],
+      "scope": [
+        "读取 LogonId、类型、开始时间、认证包；不是完整登录登出历史"
+      ],
+      "plan": {
+        "group": "系统提供程序",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主通过 WMI COM / System.Management 直接查询既有 Win32_* / SystemRestore 类",
+        "boundary": "保持各行现有类、命名空间、身份与字段；QFE 不是完整更新清单，登录会话是当前枚举，系统还原点有版本/权限限制。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.identity.machine",
+      "name": "计算机身份与域信息",
+      "execution_units": [
+        "system"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/cimv2: Win32_ComputerSystem / Win32_ComputerSystemProduct"
+      ],
+      "scope": [
+        "查询名称、域、角色、制造商、型号及 UUID；状态快照"
+      ],
+      "plan": {
+        "group": "系统提供程序",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主通过 WMI COM / System.Management 直接查询既有 Win32_* / SystemRestore 类",
+        "boundary": "保持各行现有类、命名空间、身份与字段；QFE 不是完整更新清单，登录会话是当前枚举，系统还原点有版本/权限限制。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.identity.profiles",
+      "name": "用户配置文件",
+      "execution_units": [
+        "system"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/cimv2: Win32_UserProfile"
+      ],
+      "scope": [
+        "读取 SID、路径、加载状态与 LastUseTime；状态快照"
+      ],
+      "plan": {
+        "group": "系统提供程序",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主通过 WMI COM / System.Management 直接查询既有 Win32_* / SystemRestore 类",
+        "boundary": "保持各行现有类、命名空间、身份与字段；QFE 不是完整更新清单，登录会话是当前枚举，系统还原点有版本/权限限制。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.access",
+      "name": "代理、远程桌面与 VPN",
+      "execution_units": [
+        "network"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Get-VpnConnection；HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings；HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server"
+      ],
+      "scope": [
+        "读取当前用户 VPN 和代理、RDP 配置；注册表非白名单值保存摘要"
+      ],
+      "plan": {
+        "group": "远程访问",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RasEnumEntries / RasGetEntryProperties / RasEnumConnections + Registry；必要时 VPN CIM 提供程序",
+        "boundary": "当前用户和全用户 VPN 分开；不得收集保存的密码，保持代理/RDP 配置字段。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.adapters",
+      "name": "网络适配器",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-NetAdapter -IncludeHidden"
+      ],
+      "scope": [
+        "包括隐藏网卡，读取 GUID、状态、MAC、速度与驱动版本"
+      ],
+      "plan": {
+        "group": "网卡与设备",
+        "priority": "P0",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接查询 MSFT_NetAdapter；GetIfTable2 补充接口状态；SetupAPI/CM 关联 PnP 标识",
+        "boundary": "保留隐藏/虚拟/断开网卡；GetIfTable2 单独不能替代原全部字段和设备范围。GUID 与 PnP ID 分开。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.addresses",
+      "name": "IP 地址",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-NetIPAddress"
+      ],
+      "scope": [
+        "枚举接口地址、前缀长度、地址族和地址状态；状态快照"
+      ],
+      "plan": {
+        "group": "网络现状",
+        "priority": "P0",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "GetUnicastIpAddressTable；MSFT_NetIPAddress 补充原字段",
+        "boundary": "IPv4/IPv6、接口关联、状态和前缀来源均需保留。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.dns-cache",
+      "name": "DNS 缓存",
+      "execution_units": [
+        "network"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-DnsClientCache"
+      ],
+      "scope": [
+        "时点缓存条目与解析值；非完整查询历史或查询发生时间"
+      ],
+      "plan": {
+        "group": "网络提供程序",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接查询 root/StandardCimv2：MSFT_DNSClientServerAddress / MSFT_DNSClientCache / MSFT_NetConnectionProfile；Registry 补配置",
+        "boundary": "DNS 缓存是当前缓存，不是访问历史；不调用未文档化的 DNS 缓存枚举导出。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.dns-configuration",
+      "name": "DNS 配置",
+      "execution_units": [
+        "network"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Get-DnsClientServerAddress；注册表 HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters"
+      ],
+      "scope": [
+        "查询接口 DNS 服务器及域/搜索列表配置"
+      ],
+      "plan": {
+        "group": "网络提供程序",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接查询 root/StandardCimv2：MSFT_DNSClientServerAddress / MSFT_DNSClientCache / MSFT_NetConnectionProfile；Registry 补配置",
+        "boundary": "DNS 缓存是当前缓存，不是访问历史；不调用未文档化的 DNS 缓存枚举导出。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.firewall-profiles",
+      "name": "防火墙配置文件",
+      "execution_units": [
+        "network"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-NetFirewallProfile"
+      ],
+      "scope": [
+        "查询默认入站/出站动作、防火墙开关与日志配置；不读取流量日志正文"
+      ],
+      "plan": {
+        "group": "防火墙与 IPsec",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接调用 StandardCimv2 防火墙/IPsec 提供程序，读取规则及关联过滤器",
+        "boundary": "保留 ActiveStore、PolicyStoreSource 和七类过滤器；不能只用简化 INetFwPolicy2 视图宣称完全等价。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.firewall-rules",
+      "name": "防火墙规则及过滤条件",
+      "execution_units": [
+        "network"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Get-NetFirewallRule；Get-NetFirewall{Port,Address,Application,Service,Interface,InterfaceType,Security}Filter -PolicyStore ActiveStore"
+      ],
+      "scope": [
+        "分别枚举 7 类过滤器，按 InstanceID 关联规则；缺失关联报告缺口"
+      ],
+      "plan": {
+        "group": "防火墙与 IPsec",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接调用 StandardCimv2 防火墙/IPsec 提供程序，读取规则及关联过滤器",
+        "boundary": "保留 ActiveStore、PolicyStoreSource 和七类过滤器；不能只用简化 INetFwPolicy2 视图宣称完全等价。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.hosts",
+      "name": "hosts 静态映射",
+      "execution_units": [
+        "network"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "文件系统 · %SystemRoot%\\System32\\drivers\\etc\\hosts；Get-Content"
+      ],
+      "scope": [
+        "解析有效地址和名称、排除注释；拒绝超大文件与重解析点"
+      ],
+      "plan": {
+        "group": "文件与应用登记",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译后端直接枚举文件、解析 JSON/文本、读取版本和计算摘要",
+        "boundary": "仅原允许目录、文件大小与层级；避免重解析点和自身数据目录。扩展安装清单不自动证明已启用；不读私钥。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.ipsec",
+      "name": "IPsec 规则",
+      "execution_units": [
+        "network"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-NetIPsecRule -PolicyStore ActiveStore"
+      ],
+      "scope": [
+        "枚举规则、安全模式与策略来源；状态快照"
+      ],
+      "plan": {
+        "group": "防火墙与 IPsec",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接调用 StandardCimv2 防火墙/IPsec 提供程序，读取规则及关联过滤器",
+        "boundary": "保留 ActiveStore、PolicyStoreSource 和七类过滤器；不能只用简化 INetFwPolicy2 视图宣称完全等价。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.mapped-drives",
+      "name": "SMB 驱动器映射",
+      "execution_units": [
+        "network"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-SmbMapping"
+      ],
+      "scope": [
+        "读取本地盘符、远端路径与状态"
+      ],
+      "plan": {
+        "group": "SMB",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接查询 SMB CIM 提供程序；NetShareEnum / NetSessionEnum / WNetEnumResource 作为字段可验证的补充",
+        "boundary": "Get-SmbSession 实际为本机 SMB 服务端上的客户端会话，现有名称需校正；保留加密、方言、访问 ACL，不能用少字段接口缩减。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.profiles",
+      "name": "网络连接配置文件",
+      "execution_units": [
+        "network"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-NetConnectionProfile"
+      ],
+      "scope": [
+        "读取网络名称、类别、IPv4/IPv6 连通性"
+      ],
+      "plan": {
+        "group": "网络提供程序",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接查询 root/StandardCimv2：MSFT_DNSClientServerAddress / MSFT_DNSClientCache / MSFT_NetConnectionProfile；Registry 补配置",
+        "boundary": "DNS 缓存是当前缓存，不是访问历史；不调用未文档化的 DNS 缓存枚举导出。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.routes",
+      "name": "路由表",
+      "execution_units": [
+        "network"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-NetRoute"
+      ],
+      "scope": [
+        "枚举接口、目的前缀、下一跳、度量与策略来源；状态快照"
+      ],
+      "plan": {
+        "group": "网络现状",
+        "priority": "P0",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "GetIpForwardTable2；MSFT_NetRoute 补充策略来源",
+        "boundary": "Active/Persistent 等策略范围不因迁移丢失。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.share-sessions",
+      "name": "SMB 客户端会话",
+      "execution_units": [
+        "network"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-SmbSession"
+      ],
+      "scope": [
+        "读取会话、客户端、用户、打开数、协议与加密状态"
+      ],
+      "plan": {
+        "group": "SMB",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接查询 SMB CIM 提供程序；NetShareEnum / NetSessionEnum / WNetEnumResource 作为字段可验证的补充",
+        "boundary": "Get-SmbSession 实际为本机 SMB 服务端上的客户端会话，现有名称需校正；保留加密、方言、访问 ACL，不能用少字段接口缩减。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.shares",
+      "name": "SMB 共享与访问授权",
+      "execution_units": [
+        "network"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-SmbShare / Get-SmbShareAccess -Name"
+      ],
+      "scope": [
+        "枚举共享路径与共享层 ACL；非文件系统全部有效权限"
+      ],
+      "plan": {
+        "group": "SMB",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接查询 SMB CIM 提供程序；NetShareEnum / NetSessionEnum / WNetEnumResource 作为字段可验证的补充",
+        "boundary": "Get-SmbSession 实际为本机 SMB 服务端上的客户端会话，现有名称需校正；保留加密、方言、访问 ACL，不能用少字段接口缩减。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.tcp",
+      "name": "TCP 连接与监听",
+      "execution_units": [
+        "network"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-NetTCPConnection"
+      ],
+      "scope": [
+        "时点枚举本地/远端地址端口、状态、所属 PID 与创建时间；不抓包"
+      ],
+      "plan": {
+        "group": "网络现状",
+        "priority": "P0",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "GetExtendedTcpTable / GetExtendedUdpTable；必要时直接查询 MSFT_NetTCPConnection / MSFT_NetUDPEndpoint",
+        "boundary": "保留创建时间与所属进程等身份字段；PID 模式不足时使用更完整结构/提供程序，不能以读取时间代替创建时间。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.udp",
+      "name": "UDP 端点",
+      "execution_units": [
+        "network"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-NetUDPEndpoint"
+      ],
+      "scope": [
+        "时点枚举本地地址端口、PID 与创建时间；不读取报文"
+      ],
+      "plan": {
+        "group": "网络现状",
+        "priority": "P0",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "GetExtendedTcpTable / GetExtendedUdpTable；必要时直接查询 MSFT_NetTCPConnection / MSFT_NetUDPEndpoint",
+        "boundary": "保留创建时间与所属进程等身份字段；PID 模式不足时使用更完整结构/提供程序，不能以读取时间代替创建时间。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.network.winrm-configuration",
+      "name": "WinRM 配置",
+      "execution_units": [
+        "network"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "注册表 · HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WSMAN"
+      ],
+      "scope": [
+        "递归最多 3 层，保存指定认证、监听与传输配置；不连接远端机器"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.policy.configuration",
+      "name": "UAC、资源管理器与软件限制策略",
+      "execution_units": [
+        "security"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "注册表 · HKLM/HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies；HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer"
+      ],
+      "scope": [
+        "递归最多 3 层；白名单字段保留原值，其他值保存摘要"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.power.configuration",
+      "name": "电源计划与休眠配置",
+      "execution_units": [
+        "storage"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM root/cimv2/power: Win32_PowerPlan；HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power"
+      ],
+      "scope": [
+        "查询激活计划和指定休眠/待机配置；不切换计划"
+      ],
+      "plan": {
+        "group": "电源",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "PowerEnumerate / PowerReadFriendlyName / PowerGetActiveScheme + Registry；Win32_PowerPlan 保持兼容身份",
+        "boundary": "保留计划 GUID 与当前使用状态，读取不切换电源计划。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.security.certificates.currentuser",
+      "name": "当前用户证书",
+      "execution_units": [
+        "security"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        ".NET API · X509Store(StoreLocation.CurrentUser)，Root / CA / My / TrustedPublisher / Disallowed / TrustedPeople"
+      ],
+      "scope": [
+        "只读枚举指纹、主题、颁发者、有效期与私钥存在标志"
+      ],
+      "plan": {
+        "group": "证书",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "CertOpenStore / CertEnumCertificatesInStore 或编译宿主 X509Store",
+        "boundary": "区分当前用户与机器证书库；仅元数据，不导出私钥。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.security.certificates.localmachine",
+      "name": "计算机证书",
+      "execution_units": [
+        "security"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        ".NET API · X509Store(StoreLocation.LocalMachine)，Root / CA / My / TrustedPublisher / Disallowed / TrustedPeople"
+      ],
+      "scope": [
+        "ReadOnly + OpenExistingOnly 枚举证书元数据；不导出私钥，不执行信任评估"
+      ],
+      "plan": {
+        "group": "证书",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "CertOpenStore / CertEnumCertificatesInStore 或编译宿主 X509Store",
+        "boundary": "区分当前用户与机器证书库；仅元数据，不导出私钥。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.security.detections",
+      "name": "Defender 检测记录",
+      "execution_units": [
+        "security"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-MpThreatDetection"
+      ],
+      "scope": [
+        "读取来源保留的检测时间、威胁与处理状态；非主动扫描"
+      ],
+      "plan": {
+        "group": "产品历史",
+        "priority": "P2",
+        "mode": "retained_history",
+        "target": "compiled_backend",
+        "route": "直接查询 MSFT_MpThreatDetection，关联 Defender Operational 事件",
+        "boundary": "保留 DetectionID 和检测时间；这是产品保留的历史，不是全机器当前威胁扫描。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.security.deviceguard",
+      "name": "Device Guard / VBS",
+      "execution_units": [
+        "security"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/Microsoft/Windows/DeviceGuard: Win32_DeviceGuard"
+      ],
+      "scope": [
+        "读取安全能力、配置与运行服务编号；状态快照"
+      ],
+      "plan": {
+        "group": "安全状态",
+        "priority": "P2",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接查询 Defender WMIv2、SecurityCenter2、DeviceGuard 提供程序",
+        "boundary": "Defender/第三方产品、Windows Server 和系统版本适用性分开；IsTamperProtected 等版本字段必须实测。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.security.encryption",
+      "name": "BitLocker 卷状态",
+      "execution_units": [
+        "security"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-BitLockerVolume"
+      ],
+      "scope": [
+        "读取加密方法、进度、保护与锁定状态、保护器类型；不采集恢复材料"
+      ],
+      "plan": {
+        "group": "安全状态",
+        "priority": "P2",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "Win32_EncryptableVolume 只读属性/方法，编译宿主直接调用",
+        "boundary": "不得解锁、启动加密或读取恢复密钥；保持卷和保护器元数据的范围。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.security.key-metadata",
+      "name": "CNG 密钥元数据",
+      "execution_units": [
+        "security"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "NCryptEnumStorageProviders / NCryptEnumKeys（SILENT）"
+      ],
+      "scope": [
+        "按提供程序与用户/机器范围读取名称、算法和旧式 key spec；不打开、导出或创建密钥"
+      ],
+      "plan": {
+        "group": "安全状态",
+        "priority": "保留",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "NCryptEnumStorageProviders / NCryptEnumKeys（SILENT）",
+        "boundary": "仅密钥元数据，不触发 PIN；3 个提供程序/范围问题仍单列未完成。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.security.products",
+      "name": "安全产品登记",
+      "execution_units": [
+        "security"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/SecurityCenter2: AntiVirusProduct"
+      ],
+      "scope": [
+        "读取产品名称、实例 ID 与产品状态码；依赖系统提供该命名空间"
+      ],
+      "plan": {
+        "group": "安全状态",
+        "priority": "P2",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接查询 Defender WMIv2、SecurityCenter2、DeviceGuard 提供程序",
+        "boundary": "Defender/第三方产品、Windows Server 和系统版本适用性分开；IsTamperProtected 等版本字段必须实测。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.security.protection",
+      "name": "Defender 防护状态",
+      "execution_units": [
+        "security"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-MpComputerStatus"
+      ],
+      "scope": [
+        "读取引擎、签名、防护开关与最近扫描时间；状态快照"
+      ],
+      "plan": {
+        "group": "安全状态",
+        "priority": "P2",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接查询 Defender WMIv2、SecurityCenter2、DeviceGuard 提供程序",
+        "boundary": "Defender/第三方产品、Windows Server 和系统版本适用性分开；IsTamperProtected 等版本字段必须实测。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.security.protection-policy",
+      "name": "Defender 策略与排除项",
+      "execution_units": [
+        "security"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-MpPreference"
+      ],
+      "scope": [
+        "读取指定策略、排除路径/进程/扩展名；不修改防护配置"
+      ],
+      "plan": {
+        "group": "安全状态",
+        "priority": "P2",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接查询 Defender WMIv2、SecurityCenter2、DeviceGuard 提供程序",
+        "boundary": "Defender/第三方产品、Windows Server 和系统版本适用性分开；IsTamperProtected 等版本字段必须实测。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.security.secureboot",
+      "name": "安全启动状态",
+      "execution_units": [
+        "security"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Confirm-SecureBootUEFI"
+      ],
+      "scope": [
+        "查询 UEFI Secure Boot；组件不支持或权限不足报告缺口"
+      ],
+      "plan": {
+        "group": "安全状态",
+        "priority": "P2",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "GetFirmwareType + GetFirmwareEnvironmentVariableExW 读取 UEFI SecureBoot",
+        "boundary": "UEFI/传统 BIOS/权限不足分别处理；不修改固件变量。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.security.ssh-public-keys",
+      "name": "SSH 公钥指纹",
+      "execution_units": [
+        "security"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "文件系统 · %USERPROFILE%\\.ssh\\*.pub；File.ReadAllText / SHA256"
+      ],
+      "scope": [
+        "读取支持的公钥编码并生成算法与指纹；不保存密钥材料和注释"
+      ],
+      "plan": {
+        "group": "文件与应用登记",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译后端直接枚举文件、解析 JSON/文本、读取版本和计算摘要",
+        "boundary": "仅原允许目录、文件大小与层级；避免重解析点和自身数据目录。扩展安装清单不自动证明已启用；不读私钥。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.security.tpm",
+      "name": "TPM 状态",
+      "execution_units": [
+        "security"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-Tpm"
+      ],
+      "scope": [
+        "读取 TPM 存在、就绪、开启、锁定及制造商信息"
+      ],
+      "plan": {
+        "group": "安全状态",
+        "priority": "P2",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "TpmCoreProvisioning 只读状态与厂商元数据，TBS 固定无认证能力查询读取锁定状态",
+        "boundary": "保留九字段；待处理物理确认操作非零对应 RestartPending。避免原命令构造器的授权材料读取、自检和可能的配置改变。权限错误保留旧状态，不伪造默认值；硬件代际与版本环境继续验证。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.shell.registrations",
+      "name": "第三方预览处理程序",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "注册表 · Microsoft.Win32.RegistryKey；HKLM/HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\PreviewHandlers",
+        "注册表 · HKLM/HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\ShellIconOverlayIdentifiers",
+        "注册表 · HKLM/HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved、Blocked",
+        "注册表 · HKLM/HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Desktop\\NameSpace、MyComputer\\NameSpace",
+        "注册表 · HKLM/HKCU\\Software\\Classes\\{类型}\\shell、shellex、DefaultIcon；Directory\\Background\\shell、shellex",
+        "注册表 · Software\\Classes\\CLSID\\{已发现CLSID}\\InprocServer32、LocalServer32；.NET FileInfo / FileVersionInfo / SHA256"
+      ],
+      "scope": [
+        "只读扫描 32/64 位视图；提取 CLSID 并关联 COM 注册",
+        "只读递归读取扩展登记",
+        "读取 32/64 位视图中的登记值",
+        "递归读取命名空间及关联 CLSID",
+        "逐类型枚举，递归最多 5 层；扩展名根读取默认关联；命令字段保存脱敏原值",
+        "关联已发现的 CLSID；本地 DLL 读取版本、大小、写入时间与哈希；不执行 DLL、不验证签名"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.software",
+      "name": "本机软件安装登记",
+      "execution_units": [
+        "pcscope-software.exe"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "注册表 · Rust winreg::RegKey；HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+      ],
+      "scope": [
+        "分别枚举 32/64 位视图，读取键内全部登记值与类型（敏感值脱敏）；完整快照对比"
+      ],
+      "plan": {
+        "group": "已原生登记",
+        "priority": "保留",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主直接读取 Registry",
+        "boundary": "保留各来源现有视图和用户范围。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.software.appx-user",
+      "name": "当前用户 AppX 包",
+      "execution_units": [
+        "system"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-AppxPackage"
+      ],
+      "scope": [
+        "枚举当前用户包登记与版本、发布者、位置、状态"
+      ],
+      "plan": {
+        "group": "Windows 应用",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "WinRT PackageManager.FindPackagesForUser",
+        "boundary": "按原用户 SID 查询包和依赖，保留注册状态、体系结构和安装位置；不能改为只看当前提升账户。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.software.optional-features",
+      "name": "Windows 可选组件",
+      "execution_units": [
+        "system"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-WindowsOptionalFeature -Online"
+      ],
+      "scope": [
+        "读取组件名称与状态；不启用或禁用组件"
+      ],
+      "plan": {
+        "group": "Windows 应用",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "DISM API DismGetFeatures / DismGetFeatureInfo",
+        "boundary": "只读在线映像；包/功能状态保留，权限失败不触发启用功能。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.software.portable",
+      "name": "便携软件文件登记",
+      "execution_units": [
+        "scoped"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "文件系统 · portable_roots；.NET FileVersionInfo.GetVersionInfo"
+      ],
+      "scope": [
+        "扫描 EXE/DLL/MSI 的版本、公司及文件元数据；共享 ACL/ADS/可选哈希流程，不验证签名"
+      ],
+      "plan": {
+        "group": "文件与应用登记",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译后端直接枚举文件、解析 JSON/文本、读取版本和计算摘要",
+        "boundary": "仅原允许目录、文件大小与层级；避免重解析点和自身数据目录。扩展安装清单不自动证明已启用；不读私钥。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.software.provisioned",
+      "name": "预配 AppX 包",
+      "execution_units": [
+        "system"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-AppxProvisionedPackage -Online"
+      ],
+      "scope": [
+        "读取本机映像预配包清单；需要相应权限，不执行安装"
+      ],
+      "plan": {
+        "group": "Windows 应用",
+        "priority": "P2",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主直接 WinRT FindProvisionedPackages；API 不存在的旧系统使用 DISM _DismGetProvisionedAppxPackages",
+        "boundary": "完整保留五字段、包身份与机器范围；公开接口按运行时可用性选择，不按安装包标题猜名称，不修改系统或回退 PowerShell。旧 LTSC 私有 DISM 布局和版本环境继续验证。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.software.user-inventory",
+      "name": "当前用户软件登记",
+      "execution_units": [
+        "system"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "注册表 · HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+      ],
+      "scope": [
+        "只读枚举 32/64 位视图下一层子键，键内软件登记值保留类型与脱敏原值"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.startup.advanced-extensions",
+      "name": "IFEO、AppInit 与 AppCert 入口",
+      "execution_units": [
+        "startup"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "注册表 · HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options、SilentProcessExit、Windows；HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\AppCertDlls"
+      ],
+      "scope": [
+        "递归最多 2 层；读取指定开关及其他值摘要，不加载扩展"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.startup.logon",
+      "name": "登录启动登记",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "注册表 · HKLM/HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run、RunOnce、Explorer\\StartupApproved",
+        "文件系统 · Environment.GetFolderPath(Startup / CommonStartup)；Get-ChildItem / SHA256"
+      ],
+      "scope": [
+        "枚举 32/64 位视图；Run 命令保存脱敏原值，StartupApproved 保存登记信息",
+        "枚举文件并读取大小、时间与摘要；不解析快捷方式目标"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.startup.service-configuration",
+      "name": "服务详细配置",
+      "execution_units": [
+        "startup"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "注册表 · HKLM\\SYSTEM\\CurrentControlSet\\Services"
+      ],
+      "scope": [
+        "递归最多 2 层，读取启动类型、账户、依赖与 ServiceDll 等指定值"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.startup.services",
+      "name": "服务运行状态",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/cimv2: Win32_Service"
+      ],
+      "scope": [
+        "查询名称、状态、启动模式、运行账户和服务说明；非服务事件订阅"
+      ],
+      "plan": {
+        "group": "进程与后台",
+        "priority": "P0",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "OpenSCManager / EnumServicesStatusEx / QueryServiceConfig；直接 WMI 补齐派生字段",
+        "boundary": "同时覆盖 Win32 服务与驱动服务，按原来源分开；不以服务运行证明驱动文件完整。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.startup.session-hooks",
+      "name": "会话与登录初始化入口",
+      "execution_units": [
+        "startup"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon；HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager；HKLM/HKCU\\Software\\Microsoft\\Active Setup\\Installed Components、Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run"
+      ],
+      "scope": [
+        "注册表快照，读取 Shell/Userinit/BootExecute 等；非白名单内容仅摘要"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.startup.task-details",
+      "name": "计划任务执行记录与条件",
+      "execution_units": [
+        "startup"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-ScheduledTask / Get-ScheduledTaskInfo"
+      ],
+      "scope": [
+        "读取最近/下次运行、返回码、漏跑次数、触发器、条件、执行目标；参数仅摘要"
+      ],
+      "plan": {
+        "group": "进程与后台",
+        "priority": "P0",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主直接 MI 读取 MSFT_ScheduledTask，固定只读 PS_ScheduledTask.GetInfoByObject；系统任务提供程序使用 Task Scheduler 接口",
+        "boundary": "完整任务路径、嵌入操作/触发器/条件/主体及最近执行信息；不加载 PowerShell；当前配置和最近运行结果不替代每次运行历史。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.startup.tasks",
+      "name": "计划任务基础配置",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-ScheduledTask"
+      ],
+      "scope": [
+        "枚举任务、Principal、Settings 与 Actions；保存动作全部 CIM 属性及脱敏参数"
+      ],
+      "plan": {
+        "group": "进程与后台",
+        "priority": "P0",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主直接 MI 读取 MSFT_ScheduledTask，固定只读 PS_ScheduledTask.GetInfoByObject；系统任务提供程序使用 Task Scheduler 接口",
+        "boundary": "完整任务路径、嵌入操作/触发器/条件/主体及最近执行信息；不加载 PowerShell；当前配置和最近运行结果不替代每次运行历史。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.startup.wmi-bindings",
+      "name": "WMI 过滤器与消费者绑定",
+      "execution_units": [
+        "startup"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/subscription: __FilterToConsumerBinding"
+      ],
+      "scope": [
+        "枚举 Filter/Consumer 关联与安全上下文配置"
+      ],
+      "plan": {
+        "group": "WMI 订阅配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "WMI COM 直接读取 root/subscription 的 __FilterToConsumerBinding / __EventConsumer / __EventFilter",
+        "boundary": "只读订阅定义；正确保留对象路径、绑定及保护的脚本内容，不创建或触发订阅。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.startup.wmi-consumers",
+      "name": "WMI 永久订阅消费者",
+      "execution_units": [
+        "startup"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/subscription: __EventConsumer"
+      ],
+      "scope": [
+        "读取类、脚本引擎、程序路径；命令/脚本只保存摘要"
+      ],
+      "plan": {
+        "group": "WMI 订阅配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "WMI COM 直接读取 root/subscription 的 __FilterToConsumerBinding / __EventConsumer / __EventFilter",
+        "boundary": "只读订阅定义；正确保留对象路径、绑定及保护的脚本内容，不创建或触发订阅。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.startup.wmi-filters",
+      "name": "WMI 永久订阅过滤器",
+      "execution_units": [
+        "startup"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/subscription: __EventFilter"
+      ],
+      "scope": [
+        "读取名称、命名空间、查询语言与查询摘要；这是订阅配置清单，不是主动订阅事件"
+      ],
+      "plan": {
+        "group": "WMI 订阅配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "WMI COM 直接读取 root/subscription 的 __FilterToConsumerBinding / __EventConsumer / __EventFilter",
+        "boundary": "只读订阅定义；正确保留对象路径、绑定及保护的脚本内容，不创建或触发订阅。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.storage.disks",
+      "name": "磁盘清单",
+      "execution_units": [
+        "storage"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-Disk"
+      ],
+      "scope": [
+        "读取磁盘 ID、总线、分区样式、容量、启动和读写状态"
+      ],
+      "plan": {
+        "group": "磁盘与分区",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接查询 root/Microsoft/Windows/Storage：MSFT_Disk / MSFT_Partition / MSFT_PhysicalDisk",
+        "boundary": "保留 ObjectId、UniqueId、访问路径、磁盘健康和关联；存储提供程序不存在时报告能力不可用。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.storage.partitions",
+      "name": "分区清单",
+      "execution_units": [
+        "storage"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "PowerShell · Get-Partition"
+      ],
+      "scope": [
+        "读取磁盘/分区编号、GUID、偏移、大小与访问路径"
+      ],
+      "plan": {
+        "group": "磁盘与分区",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "直接查询 root/Microsoft/Windows/Storage：MSFT_Disk / MSFT_Partition / MSFT_PhysicalDisk",
+        "boundary": "保留 ObjectId、UniqueId、访问路径、磁盘健康和关联；存储提供程序不存在时报告能力不可用。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.storage.volumes",
+      "name": "卷与文件系统",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/cimv2: Win32_Volume"
+      ],
+      "scope": [
+        "枚举卷 ID、盘符、文件系统、容量和卷类型；状态快照"
+      ],
+      "plan": {
+        "group": "磁盘与分区",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "FindFirstVolume / GetVolumeInformation / GetDiskFreeSpaceEx；Win32_Volume 补充",
+        "boundary": "包含无盘符卷，卷身份不得退化为盘符；保留原驱动器类型与容量字段。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.system.boot-state",
+      "name": "最近启动时间与时区",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · Win32_OperatingSystem.LastBootUpTime；PowerShell Get-TimeZone"
+      ],
+      "scope": [
+        "读取系统启动时间与时区 ID；状态快照"
+      ],
+      "plan": {
+        "group": "系统提供程序",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主通过 WMI COM / System.Management 直接查询既有 Win32_* / SystemRestore 类",
+        "boundary": "保持各行现有类、命名空间、身份与字段；QFE 不是完整更新清单，登录会话是当前枚举，系统还原点有版本/权限限制。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.system.clock",
+      "name": "时间同步配置与时区",
+      "execution_units": [
+        "system"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "注册表 · HKLM\\SYSTEM\\CurrentControlSet\\Services\\W32Time；Get-TimeZone"
+      ],
+      "scope": [
+        "递归配置 3 层；读取键内值并脱敏，标注限定深度外的子键数量"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.system.hotfixes",
+      "name": "QFE 更新登记",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/cimv2: Win32_QuickFixEngineering"
+      ],
+      "scope": [
+        "枚举 HotFixID、InstalledOn 等；范围为 QFE 更新登记"
+      ],
+      "plan": {
+        "group": "系统提供程序",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主通过 WMI COM / System.Management 直接查询既有 Win32_* / SystemRestore 类",
+        "boundary": "保持各行现有类、命名空间、身份与字段；QFE 不是完整更新清单，登录会话是当前枚举，系统还原点有版本/权限限制。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.system.reboot-pending",
+      "name": "待重启标志",
+      "execution_units": [
+        "system"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "注册表 · HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\RebootPending；WindowsUpdate\\Auto Update\\RebootRequired；SYSTEM\\CurrentControlSet\\Control\\Session Manager"
+      ],
+      "scope": [
+        "读取标志键与 PendingFileRenameOperations；状态快照"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.system.restore-points",
+      "name": "系统还原点",
+      "execution_units": [
+        "system"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/default: SystemRestore"
+      ],
+      "scope": [
+        "枚举序号、说明、建立时间与类型；不创建还原点"
+      ],
+      "plan": {
+        "group": "系统提供程序",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主通过 WMI COM / System.Management 直接查询既有 Win32_* / SystemRestore 类",
+        "boundary": "保持各行现有类、命名空间、身份与字段；QFE 不是完整更新清单，登录会话是当前枚举，系统还原点有版本/权限限制。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.system.update-history",
+      "name": "Windows Update 历史",
+      "execution_units": [
+        "system"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "COM · Microsoft.Update.Session → CreateUpdateSearcher → GetTotalHistoryCount / QueryHistory"
+      ],
+      "scope": [
+        "每批 128 条读取本机保留的更新历史；非在线检查更新，不安装更新"
+      ],
+      "plan": {
+        "group": "产品历史",
+        "priority": "P2",
+        "mode": "retained_history",
+        "target": "compiled_backend",
+        "route": "WUA COM：IUpdateSession / IUpdateSearcher.QueryHistory",
+        "boundary": "普通应用完整性级别实机 136 条历史身份/字段比对通过；低完整性拒绝。仅查询产品保留历史，不搜索、下载或安装更新；其他环境继续验收。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.system.version",
+      "name": "操作系统版本与安装时间",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · root/cimv2: Win32_OperatingSystem"
+      ],
+      "scope": [
+        "Get-CimInstance 查询 Caption、Version、BuildNumber、OSArchitecture、InstallDate 等；状态快照"
+      ],
+      "plan": {
+        "group": "系统提供程序",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主通过 WMI COM / System.Management 直接查询既有 Win32_* / SystemRestore 类",
+        "boundary": "保持各行现有类、命名空间、身份与字段；QFE 不是完整更新清单，登录会话是当前枚举，系统还原点有版本/权限限制。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.usn.{drive}",
+      "name": "USN 日志身份与断点",
+      "execution_units": [
+        "usn"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Win32 API · CreateFileW 打开卷；DeviceIoControl（0x900F4）",
+        "Win32 API · DeviceIoControl（0x900BB）；USN V2/V3 记录解析",
+        "Win32 API · CreateFileW / GetFileInformationByHandle"
+      ],
+      "scope": [
+        "查询已有日志元数据，验证日志 ID、断点有效范围；权限不足报告缺口",
+        "按父目录 ID + 精确文件名匹配白名单；从列表首次读取建立的断点增量读取，每卷每轮最多 8 × 16 KiB；仅保存命中记录；多次写入可能合并为一条记录；不保存文件内容",
+        "按卷序列号和文件 ID 排除 history.db、WAL、SHM 的变化，避免自采集循环"
+      ],
+      "plan": {
+        "group": "文件日志",
+        "priority": "保留",
+        "mode": "change_journal",
+        "target": "compiled_backend",
+        "route": "DeviceIoControl：FSCTL_QUERY_USN_JOURNAL / FSCTL_READ_USN_JOURNAL",
+        "boundary": "需要现有 NTFS journal 和读取权限；USN 不给操作者或完整内容，不自动创建 journal。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.usn.changes",
+      "name": null,
+      "execution_units": [],
+      "backend": "virtual",
+      "status": "group_only",
+      "existing_api": [],
+      "scope": [],
+      "plan": {
+        "group": "虚拟分组",
+        "priority": "不采集",
+        "mode": "virtual",
+        "target": "none",
+        "route": "复用既有日志/USN 导入与分组",
+        "boundary": "这两项不单独启动采集器。",
+        "validation": "分组标识，不单独执行采集"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.usn.volumes",
+      "name": "固定 NTFS 卷发现",
+      "execution_units": [
+        "usn"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Win32 API · GetLogicalDrives / GetDriveTypeW / GetVolumeInformationW / GetVolumeNameForVolumeMountPointW"
+      ],
+      "scope": [
+        "只检查文件列表涉及的固定 NTFS 卷与卷身份；空列表不枚举或读取卷日志；不扫描无盘符卷"
+      ],
+      "plan": {
+        "group": "文件系统",
+        "priority": "保留",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "GetLogicalDrives / GetDriveType / GetVolumeInformation / GetVolumeNameForVolumeMountPoint",
+        "boundary": "当前固定 NTFS 卷范围。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.usn.watch-list",
+      "name": null,
+      "execution_units": [
+        "usn"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [],
+      "scope": [],
+      "plan": {
+        "group": "采集配置",
+        "priority": "保留",
+        "mode": "configuration",
+        "target": "compiled_backend",
+        "route": "编译后端读取已配置名单与本地配置",
+        "boundary": "名单与日志元数据分开，不产生额外系统采集。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.virtualization.docker",
+      "name": "Docker 容器、镜像、卷与网络",
+      "execution_units": [
+        "scoped"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "Docker Desktop docker.exe --host npipe:////./pipe/docker_engine；container ls --all / image ls / volume ls / network ls"
+      ],
+      "scope": [
+        "docker_metadata 开启才经本机命名管道读取格式化清单；不读取日志、环境变量和容器内容"
+      ],
+      "plan": {
+        "group": "第三方产品",
+        "priority": "P2",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译后端通过本机命名管道调用 Docker Engine HTTP API",
+        "boundary": "保持当前 docker_engine 范围，协商 API 版本；不自动启动 Docker，不使用远程端点；无 PowerShell 或 shell。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-checkpoints",
+      "name": "虚拟机检查点",
+      "execution_units": [
+        "virtualization"
+      ],
+      "backend": "powershell_compatibility",
+      "status": "pending_native_port",
+      "existing_api": [
+        "PowerShell · Get-VM / Get-VMSnapshot"
+      ],
+      "scope": [
+        "枚举检查点 ID、建立时间、类型与父检查点；不创建检查点"
+      ],
+      "plan": {
+        "group": "虚拟化",
+        "priority": "P2",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "Hyper-V WMI V2：root/virtualization/v2，Msvm_* 类与关联",
+        "boundary": "Hyper-V 未安装/家庭版无提供程序为不适用；逐字段关联 VM、设置、交换机、磁盘、检查点，不因命令替换丢 Generation 等派生值。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": "Preserve identities, raw fields, scopes, shards, protection and gaps; prove native parity and timeout behavior before changing ownership."
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-disks",
+      "name": "虚拟机磁盘连接",
+      "execution_units": [
+        "virtualization"
+      ],
+      "backend": "powershell_compatibility",
+      "status": "pending_native_port",
+      "existing_api": [
+        "PowerShell · Get-VM / Get-VMHardDiskDrive"
+      ],
+      "scope": [
+        "逐虚拟机读取虚拟磁盘路径与控制器位置；不读取磁盘内容"
+      ],
+      "plan": {
+        "group": "虚拟化",
+        "priority": "P2",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "Hyper-V WMI V2：root/virtualization/v2，Msvm_* 类与关联",
+        "boundary": "Hyper-V 未安装/家庭版无提供程序为不适用；逐字段关联 VM、设置、交换机、磁盘、检查点，不因命令替换丢 Generation 等派生值。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": "Preserve identities, raw fields, scopes, shards, protection and gaps; prove native parity and timeout behavior before changing ownership."
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-switches",
+      "name": "Hyper-V 虚拟交换机",
+      "execution_units": [
+        "virtualization"
+      ],
+      "backend": "powershell_compatibility",
+      "status": "pending_native_port",
+      "existing_api": [
+        "PowerShell · Get-VMSwitch"
+      ],
+      "scope": [
+        "枚举交换机类型、网卡描述与管理系统访问配置"
+      ],
+      "plan": {
+        "group": "虚拟化",
+        "priority": "P2",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "Hyper-V WMI V2：root/virtualization/v2，Msvm_* 类与关联",
+        "boundary": "Hyper-V 未安装/家庭版无提供程序为不适用；逐字段关联 VM、设置、交换机、磁盘、检查点，不因命令替换丢 Generation 等派生值。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": "Preserve identities, raw fields, scopes, shards, protection and gaps; prove native parity and timeout behavior before changing ownership."
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-vms",
+      "name": "Hyper-V 虚拟机",
+      "execution_units": [
+        "virtualization"
+      ],
+      "backend": "powershell_compatibility",
+      "status": "pending_native_port",
+      "existing_api": [
+        "PowerShell · Get-VM"
+      ],
+      "scope": [
+        "读取虚拟机 ID、状态、代数、CPU、内存与启动行为；需 Hyper-V 模块和访问权限"
+      ],
+      "plan": {
+        "group": "虚拟化",
+        "priority": "P2",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "Hyper-V WMI V2：root/virtualization/v2，Msvm_* 类与关联",
+        "boundary": "Hyper-V 未安装/家庭版无提供程序为不适用；逐字段关联 VM、设置、交换机、磁盘、检查点，不因命令替换丢 Generation 等派生值。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": "Preserve identities, raw fields, scopes, shards, protection and gaps; prove native parity and timeout behavior before changing ownership."
+    },
+    {
+      "source": "pcscope.virtualization.platform",
+      "name": "虚拟化能力与平台",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "CIM · Win32_ComputerSystem / Win32_Processor"
+      ],
+      "scope": [
+        "查询 HypervisorPresent、固件虚拟化、监控扩展与 SLAT 能力；不枚举运行虚拟机"
+      ],
+      "plan": {
+        "group": "系统提供程序",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "编译宿主通过 WMI COM / System.Management 直接查询既有 Win32_* / SystemRestore 类",
+        "boundary": "保持各行现有类、命名空间、身份与字段；QFE 不是完整更新清单，登录会话是当前枚举，系统还原点有版本/权限限制。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    },
+    {
+      "source": "pcscope.virtualization.wsl-registration",
+      "name": "WSL 发行版登记",
+      "execution_units": [
+        "virtualization"
+      ],
+      "backend": "native",
+      "status": "native_owned",
+      "existing_api": [
+        "注册表 · HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Lxss"
+      ],
+      "scope": [
+        "读取下一层发行版名称、版本、位置与默认 UID；不启动 WSL"
+      ],
+      "plan": {
+        "group": "注册表与配置",
+        "priority": "P1",
+        "mode": "state",
+        "target": "compiled_backend",
+        "route": "RegOpenKeyEx / RegEnumKeyEx / RegQueryValueEx 或编译宿主 Registry API；必要时原生文件读取",
+        "boundary": "保留 HKLM/HKCU、32/64 位视图、原递归边界与值保护；启动目录文件、时区和 COM 文件元数据由后端补齐。WSL 登记不当作发行版运行状态。",
+        "validation": "接口路线已识别；字段、权限和环境一致性需逐项验收"
+      },
+      "completion_gate": null
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+{"protocol_version":1,"request_id":"c7-1","type":"event_batch","source":"pcscope.eventlog.application","epoch":"c7-epoch","batch_seq":1,"checkpoint":"c7-cp","events":[{"id":"9001","occurred_at":"2026-09-12T09:00:00Z","kind":"windows.event","object_id":"999999","data":{"provider":"示例未知提供程序","event_id":999999}}]}
+{"protocol_version":1,"request_id":"c7-2","type":"gap","source":"pcscope.eventlog.security","observed_at":"2026-09-12T09:00:00Z","reason":"Source unavailable; previous state retained: 访问被拒绝。"}

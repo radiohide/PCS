@@ -1,0 +1,128 @@
+{
+  "date": "2026-10-12",
+  "collector_digest": "8b42b780fb27545d9c10d99582b007b75c638381910d024403a8a4b8042f8c71",
+  "scope": "isolated read-only collector assessment; no formal daemon or database",
+  "environment": {
+    "windows": "10.0.19044 x64",
+    "framework": "system .NET Framework 4.x",
+    "powershell_compatibility": "Windows PowerShell 5.1",
+    "harness": "PowerShell 7",
+    "filesystem": "local NTFS"
+  },
+  "routes": {
+    "powershell_compatibility": 92,
+    "native": 37,
+    "virtual": 2
+  },
+  "elevated": {
+    "actual_admin_token": true,
+    "same_user": true,
+    "repair": false,
+    "changes": 0,
+    "readable_channels": 21,
+    "total_channels": 23,
+    "driver_items": 732,
+    "unique_package_ids": 732,
+    "unique_published_inf": 730,
+    "driver_gaps": 0,
+    "cng_gaps": 3,
+    "cached_material": "target/native-permission-assessment/06772b5977ac43bea514bb4dbbf7fd49",
+    "final_bundle_elevated_retested": false
+  },
+  "ordinary": {
+    "readable_channels": 19,
+    "dotnet_items": 24,
+    "dotnet_full_payload_parity": true,
+    "self_watch": "explicit gaps, no file/directory complete snapshot",
+    "directory_recursion": false,
+    "default_event_backend": "native",
+    "resume": "same epoch, next sequence, no repeated IDs",
+    "native_missing_fallback": false,
+    "hybrid_native_items": 24,
+    "hybrid_compatibility_gaps": 6,
+    "timings": [
+      {
+        "elapsed_ms": 283.31,
+        "name": "applications",
+        "stdout_bytes": 20085,
+        "messages": 16
+      },
+      {
+        "elapsed_ms": 568.5083,
+        "name": "system",
+        "stdout_bytes": 16446,
+        "messages": 33
+      },
+      {
+        "elapsed_ms": 195.7196,
+        "name": "security",
+        "stdout_bytes": 69503,
+        "messages": 115
+      },
+      {
+        "elapsed_ms": 110.3132,
+        "name": "storage",
+        "stdout_bytes": 336,
+        "messages": 1
+      },
+      {
+        "elapsed_ms": 132.5174,
+        "name": "scoped",
+        "stdout_bytes": 27949,
+        "messages": 48
+      },
+      {
+        "elapsed_ms": 125.7729,
+        "name": "self-watch",
+        "stdout_bytes": 8692,
+        "messages": 18
+      },
+      {
+        "elapsed_ms": 53.4292,
+        "name": "missing-native",
+        "stdout_bytes": 338,
+        "messages": 1
+      },
+      {
+        "elapsed_ms": 231.1499,
+        "name": "missing-compatibility",
+        "stdout_bytes": 22093,
+        "messages": 22
+      },
+      {
+        "elapsed_ms": 344.0283,
+        "name": "hybrid-applications",
+        "stdout_bytes": 22249,
+        "messages": 22
+      },
+      {
+        "elapsed_ms": 540.558,
+        "name": "event-first",
+        "stdout_bytes": 709965,
+        "messages": 1
+      },
+      {
+        "elapsed_ms": 289.514,
+        "name": "event-resume",
+        "stdout_bytes": 587568,
+        "messages": 1
+      }
+    ],
+    "evidence_directory": "target/native-backend-tests/6409b313051744bfb8fd6ea015ea09e0"
+  },
+  "offline": {
+    "messages": 327,
+    "projection_failures": 0,
+    "duplicate_replay_work": 0,
+    "database": "in-memory"
+  },
+  "validation": {
+    "workspace_tests_passed": 362,
+    "final_focused_tests_passed": 13,
+    "node_checks_passed": 22,
+    "desktop_build": "passed with existing manifest warning",
+    "strict_clippy": "14 historical issues, not claimed resolved",
+    "gui_uac": "new launch path compiled, not exercised",
+    "long_soak": "pending"
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "id": "pcscope.windows-uninstall-registration",
+  "revision": "2026-10-12.1",
+  "entries": [
+    {
+      "id": "microsoft-edge-update",
+      "hive": "LocalMachine",
+      "registry_path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Microsoft Edge Update",
+      "views": ["32", "64", "Registry32", "Registry64"],
+      "name": "Edge 更新组件登记",
+      "description": "与 Edge 和网页显示组件的更新有关。",
+      "publishers": ["Microsoft Corporation", "Microsoft"],
+      "references": ["https://learn.microsoft.com/en-us/troubleshoot/microsoft-edge/manageability/update-install-rollback-failures"]
+    },
+    {
+      "id": "nvidia-nvwmi-observed-registration",
+      "hive": "LocalMachine",
+      "registry_path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{B2FE1952-0186-46C3-BAEC-A80AA35AC5B8}_Display.NVWMI",
+      "views": ["32", "64", "Registry32", "Registry64"],
+      "name": "NVIDIA 显卡管理组件登记",
+      "description": "供程序读取和管理显卡信息。",
+      "publishers": ["NVIDIA Corporation", "NVIDIA"],
+      "references": ["https://www.nvidia.com/content/quadro_fx_product_literature/wp-06953-001-v02.pdf"]
+    },
+    {
+      "id": "windows-address-book",
+      "hive": "LocalMachine",
+      "registry_path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\AddressBook",
+      "views": ["32", "64", "Registry32", "Registry64"],
+      "name": "旧版 Windows 通讯簿相关登记",
+      "description": "通常与联系人和电子邮件地址簿功能有关。",
+      "publishers": ["Microsoft Corporation", "Microsoft"],
+      "references": ["https://learn.microsoft.com/en-us/previous-versions/windows/desktop/wab/-wab-overview"]
+    },
+    {
+      "id": "windows-paint-observed-registration",
+      "hive": "LocalMachine",
+      "registry_path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\mspaint-b330ad9e-f80b-4c96-9949-4b4228be9a6e",
+      "views": ["32", "64", "Registry32", "Registry64"],
+      "name": "画图组件登记",
+      "description": "与绘图和简单图片编辑有关。",
+      "publishers": ["Microsoft Corporation", "Microsoft"],
+      "references": ["https://www.microsoft.com/en-us/windows/paint"]
+    },
+    {
+      "id": "windows-remote-desktop-observed-registration",
+      "hive": "LocalMachine",
+      "registry_path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\mstsc-4b0a31aa-df6a-4307-9b47-d5cc50009643",
+      "views": ["32", "64", "Registry32", "Registry64"],
+      "name": "远程桌面连接组件登记",
+      "description": "与连接和操作远程电脑有关。",
+      "publishers": ["Microsoft Corporation", "Microsoft"],
+      "references": ["https://learn.microsoft.com/en-us/troubleshoot/windows-client/remote/use-mstsc-universal-remote-desktop-client-instead-rdman", "本机文件资源：Windows\\System32\\mstsc.exe；FileDescription=远程桌面连接；对应登记 Publisher=Microsoft Corporation（2026-10-12 只读样本）"]
+    },
+    {
+      "id": "windows-snipping-tool-observed-registration",
+      "hive": "LocalMachine",
+      "registry_path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\snippingtool-ee6eb196-db28-4d99-816d-fa9a63b4a377",
+      "views": ["32", "64", "Registry32", "Registry64"],
+      "name": "截图工具组件登记",
+      "description": "与截取屏幕画面有关。",
+      "publishers": ["Microsoft Corporation", "Microsoft"],
+      "references": ["https://support.microsoft.com/en-au/windows/apps/use-snipping-tool-to-capture-screenshots"]
+    },
+    {
+      "id": "windows-connection-manager",
+      "hive": "LocalMachine",
+      "registry_path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Connection Manager",
+      "views": ["32", "64", "Registry32", "Registry64"],
+      "name": "网络连接管理组件相关登记",
+      "description": "通常与按预设配置连接远程网络有关。",
+      "publishers": ["Microsoft Corporation", "Microsoft"],
+      "references": ["https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/hh831583%28v%3Dws.11%29"]
+    },
+    {
+      "id": "windows-directdrawex",
+      "hive": "LocalMachine",
+      "registry_path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\DirectDrawEx",
+      "views": ["32", "64", "Registry32", "Registry64"],
+      "name": "旧版图形组件相关登记",
+      "description": "通常与旧版图形显示支持有关。",
+      "publishers": ["Microsoft Corporation", "Microsoft"],
+      "references": ["本机 Active Setup：HKLM\\SOFTWARE\\Microsoft\\Active Setup\\Installed Components\\{44BBA855-CC51-11CF-AAFA-00AA00B6015F}；ComponentID=DirectDrawEx；默认名称=DirectDrawEx（2026-10-12 只读样本）。图形用途按组件家族推断，不是完整卸载路径的官方映射。", "https://learn.microsoft.com/en-us/windows/win32/api/ddraw/nf-ddraw-directdrawcreateex"]
+    },
+    {
+      "id": "windows-internet-explorer-core-fonts",
+      "hive": "LocalMachine",
+      "registry_path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Fontcore",
+      "views": ["32", "64", "Registry32", "Registry64"],
+      "name": "旧版浏览器字体组件登记",
+      "description": "通常与旧版浏览器的基础字体有关。",
+      "publishers": ["Microsoft Corporation", "Microsoft"],
+      "references": ["本机 Active Setup：HKLM\\SOFTWARE\\Microsoft\\Active Setup\\Installed Components\\{C9E9A340-D1F1-11D0-821E-444553540600}；ComponentID=Fontcore；默认名称=Internet Explorer Core Fonts（2026-10-12 只读样本）。按相同组件标识解释名称，不证明卸载登记有效。"]
+    },
+    {
+      "id": "windows-legacy-media-player",
+      "hive": "LocalMachine",
+      "registry_path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MPlayer2",
+      "views": ["32", "64", "Registry32", "Registry64"],
+      "name": "旧版媒体播放器组件相关登记",
+      "description": "通常与旧版音视频播放功能有关。",
+      "publishers": ["Microsoft Corporation", "Microsoft"],
+      "references": ["https://learn.microsoft.com/en-us/previous-versions/windows/desktop/dd874350%28v%3Dvs.85%29"]
+    },
+    {
+      "id": "windows-scheduling-agent",
+      "hive": "LocalMachine",
+      "registry_path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\SchedulingAgent",
+      "views": ["32", "64", "Registry32", "Registry64"],
+      "name": "任务计划组件相关登记",
+      "description": "通常与按计划自动运行任务有关。",
+      "publishers": ["Microsoft Corporation", "Microsoft"],
+      "references": ["https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-tsch/2d1fbbab-fe6c-4ae5-bdf5-41dc526b2439"]
+    },
+    {
+      "id": "windows-imaging-component",
+      "hive": "LocalMachine",
+      "registry_path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\WIC",
+      "views": ["32", "64", "Registry32", "Registry64"],
+      "name": "图像处理组件相关登记",
+      "description": "通常与读取和保存多种格式的图片有关。",
+      "publishers": ["Microsoft Corporation", "Microsoft"],
+      "references": ["https://learn.microsoft.com/en-us/windows/win32/wic/-wic-about-windows-imaging-codec"]
+    }
+  ]
+}

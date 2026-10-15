@@ -1,0 +1,36 @@
+.tools/
+target/
+node_modules/
+data/
+*.db
+*.db-wal
+*.db-shm
+dist/
+
+# Generated Tauri schemas
+/apps/desktop/src-tauri/gen/
+
+# Runtime exports and local secrets
+*.log
+*.evtx
+*.sqlite
+*.sqlite3
+.env
+.env.*
+!.env.example
+!.env.sample
+*.local.json
+*.local.toml
+*.pem
+*.key
+*.pfx
+*.p12
+
+# Generated real-scale S02 fixture corpus (rebuild with: node scripts/build-fixtures.cjs --scale)
+fixtures/scaled/
+
+# Machine-specific runnable preview shortcuts
+*.lnk
+
+# Generated documentation archive; editable sources are kept under docs/.
+/docs/sensitive-display.zip

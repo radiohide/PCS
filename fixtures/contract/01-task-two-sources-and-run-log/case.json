@@ -1,0 +1,65 @@
+{
+  "name": "01-task-two-sources-and-run-log",
+  "description": "一个计划任务，两个配置来源（基础清单与详细配置）和一份运行日志。",
+  "machine_id": "example-machine",
+  "installation_id": "example-install",
+  "collected_scope": "install:example-install",
+  "configured": true,
+  "complete": true,
+  "assertions": [
+    {
+      "what": "两个配置来源与运行日志归一为同一个任务实例",
+      "path": "instances.length",
+      "equals": 1,
+      "basis": "两处配置来源给出相同的 task 路径，运行日志的 task_name 与之相同；类型规定的身份键是完整任务路径，与来源分片、请求 ID 无关"
+    },
+    {
+      "what": "实例是计划任务且身份已确认",
+      "path": "instances[0].identity_status",
+      "equals": "confirmed",
+      "basis": "完整任务路径已提供，身份键完整"
+    },
+    {
+      "what": "来源不同不影响实例身份",
+      "path": "instances[0].type_id",
+      "equals": "startup.scheduled_task",
+      "basis": "两个来源都映射到目录中的同一类型"
+    },
+    {
+      "what": "运行日志的开始与结束是两条动作，保留阶段",
+      "path": "actions.length",
+      "equals": 2,
+      "basis": "事件 100 与 102 是同一任务的两个阶段，不得去重成一条成功事件"
+    },
+    {
+      "what": "开始动作的结果语义是 started，不是 succeeded",
+      "path": "actions",
+      "contains": { "action_id": "startup.task_started", "result": "started" },
+      "basis": "来源记录的是开始，未报告结果；开始不得冒充成功"
+    },
+    {
+      "what": "结束动作的结果语义是 ended",
+      "path": "actions",
+      "contains": { "action_id": "startup.task_ended", "result": "ended" },
+      "basis": "来源记录的是结束"
+    },
+    {
+      "what": "两条动作时间精度都是精确",
+      "path": "actions",
+      "contains": { "action_id": "startup.task_started", "precision": "exact" },
+      "basis": "任务日志带有确切的发生时间"
+    },
+    {
+      "what": "每条动作都引用了证据",
+      "path": "actions",
+      "contains": { "evidence_count": 1 },
+      "basis": "动作必须能追溯到支撑它的来源记录"
+    },
+    {
+      "what": "同一个字段有来自两个配置来源的观察",
+      "path": "current_values",
+      "contains": { "field_id": "name", "observations": 2 },
+      "basis": "基础清单与详细配置都提供了任务名称"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+[package]
+name = "pcscope-simulator"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde_json.workspace = true

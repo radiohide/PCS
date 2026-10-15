@@ -1,0 +1,3894 @@
+{
+  "cases": [
+    {
+      "case": "01-task-two-sources-and-run-log",
+      "counts": {
+        "actions": 2,
+        "instances": 1,
+        "responses": 5
+      },
+      "lifecycle": [
+        "active"
+      ],
+      "problems": [],
+      "responses": [
+        {
+          "query": "instance_list",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 2,
+              "evidence": 4,
+              "instances": 1,
+              "source_records": 4
+            },
+            "data": [
+              {
+                "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+                "category": "startup",
+                "changed_at": "2026-09-12T08:00:00Z",
+                "coverage": [
+                  {
+                    "configured": true,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "success",
+                    "last_success_at": "2026-09-12T09:00:00.000Z",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "\\示例文件夹\\示例任务",
+                "identity_status": "confirmed",
+                "instance_id": 1,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "path",
+                    "kind": "identity",
+                    "label": "任务路径",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "\\示例文件夹\\示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "actions",
+                    "kind": "configuration",
+                    "label": "执行动作",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": [
+                      {
+                        "execute": "C:\\示例\\程序\\示例程序.exe"
+                      }
+                    ],
+                    "value_type": "list"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "enabled",
+                    "kind": "configuration",
+                    "label": "是否启用",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": true,
+                    "value_type": "boolean"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "name",
+                    "kind": "configuration",
+                    "label": "名称",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "principal",
+                    "kind": "configuration",
+                    "label": "运行账户",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "示例用户",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "triggers",
+                    "kind": "configuration",
+                    "label": "触发条件",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": [
+                      {
+                        "start_boundary": "2026-09-12T18:00:00Z",
+                        "type": "Daily"
+                      }
+                    ],
+                    "value_type": "unknown"
+                  }
+                ],
+                "lifecycle": "active",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T09:00:00Z",
+                "type_id": "startup.scheduled_task",
+                "type_name": "计划任务"
+              }
+            ],
+            "page": {
+              "has_more": false,
+              "limit": 50,
+              "watermark": "drill-01-task-two-sources-and-run-log-154b198b4b59a0f3c2c26a39105bf11037f57e1baf44561bff1b11be6d8c181b"
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "instance_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 2,
+              "evidence": 4,
+              "instances": 1,
+              "source_records": 4
+            },
+            "data": {
+              "actions_preview": [
+                {
+                  "action_id": "startup.task_started",
+                  "evidence": [
+                    {
+                      "id": "pcscope.eventlog.microsoft-windows-taskscheduler/operational|c1-epoch|100",
+                      "kind": "event"
+                    }
+                  ],
+                  "observed_at": "2026-09-12T08:00:00Z",
+                  "occurred_at": "2026-09-12T08:00:00Z",
+                  "phase": "task run",
+                  "precision": "exact",
+                  "result": "started",
+                  "time_derived": false,
+                  "title": "任务开始执行"
+                },
+                {
+                  "action_id": "startup.task_ended",
+                  "evidence": [
+                    {
+                      "id": "pcscope.eventlog.microsoft-windows-taskscheduler/operational|c1-epoch|102",
+                      "kind": "event"
+                    }
+                  ],
+                  "observed_at": "2026-09-12T08:00:05Z",
+                  "occurred_at": "2026-09-12T08:00:05Z",
+                  "phase": "task run",
+                  "precision": "exact",
+                  "result": "ended",
+                  "time_derived": false,
+                  "title": "任务执行结束"
+                }
+              ],
+              "bindings": [],
+              "fields": [
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "actions",
+                  "kind": "configuration",
+                  "label": "执行动作",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "status": "known",
+                  "value": [
+                    {
+                      "execute": "C:\\示例\\程序\\示例程序.exe"
+                    }
+                  ],
+                  "value_type": "list"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "enabled",
+                  "kind": "configuration",
+                  "label": "是否启用",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "status": "known",
+                  "value": true,
+                  "value_type": "boolean"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "name",
+                  "kind": "configuration",
+                  "label": "名称",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "status": "known",
+                  "value": "示例任务",
+                  "value_type": "string"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "path",
+                  "kind": "identity",
+                  "label": "任务路径",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "status": "known",
+                  "value": "\\示例文件夹\\示例任务",
+                  "value_type": "string"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "principal",
+                  "kind": "configuration",
+                  "label": "运行账户",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "status": "known",
+                  "value": "示例用户",
+                  "value_type": "string"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "triggers",
+                  "kind": "configuration",
+                  "label": "触发条件",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "status": "known",
+                  "value": [
+                    {
+                      "start_boundary": "2026-09-12T18:00:00Z",
+                      "type": "Daily"
+                    }
+                  ],
+                  "value_type": "unknown"
+                }
+              ],
+              "summary": {
+                "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+                "category": "startup",
+                "changed_at": "2026-09-12T08:00:00Z",
+                "coverage": [
+                  {
+                    "configured": true,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "success",
+                    "last_success_at": "2026-09-12T09:00:00.000Z",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "\\示例文件夹\\示例任务",
+                "identity_status": "confirmed",
+                "instance_id": 1,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "path",
+                    "kind": "identity",
+                    "label": "任务路径",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "\\示例文件夹\\示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "actions",
+                    "kind": "configuration",
+                    "label": "执行动作",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": [
+                      {
+                        "execute": "C:\\示例\\程序\\示例程序.exe"
+                      }
+                    ],
+                    "value_type": "list"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "enabled",
+                    "kind": "configuration",
+                    "label": "是否启用",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": true,
+                    "value_type": "boolean"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "name",
+                    "kind": "configuration",
+                    "label": "名称",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "principal",
+                    "kind": "configuration",
+                    "label": "运行账户",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "示例用户",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "triggers",
+                    "kind": "configuration",
+                    "label": "触发条件",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": [
+                      {
+                        "start_boundary": "2026-09-12T18:00:00Z",
+                        "type": "Daily"
+                      }
+                    ],
+                    "value_type": "unknown"
+                  }
+                ],
+                "lifecycle": "active",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T09:00:00Z",
+                "type_id": "startup.scheduled_task",
+                "type_name": "计划任务"
+              }
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "instance_actions",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 2,
+              "evidence": 4,
+              "instances": 1,
+              "source_records": 4
+            },
+            "data": [
+              {
+                "action_id": "startup.task_started",
+                "evidence": [
+                  {
+                    "id": "pcscope.eventlog.microsoft-windows-taskscheduler/operational|c1-epoch|100",
+                    "kind": "event"
+                  }
+                ],
+                "observed_at": "2026-09-12T08:00:00Z",
+                "occurred_at": "2026-09-12T08:00:00Z",
+                "phase": "task run",
+                "precision": "exact",
+                "result": "started",
+                "time_derived": false,
+                "title": "任务开始执行"
+              },
+              {
+                "action_id": "startup.task_ended",
+                "evidence": [
+                  {
+                    "id": "pcscope.eventlog.microsoft-windows-taskscheduler/operational|c1-epoch|102",
+                    "kind": "event"
+                  }
+                ],
+                "observed_at": "2026-09-12T08:00:05Z",
+                "occurred_at": "2026-09-12T08:00:05Z",
+                "phase": "task run",
+                "precision": "exact",
+                "result": "ended",
+                "time_derived": false,
+                "title": "任务执行结束"
+              }
+            ],
+            "page": {
+              "has_more": false,
+              "limit": 50,
+              "watermark": "drill-01-task-two-sources-and-run-log-154b198b4b59a0f3c2c26a39105bf11037f57e1baf44561bff1b11be6d8c181b"
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "evidence_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "data": {
+              "decoding": "available",
+              "ingested_at": "2026-09-12T09:00:00Z",
+              "observed_at": "2026-09-12T09:00:00Z",
+              "raw_available": true,
+              "reference": {
+                "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c1-run-1",
+                "kind": "snapshot"
+              },
+              "source": "pcscope.startup.task-details",
+              "state": "available"
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "evidence_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "data": {
+              "decoding": "available",
+              "ingested_at": "2026-09-12T09:00:00Z",
+              "observed_at": "2026-09-12T09:00:00Z",
+              "raw_available": true,
+              "reference": {
+                "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c1-run-1",
+                "kind": "snapshot"
+              },
+              "source": "pcscope.startup.tasks",
+              "state": "available"
+            },
+            "status": "loaded"
+          }
+        }
+      ]
+    },
+    {
+      "case": "02-same-name-different-path-and-recreated",
+      "counts": {
+        "actions": 1,
+        "instances": 3,
+        "responses": 5
+      },
+      "lifecycle": [
+        "removed",
+        "active",
+        "active"
+      ],
+      "problems": [],
+      "responses": [
+        {
+          "query": "instance_list",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 1,
+              "evidence": 5,
+              "instances": 3,
+              "source_records": 5
+            },
+            "data": [
+              {
+                "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#1",
+                "category": "startup",
+                "changed_at": "2026-09-12T10:00:00Z",
+                "coverage": [
+                  {
+                    "configured": true,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "success",
+                    "last_success_at": "2026-09-12T09:00:00.000Z",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "\\另一个文件夹\\示例任务",
+                "identity_status": "confirmed",
+                "instance_id": 2,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "path",
+                    "kind": "identity",
+                    "label": "任务路径",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "\\另一个文件夹\\示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "actions",
+                    "kind": "configuration",
+                    "label": "执行动作",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "enabled",
+                    "kind": "configuration",
+                    "label": "是否启用",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": true,
+                    "value_type": "boolean"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "name",
+                    "kind": "configuration",
+                    "label": "名称",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "principal",
+                    "kind": "configuration",
+                    "label": "运行账户",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "示例用户",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "triggers",
+                    "kind": "configuration",
+                    "label": "触发条件",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  }
+                ],
+                "lifecycle": "removed",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T09:00:00Z",
+                "type_id": "startup.scheduled_task",
+                "type_name": "计划任务"
+              },
+              {
+                "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#2",
+                "category": "startup",
+                "coverage": [
+                  {
+                    "configured": true,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "success",
+                    "last_success_at": "2026-09-12T09:00:00.000Z",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "\\另一个文件夹\\示例任务",
+                "identity_status": "confirmed",
+                "instance_id": 3,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "path",
+                    "kind": "identity",
+                    "label": "任务路径",
+                    "observed_at": "2026-09-12T11:00:00Z",
+                    "source_time": "2026-09-12T11:00:00.000Z",
+                    "status": "known",
+                    "value": "\\另一个文件夹\\示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "actions",
+                    "kind": "configuration",
+                    "label": "执行动作",
+                    "observed_at": "2026-09-12T11:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "enabled",
+                    "kind": "configuration",
+                    "label": "是否启用",
+                    "observed_at": "2026-09-12T11:00:00Z",
+                    "source_time": "2026-09-12T11:00:00.000Z",
+                    "status": "known",
+                    "value": false,
+                    "value_type": "boolean"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "name",
+                    "kind": "configuration",
+                    "label": "名称",
+                    "observed_at": "2026-09-12T11:00:00Z",
+                    "source_time": "2026-09-12T11:00:00.000Z",
+                    "status": "known",
+                    "value": "示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "principal",
+                    "kind": "configuration",
+                    "label": "运行账户",
+                    "observed_at": "2026-09-12T11:00:00Z",
+                    "source_time": "2026-09-12T11:00:00.000Z",
+                    "status": "known",
+                    "value": "示例用户",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "triggers",
+                    "kind": "configuration",
+                    "label": "触发条件",
+                    "observed_at": "2026-09-12T11:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  }
+                ],
+                "lifecycle": "active",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T11:00:00Z",
+                "type_id": "startup.scheduled_task",
+                "type_name": "计划任务"
+              },
+              {
+                "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+                "category": "startup",
+                "coverage": [
+                  {
+                    "configured": true,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "success",
+                    "last_success_at": "2026-09-12T09:00:00.000Z",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "\\示例文件夹\\示例任务",
+                "identity_status": "confirmed",
+                "instance_id": 1,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "path",
+                    "kind": "identity",
+                    "label": "任务路径",
+                    "observed_at": "2026-09-12T11:00:00Z",
+                    "source_time": "2026-09-12T11:00:00.000Z",
+                    "status": "known",
+                    "value": "\\示例文件夹\\示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "actions",
+                    "kind": "configuration",
+                    "label": "执行动作",
+                    "observed_at": "2026-09-12T11:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "enabled",
+                    "kind": "configuration",
+                    "label": "是否启用",
+                    "observed_at": "2026-09-12T11:00:00Z",
+                    "source_time": "2026-09-12T11:00:00.000Z",
+                    "status": "known",
+                    "value": true,
+                    "value_type": "boolean"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "name",
+                    "kind": "configuration",
+                    "label": "名称",
+                    "observed_at": "2026-09-12T11:00:00Z",
+                    "source_time": "2026-09-12T11:00:00.000Z",
+                    "status": "known",
+                    "value": "示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "principal",
+                    "kind": "configuration",
+                    "label": "运行账户",
+                    "observed_at": "2026-09-12T11:00:00Z",
+                    "source_time": "2026-09-12T11:00:00.000Z",
+                    "status": "known",
+                    "value": "示例用户",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "triggers",
+                    "kind": "configuration",
+                    "label": "触发条件",
+                    "observed_at": "2026-09-12T11:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  }
+                ],
+                "lifecycle": "active",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T09:00:00Z",
+                "type_id": "startup.scheduled_task",
+                "type_name": "计划任务"
+              }
+            ],
+            "page": {
+              "has_more": false,
+              "limit": 50,
+              "watermark": "drill-02-same-name-different-path-and-recreated-154b198b4b59a0f3c2c26a39105bf11037f57e1baf44561bff1b11be6d8c181b"
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "instance_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 1,
+              "evidence": 5,
+              "instances": 3,
+              "source_records": 5
+            },
+            "data": {
+              "actions_preview": [
+                {
+                  "action_id": "startup.task_deleted",
+                  "evidence": [
+                    {
+                      "id": "pcscope.eventlog.microsoft-windows-taskscheduler/operational|c2-epoch|4699",
+                      "kind": "event"
+                    }
+                  ],
+                  "observed_at": "2026-09-12T10:00:00Z",
+                  "occurred_at": "2026-09-12T10:00:00Z",
+                  "phase": "task lifecycle",
+                  "precision": "exact",
+                  "result": "succeeded",
+                  "time_derived": false,
+                  "title": "任务删除"
+                }
+              ],
+              "bindings": [],
+              "fields": [
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "actions",
+                  "kind": "configuration",
+                  "label": "执行动作",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "status": "not_provided",
+                  "value_type": "unknown"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "enabled",
+                  "kind": "configuration",
+                  "label": "是否启用",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "status": "known",
+                  "value": true,
+                  "value_type": "boolean"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "name",
+                  "kind": "configuration",
+                  "label": "名称",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "status": "known",
+                  "value": "示例任务",
+                  "value_type": "string"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "path",
+                  "kind": "identity",
+                  "label": "任务路径",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "status": "known",
+                  "value": "\\另一个文件夹\\示例任务",
+                  "value_type": "string"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "principal",
+                  "kind": "configuration",
+                  "label": "运行账户",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "status": "known",
+                  "value": "示例用户",
+                  "value_type": "string"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "triggers",
+                  "kind": "configuration",
+                  "label": "触发条件",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "status": "not_provided",
+                  "value_type": "unknown"
+                }
+              ],
+              "summary": {
+                "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#1",
+                "category": "startup",
+                "changed_at": "2026-09-12T10:00:00Z",
+                "coverage": [
+                  {
+                    "configured": true,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "success",
+                    "last_success_at": "2026-09-12T09:00:00.000Z",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "\\另一个文件夹\\示例任务",
+                "identity_status": "confirmed",
+                "instance_id": 2,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "path",
+                    "kind": "identity",
+                    "label": "任务路径",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "\\另一个文件夹\\示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "actions",
+                    "kind": "configuration",
+                    "label": "执行动作",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "enabled",
+                    "kind": "configuration",
+                    "label": "是否启用",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": true,
+                    "value_type": "boolean"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "name",
+                    "kind": "configuration",
+                    "label": "名称",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "principal",
+                    "kind": "configuration",
+                    "label": "运行账户",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "示例用户",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "triggers",
+                    "kind": "configuration",
+                    "label": "触发条件",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  }
+                ],
+                "lifecycle": "removed",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T09:00:00Z",
+                "type_id": "startup.scheduled_task",
+                "type_name": "计划任务"
+              }
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "instance_actions",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 1,
+              "evidence": 5,
+              "instances": 3,
+              "source_records": 5
+            },
+            "data": [
+              {
+                "action_id": "startup.task_deleted",
+                "evidence": [
+                  {
+                    "id": "pcscope.eventlog.microsoft-windows-taskscheduler/operational|c2-epoch|4699",
+                    "kind": "event"
+                  }
+                ],
+                "observed_at": "2026-09-12T10:00:00Z",
+                "occurred_at": "2026-09-12T10:00:00Z",
+                "phase": "task lifecycle",
+                "precision": "exact",
+                "result": "succeeded",
+                "time_derived": false,
+                "title": "任务删除"
+              }
+            ],
+            "page": {
+              "has_more": false,
+              "limit": 50,
+              "watermark": "drill-02-same-name-different-path-and-recreated-154b198b4b59a0f3c2c26a39105bf11037f57e1baf44561bff1b11be6d8c181b"
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "evidence_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "data": {
+              "decoding": "available",
+              "ingested_at": "2026-09-12T09:00:00Z",
+              "observed_at": "2026-09-12T09:00:00Z",
+              "raw_available": true,
+              "reference": {
+                "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-1",
+                "kind": "snapshot"
+              },
+              "source": "pcscope.startup.tasks",
+              "state": "available"
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "evidence_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "data": {
+              "decoding": "available",
+              "ingested_at": "2026-09-12T11:00:00Z",
+              "observed_at": "2026-09-12T11:00:00Z",
+              "raw_available": true,
+              "reference": {
+                "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c2-run-2",
+                "kind": "snapshot"
+              },
+              "source": "pcscope.startup.tasks",
+              "state": "available"
+            },
+            "status": "loaded"
+          }
+        }
+      ]
+    },
+    {
+      "case": "03-pid-reuse-and-incomplete-event",
+      "counts": {
+        "actions": 1,
+        "instances": 3,
+        "responses": 5
+      },
+      "lifecycle": [
+        "active",
+        "active",
+        "active"
+      ],
+      "problems": [],
+      "responses": [
+        {
+          "query": "instance_list",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 1,
+              "evidence": 3,
+              "instances": 3,
+              "source_records": 4
+            },
+            "data": [
+              {
+                "alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T08:00:00Z#1",
+                "category": "runtime",
+                "coverage": [
+                  {
+                    "configured": true,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "success",
+                    "last_success_at": "2026-09-12T09:00:00.000Z",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "install:example-install|2026-09-12T08:00:00Z|4100",
+                "identity_status": "confirmed",
+                "instance_id": 1,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "created_at",
+                    "kind": "identity",
+                    "label": "创建时间",
+                    "observed_at": "2026-09-12T08:00:00Z",
+                    "source_time": "2026-09-12T08:00:00.000Z",
+                    "status": "known",
+                    "value": "2026-09-12T08:00:00Z",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "pid",
+                    "kind": "identity",
+                    "label": "进程 ID",
+                    "observed_at": "2026-09-12T08:00:00Z",
+                    "source_time": "2026-09-12T08:00:00.000Z",
+                    "status": "known",
+                    "value": 4100,
+                    "value_type": "number"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "command_line",
+                    "kind": "configuration",
+                    "label": "命令行",
+                    "observed_at": "2026-09-12T08:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "image",
+                    "kind": "configuration",
+                    "label": "程序路径",
+                    "observed_at": "2026-09-12T08:00:00Z",
+                    "source_time": "2026-09-12T08:00:00.000Z",
+                    "status": "known",
+                    "value": "C:\\示例\\程序\\示例程序.exe",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "parent_pid",
+                    "kind": "configuration",
+                    "label": "父进程 ID",
+                    "observed_at": "2026-09-12T08:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "session",
+                    "kind": "configuration",
+                    "label": "会话",
+                    "observed_at": "2026-09-12T08:00:00Z",
+                    "source_time": "2026-09-12T08:00:00.000Z",
+                    "status": "known",
+                    "value": 1,
+                    "value_type": "number"
+                  }
+                ],
+                "lifecycle": "active",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T08:00:00Z",
+                "type_id": "runtime.process",
+                "type_name": "进程"
+              },
+              {
+                "alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T09:00:00Z#1",
+                "category": "runtime",
+                "coverage": [
+                  {
+                    "configured": true,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "success",
+                    "last_success_at": "2026-09-12T09:00:00.000Z",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "install:example-install|2026-09-12T09:00:00Z|4100",
+                "identity_status": "confirmed",
+                "instance_id": 2,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "created_at",
+                    "kind": "identity",
+                    "label": "创建时间",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "2026-09-12T09:00:00Z",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "pid",
+                    "kind": "identity",
+                    "label": "进程 ID",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": 4100,
+                    "value_type": "number"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "command_line",
+                    "kind": "configuration",
+                    "label": "命令行",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "image",
+                    "kind": "configuration",
+                    "label": "程序路径",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "C:\\示例\\程序\\另一个程序.exe",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "parent_pid",
+                    "kind": "configuration",
+                    "label": "父进程 ID",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-2",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "session",
+                    "kind": "configuration",
+                    "label": "会话",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": 1,
+                    "value_type": "number"
+                  }
+                ],
+                "lifecycle": "active",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T09:00:00Z",
+                "type_id": "runtime.process",
+                "type_name": "进程"
+              },
+              {
+                "alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|?pid|?created_at#1",
+                "category": "runtime",
+                "coverage": [
+                  {
+                    "configured": true,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "success",
+                    "last_success_at": "2026-09-12T09:00:00.000Z",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "install:example-install",
+                "identity_status": "provisional",
+                "instance_id": 3,
+                "key_facts": [],
+                "lifecycle": "active",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T09:30:00Z",
+                "type_id": "runtime.process",
+                "type_name": "进程"
+              }
+            ],
+            "page": {
+              "has_more": false,
+              "limit": 50,
+              "watermark": "drill-03-pid-reuse-and-incomplete-event-154b198b4b59a0f3c2c26a39105bf11037f57e1baf44561bff1b11be6d8c181b"
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "instance_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 1,
+              "evidence": 3,
+              "instances": 3,
+              "source_records": 4
+            },
+            "data": {
+              "actions_preview": [
+                {
+                  "action_id": "execution.process_started",
+                  "evidence": [
+                    {
+                      "id": "pcscope.eventlog.security|c3-epoch|1001",
+                      "kind": "event"
+                    }
+                  ],
+                  "observed_at": "2026-09-12T09:30:00Z",
+                  "occurred_at": "2026-09-12T09:30:00Z",
+                  "phase": "process lifecycle",
+                  "precision": "exact",
+                  "result": "started",
+                  "time_derived": false,
+                  "title": "进程启动",
+                  "unassigned_reason": "pcscope.eventlog.security 只提供了作用域，没有任何可用于识别目标的值"
+                }
+              ],
+              "bindings": [],
+              "fields": [
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "command_line",
+                  "kind": "configuration",
+                  "label": "命令行",
+                  "observed_at": "2026-09-12T08:00:00Z",
+                  "status": "not_provided",
+                  "value_type": "unknown"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "created_at",
+                  "kind": "identity",
+                  "label": "创建时间",
+                  "observed_at": "2026-09-12T08:00:00Z",
+                  "source_time": "2026-09-12T08:00:00.000Z",
+                  "status": "known",
+                  "value": "2026-09-12T08:00:00Z",
+                  "value_type": "string"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "image",
+                  "kind": "configuration",
+                  "label": "程序路径",
+                  "observed_at": "2026-09-12T08:00:00Z",
+                  "source_time": "2026-09-12T08:00:00.000Z",
+                  "status": "known",
+                  "value": "C:\\示例\\程序\\示例程序.exe",
+                  "value_type": "string"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "parent_pid",
+                  "kind": "configuration",
+                  "label": "父进程 ID",
+                  "observed_at": "2026-09-12T08:00:00Z",
+                  "status": "not_provided",
+                  "value_type": "unknown"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "pid",
+                  "kind": "identity",
+                  "label": "进程 ID",
+                  "observed_at": "2026-09-12T08:00:00Z",
+                  "source_time": "2026-09-12T08:00:00.000Z",
+                  "status": "known",
+                  "value": 4100,
+                  "value_type": "number"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "session",
+                  "kind": "configuration",
+                  "label": "会话",
+                  "observed_at": "2026-09-12T08:00:00Z",
+                  "source_time": "2026-09-12T08:00:00.000Z",
+                  "status": "known",
+                  "value": 1,
+                  "value_type": "number"
+                }
+              ],
+              "summary": {
+                "alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T08:00:00Z#1",
+                "category": "runtime",
+                "coverage": [
+                  {
+                    "configured": true,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "success",
+                    "last_success_at": "2026-09-12T09:00:00.000Z",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "install:example-install|2026-09-12T08:00:00Z|4100",
+                "identity_status": "confirmed",
+                "instance_id": 1,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "created_at",
+                    "kind": "identity",
+                    "label": "创建时间",
+                    "observed_at": "2026-09-12T08:00:00Z",
+                    "source_time": "2026-09-12T08:00:00.000Z",
+                    "status": "known",
+                    "value": "2026-09-12T08:00:00Z",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "pid",
+                    "kind": "identity",
+                    "label": "进程 ID",
+                    "observed_at": "2026-09-12T08:00:00Z",
+                    "source_time": "2026-09-12T08:00:00.000Z",
+                    "status": "known",
+                    "value": 4100,
+                    "value_type": "number"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "command_line",
+                    "kind": "configuration",
+                    "label": "命令行",
+                    "observed_at": "2026-09-12T08:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "image",
+                    "kind": "configuration",
+                    "label": "程序路径",
+                    "observed_at": "2026-09-12T08:00:00Z",
+                    "source_time": "2026-09-12T08:00:00.000Z",
+                    "status": "known",
+                    "value": "C:\\示例\\程序\\示例程序.exe",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "parent_pid",
+                    "kind": "configuration",
+                    "label": "父进程 ID",
+                    "observed_at": "2026-09-12T08:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "session",
+                    "kind": "configuration",
+                    "label": "会话",
+                    "observed_at": "2026-09-12T08:00:00Z",
+                    "source_time": "2026-09-12T08:00:00.000Z",
+                    "status": "known",
+                    "value": 1,
+                    "value_type": "number"
+                  }
+                ],
+                "lifecycle": "active",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T08:00:00Z",
+                "type_id": "runtime.process",
+                "type_name": "进程"
+              }
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "instance_actions",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 1,
+              "evidence": 3,
+              "instances": 3,
+              "source_records": 4
+            },
+            "data": [
+              {
+                "action_id": "execution.process_started",
+                "evidence": [
+                  {
+                    "id": "pcscope.eventlog.security|c3-epoch|1001",
+                    "kind": "event"
+                  }
+                ],
+                "observed_at": "2026-09-12T09:30:00Z",
+                "occurred_at": "2026-09-12T09:30:00Z",
+                "phase": "process lifecycle",
+                "precision": "exact",
+                "result": "started",
+                "time_derived": false,
+                "title": "进程启动",
+                "unassigned_reason": "pcscope.eventlog.security 只提供了作用域，没有任何可用于识别目标的值"
+              }
+            ],
+            "page": {
+              "has_more": false,
+              "limit": 50,
+              "watermark": "drill-03-pid-reuse-and-incomplete-event-154b198b4b59a0f3c2c26a39105bf11037f57e1baf44561bff1b11be6d8c181b"
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "evidence_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "data": {
+              "decoding": "available",
+              "ingested_at": "2026-09-12T08:00:00Z",
+              "observed_at": "2026-09-12T08:00:00Z",
+              "raw_available": true,
+              "reference": {
+                "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-1",
+                "kind": "snapshot"
+              },
+              "source": "pcscope.execution.processes",
+              "state": "available"
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "evidence_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "data": {
+              "decoding": "available",
+              "ingested_at": "2026-09-12T09:00:00Z",
+              "observed_at": "2026-09-12T09:00:00Z",
+              "raw_available": true,
+              "reference": {
+                "id": "pcscope.execution.processes|machine:example-machine/install:example-install/schema:1/context:/shard:0|c3-run-2",
+                "kind": "snapshot"
+              },
+              "source": "pcscope.execution.processes",
+              "state": "available"
+            },
+            "status": "loaded"
+          }
+        }
+      ]
+    },
+    {
+      "case": "04-late-log-and-conflicting-value",
+      "counts": {
+        "actions": 1,
+        "instances": 1,
+        "responses": 6
+      },
+      "lifecycle": [
+        "active"
+      ],
+      "problems": [],
+      "responses": [
+        {
+          "query": "instance_list",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 1,
+              "evidence": 3,
+              "instances": 1,
+              "source_records": 3
+            },
+            "data": [
+              {
+                "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+                "category": "startup",
+                "coverage": [
+                  {
+                    "configured": true,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "success",
+                    "last_success_at": "2026-09-12T09:00:00.000Z",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "\\示例文件夹\\示例任务",
+                "identity_status": "confirmed",
+                "instance_id": 1,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "path",
+                    "kind": "identity",
+                    "label": "任务路径",
+                    "observed_at": "2026-09-12T10:05:00Z",
+                    "source_time": "2026-09-12T10:05:00.000Z",
+                    "status": "known",
+                    "value": "\\示例文件夹\\示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "actions",
+                    "kind": "configuration",
+                    "label": "执行动作",
+                    "observed_at": "2026-09-12T10:05:00Z",
+                    "source_time": "2026-09-12T10:05:00.000Z",
+                    "status": "known",
+                    "value": [
+                      {
+                        "arguments": "--示例程序 B",
+                        "execute": "C:\\示例\\程序\\示例程序.exe"
+                      }
+                    ],
+                    "value_type": "list"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "enabled",
+                    "kind": "configuration",
+                    "label": "是否启用",
+                    "observed_at": "2026-09-12T10:05:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "name",
+                    "kind": "configuration",
+                    "label": "名称",
+                    "observed_at": "2026-09-12T10:05:00Z",
+                    "source_time": "2026-09-12T10:05:00.000Z",
+                    "status": "known",
+                    "value": "示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "conflicts": [
+                      {
+                        "source": "pcscope.startup.tasks",
+                        "value": "示例账户乙"
+                      },
+                      {
+                        "source": "pcscope.startup.task-details",
+                        "value": "示例账户甲"
+                      }
+                    ],
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "principal",
+                    "kind": "configuration",
+                    "label": "运行账户",
+                    "observed_at": "2026-09-12T10:05:00Z",
+                    "status": "conflicting",
+                    "value": "示例账户乙",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "triggers",
+                    "kind": "configuration",
+                    "label": "触发条件",
+                    "observed_at": "2026-09-12T10:05:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  }
+                ],
+                "lifecycle": "active",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T10:05:00Z",
+                "type_id": "startup.scheduled_task",
+                "type_name": "计划任务"
+              }
+            ],
+            "page": {
+              "has_more": false,
+              "limit": 50,
+              "watermark": "drill-04-late-log-and-conflicting-value-154b198b4b59a0f3c2c26a39105bf11037f57e1baf44561bff1b11be6d8c181b"
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "instance_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 1,
+              "evidence": 3,
+              "instances": 1,
+              "source_records": 3
+            },
+            "data": {
+              "actions_preview": [
+                {
+                  "action_id": "observed.configuration_changed",
+                  "after": [
+                    {
+                      "arguments": "--示例程序 B",
+                      "execute": "C:\\示例\\程序\\示例程序.exe"
+                    }
+                  ],
+                  "before": [
+                    {
+                      "arguments": "--示例程序 A",
+                      "execute": "C:\\示例\\程序\\示例程序.exe"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "actions",
+                  "interval_from": "2026-09-12T10:00:00Z",
+                  "interval_until": "2026-09-12T10:05:00Z",
+                  "observed_at": "2026-09-12T10:05:00Z",
+                  "precision": "interval",
+                  "result": "observed",
+                  "time_derived": true,
+                  "title": "观察到配置变化"
+                }
+              ],
+              "bindings": [],
+              "fields": [
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "actions",
+                  "kind": "configuration",
+                  "label": "执行动作",
+                  "observed_at": "2026-09-12T10:05:00Z",
+                  "source_time": "2026-09-12T10:05:00.000Z",
+                  "status": "known",
+                  "value": [
+                    {
+                      "arguments": "--示例程序 B",
+                      "execute": "C:\\示例\\程序\\示例程序.exe"
+                    }
+                  ],
+                  "value_type": "list"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "enabled",
+                  "kind": "configuration",
+                  "label": "是否启用",
+                  "observed_at": "2026-09-12T10:05:00Z",
+                  "status": "not_provided",
+                  "value_type": "unknown"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "name",
+                  "kind": "configuration",
+                  "label": "名称",
+                  "observed_at": "2026-09-12T10:05:00Z",
+                  "source_time": "2026-09-12T10:05:00.000Z",
+                  "status": "known",
+                  "value": "示例任务",
+                  "value_type": "string"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "path",
+                  "kind": "identity",
+                  "label": "任务路径",
+                  "observed_at": "2026-09-12T10:05:00Z",
+                  "source_time": "2026-09-12T10:05:00.000Z",
+                  "status": "known",
+                  "value": "\\示例文件夹\\示例任务",
+                  "value_type": "string"
+                },
+                {
+                  "conflicts": [
+                    {
+                      "source": "pcscope.startup.tasks",
+                      "value": "示例账户乙"
+                    },
+                    {
+                      "source": "pcscope.startup.task-details",
+                      "value": "示例账户甲"
+                    }
+                  ],
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "principal",
+                  "kind": "configuration",
+                  "label": "运行账户",
+                  "observed_at": "2026-09-12T10:05:00Z",
+                  "status": "conflicting",
+                  "value": "示例账户乙",
+                  "value_type": "string"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                      "kind": "snapshot"
+                    },
+                    {
+                      "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "triggers",
+                  "kind": "configuration",
+                  "label": "触发条件",
+                  "observed_at": "2026-09-12T10:05:00Z",
+                  "status": "not_provided",
+                  "value_type": "unknown"
+                }
+              ],
+              "summary": {
+                "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+                "category": "startup",
+                "coverage": [
+                  {
+                    "configured": true,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "success",
+                    "last_success_at": "2026-09-12T09:00:00.000Z",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "\\示例文件夹\\示例任务",
+                "identity_status": "confirmed",
+                "instance_id": 1,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "path",
+                    "kind": "identity",
+                    "label": "任务路径",
+                    "observed_at": "2026-09-12T10:05:00Z",
+                    "source_time": "2026-09-12T10:05:00.000Z",
+                    "status": "known",
+                    "value": "\\示例文件夹\\示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "actions",
+                    "kind": "configuration",
+                    "label": "执行动作",
+                    "observed_at": "2026-09-12T10:05:00Z",
+                    "source_time": "2026-09-12T10:05:00.000Z",
+                    "status": "known",
+                    "value": [
+                      {
+                        "arguments": "--示例程序 B",
+                        "execute": "C:\\示例\\程序\\示例程序.exe"
+                      }
+                    ],
+                    "value_type": "list"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "enabled",
+                    "kind": "configuration",
+                    "label": "是否启用",
+                    "observed_at": "2026-09-12T10:05:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "name",
+                    "kind": "configuration",
+                    "label": "名称",
+                    "observed_at": "2026-09-12T10:05:00Z",
+                    "source_time": "2026-09-12T10:05:00.000Z",
+                    "status": "known",
+                    "value": "示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "conflicts": [
+                      {
+                        "source": "pcscope.startup.tasks",
+                        "value": "示例账户乙"
+                      },
+                      {
+                        "source": "pcscope.startup.task-details",
+                        "value": "示例账户甲"
+                      }
+                    ],
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "principal",
+                    "kind": "configuration",
+                    "label": "运行账户",
+                    "observed_at": "2026-09-12T10:05:00Z",
+                    "status": "conflicting",
+                    "value": "示例账户乙",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                        "kind": "snapshot"
+                      },
+                      {
+                        "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "triggers",
+                    "kind": "configuration",
+                    "label": "触发条件",
+                    "observed_at": "2026-09-12T10:05:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  }
+                ],
+                "lifecycle": "active",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T10:05:00Z",
+                "type_id": "startup.scheduled_task",
+                "type_name": "计划任务"
+              }
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "instance_actions",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 1,
+              "evidence": 3,
+              "instances": 1,
+              "source_records": 3
+            },
+            "data": [
+              {
+                "action_id": "observed.configuration_changed",
+                "after": [
+                  {
+                    "arguments": "--示例程序 B",
+                    "execute": "C:\\示例\\程序\\示例程序.exe"
+                  }
+                ],
+                "before": [
+                  {
+                    "arguments": "--示例程序 A",
+                    "execute": "C:\\示例\\程序\\示例程序.exe"
+                  }
+                ],
+                "evidence": [
+                  {
+                    "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                    "kind": "snapshot"
+                  },
+                  {
+                    "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                    "kind": "snapshot"
+                  }
+                ],
+                "field_id": "actions",
+                "interval_from": "2026-09-12T10:00:00Z",
+                "interval_until": "2026-09-12T10:05:00Z",
+                "observed_at": "2026-09-12T10:05:00Z",
+                "precision": "interval",
+                "result": "observed",
+                "time_derived": true,
+                "title": "观察到配置变化"
+              }
+            ],
+            "page": {
+              "has_more": false,
+              "limit": 50,
+              "watermark": "drill-04-late-log-and-conflicting-value-154b198b4b59a0f3c2c26a39105bf11037f57e1baf44561bff1b11be6d8c181b"
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "evidence_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "data": {
+              "decoding": "available",
+              "ingested_at": "2026-09-12T10:05:00Z",
+              "observed_at": "2026-09-12T10:05:00Z",
+              "raw_available": true,
+              "reference": {
+                "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                "kind": "snapshot"
+              },
+              "source": "pcscope.startup.task-details",
+              "state": "available"
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "evidence_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "data": {
+              "decoding": "available",
+              "ingested_at": "2026-09-12T10:00:00Z",
+              "observed_at": "2026-09-12T10:00:00Z",
+              "raw_available": true,
+              "reference": {
+                "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-0",
+                "kind": "snapshot"
+              },
+              "source": "pcscope.startup.tasks",
+              "state": "available"
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "evidence_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "data": {
+              "decoding": "available",
+              "ingested_at": "2026-09-12T10:05:00Z",
+              "observed_at": "2026-09-12T10:05:00Z",
+              "raw_available": true,
+              "reference": {
+                "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                "kind": "snapshot"
+              },
+              "source": "pcscope.startup.tasks",
+              "state": "available"
+            },
+            "status": "loaded"
+          }
+        }
+      ]
+    },
+    {
+      "case": "05-disabled-unreadable-pruned",
+      "counts": {
+        "actions": 0,
+        "instances": 1,
+        "responses": 4
+      },
+      "lifecycle": [
+        "active"
+      ],
+      "problems": [],
+      "responses": [
+        {
+          "query": "instance_list",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 0,
+              "evidence": 1,
+              "instances": 1,
+              "source_records": 1
+            },
+            "data": [
+              {
+                "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+                "category": "startup",
+                "coverage": [
+                  {
+                    "configured": false,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "never",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "\\示例文件夹\\示例任务",
+                "identity_status": "confirmed",
+                "instance_id": 1,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "path",
+                    "kind": "identity",
+                    "label": "任务路径",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "\\示例文件夹\\示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "actions",
+                    "kind": "configuration",
+                    "label": "执行动作",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "enabled",
+                    "kind": "configuration",
+                    "label": "是否启用",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": true,
+                    "value_type": "boolean"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "name",
+                    "kind": "configuration",
+                    "label": "名称",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "principal",
+                    "kind": "configuration",
+                    "label": "运行账户",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "evidence_pruned",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "triggers",
+                    "kind": "configuration",
+                    "label": "触发条件",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "unreadable",
+                    "value_type": "unknown"
+                  }
+                ],
+                "lifecycle": "active",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T09:00:00Z",
+                "type_id": "startup.scheduled_task",
+                "type_name": "计划任务"
+              }
+            ],
+            "page": {
+              "has_more": false,
+              "limit": 50,
+              "watermark": "drill-05-disabled-unreadable-pruned-154b198b4b59a0f3c2c26a39105bf11037f57e1baf44561bff1b11be6d8c181b"
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "instance_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 0,
+              "evidence": 1,
+              "instances": 1,
+              "source_records": 1
+            },
+            "data": {
+              "actions_preview": [],
+              "bindings": [],
+              "fields": [
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "actions",
+                  "kind": "configuration",
+                  "label": "执行动作",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "status": "not_provided",
+                  "value_type": "unknown"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "enabled",
+                  "kind": "configuration",
+                  "label": "是否启用",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "status": "known",
+                  "value": true,
+                  "value_type": "boolean"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "name",
+                  "kind": "configuration",
+                  "label": "名称",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "status": "known",
+                  "value": "示例任务",
+                  "value_type": "string"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "path",
+                  "kind": "identity",
+                  "label": "任务路径",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "status": "known",
+                  "value": "\\示例文件夹\\示例任务",
+                  "value_type": "string"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "principal",
+                  "kind": "configuration",
+                  "label": "运行账户",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "status": "evidence_pruned",
+                  "value_type": "unknown"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "triggers",
+                  "kind": "configuration",
+                  "label": "触发条件",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "status": "unreadable",
+                  "value_type": "unknown"
+                }
+              ],
+              "summary": {
+                "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+                "category": "startup",
+                "coverage": [
+                  {
+                    "configured": false,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "never",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "\\示例文件夹\\示例任务",
+                "identity_status": "confirmed",
+                "instance_id": 1,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "path",
+                    "kind": "identity",
+                    "label": "任务路径",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "\\示例文件夹\\示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "actions",
+                    "kind": "configuration",
+                    "label": "执行动作",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "enabled",
+                    "kind": "configuration",
+                    "label": "是否启用",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": true,
+                    "value_type": "boolean"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "name",
+                    "kind": "configuration",
+                    "label": "名称",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "principal",
+                    "kind": "configuration",
+                    "label": "运行账户",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "evidence_pruned",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "triggers",
+                    "kind": "configuration",
+                    "label": "触发条件",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "unreadable",
+                    "value_type": "unknown"
+                  }
+                ],
+                "lifecycle": "active",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T09:00:00Z",
+                "type_id": "startup.scheduled_task",
+                "type_name": "计划任务"
+              }
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "instance_actions",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 0,
+              "evidence": 1,
+              "instances": 1,
+              "source_records": 1
+            },
+            "data": [],
+            "page": {
+              "has_more": false,
+              "limit": 50,
+              "watermark": "drill-05-disabled-unreadable-pruned-154b198b4b59a0f3c2c26a39105bf11037f57e1baf44561bff1b11be6d8c181b"
+            },
+            "status": "empty"
+          }
+        },
+        {
+          "query": "evidence_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "data": {
+              "decoding": "available",
+              "ingested_at": "2026-09-12T09:00:00Z",
+              "observed_at": "2026-09-12T09:00:00Z",
+              "problems": [
+                "原始材料已按保留策略清理"
+              ],
+              "pruned_at": "2026-09-12T00:00:00.000Z",
+              "raw_available": false,
+              "reference": {
+                "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c5-run-1",
+                "kind": "snapshot"
+              },
+              "retained_from": "2026-09-01T00:00:00.000Z",
+              "source": "pcscope.startup.tasks",
+              "state": "pruned"
+            },
+            "status": "evidence_pruned"
+          }
+        }
+      ]
+    },
+    {
+      "case": "06-sensitive-value-and-mask",
+      "counts": {
+        "actions": 0,
+        "instances": 2,
+        "responses": 4
+      },
+      "lifecycle": [
+        "active",
+        "active"
+      ],
+      "problems": [],
+      "responses": [
+        {
+          "query": "instance_list",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 0,
+              "evidence": 2,
+              "instances": 2,
+              "source_records": 2
+            },
+            "data": [
+              {
+                "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\另一个任务#1",
+                "category": "startup",
+                "coverage": [
+                  {
+                    "configured": true,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "success",
+                    "last_success_at": "2026-09-12T09:00:00.000Z",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "\\示例文件夹\\另一个任务",
+                "identity_status": "confirmed",
+                "instance_id": 2,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "path",
+                    "kind": "identity",
+                    "label": "任务路径",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "\\示例文件夹\\另一个任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "actions",
+                    "kind": "configuration",
+                    "label": "执行动作",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "enabled",
+                    "kind": "configuration",
+                    "label": "是否启用",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "name",
+                    "kind": "configuration",
+                    "label": "名称",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "另一个任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "field_id": "principal",
+                    "kind": "configuration",
+                    "label": "运行账户",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_applicable",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "triggers",
+                    "kind": "configuration",
+                    "label": "触发条件",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  }
+                ],
+                "lifecycle": "active",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T09:00:00Z",
+                "type_id": "startup.scheduled_task",
+                "type_name": "计划任务"
+              },
+              {
+                "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+                "category": "startup",
+                "coverage": [
+                  {
+                    "configured": true,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "success",
+                    "last_success_at": "2026-09-12T09:00:00.000Z",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "\\示例文件夹\\示例任务",
+                "identity_status": "confirmed",
+                "instance_id": 1,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "path",
+                    "kind": "identity",
+                    "label": "任务路径",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "\\示例文件夹\\示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "actions",
+                    "kind": "configuration",
+                    "label": "执行动作",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "enabled",
+                    "kind": "configuration",
+                    "label": "是否启用",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "name",
+                    "kind": "configuration",
+                    "label": "名称",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "示例任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "principal",
+                    "kind": "configuration",
+                    "label": "运行账户",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "示例账户",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "triggers",
+                    "kind": "configuration",
+                    "label": "触发条件",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  }
+                ],
+                "lifecycle": "active",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T09:00:00Z",
+                "type_id": "startup.scheduled_task",
+                "type_name": "计划任务"
+              }
+            ],
+            "page": {
+              "has_more": false,
+              "limit": 50,
+              "watermark": "drill-06-sensitive-value-and-mask-154b198b4b59a0f3c2c26a39105bf11037f57e1baf44561bff1b11be6d8c181b"
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "instance_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 0,
+              "evidence": 2,
+              "instances": 2,
+              "source_records": 2
+            },
+            "data": {
+              "actions_preview": [],
+              "bindings": [],
+              "fields": [
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "actions",
+                  "kind": "configuration",
+                  "label": "执行动作",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "status": "not_provided",
+                  "value_type": "unknown"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "enabled",
+                  "kind": "configuration",
+                  "label": "是否启用",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "status": "not_provided",
+                  "value_type": "unknown"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "name",
+                  "kind": "configuration",
+                  "label": "名称",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "status": "known",
+                  "value": "另一个任务",
+                  "value_type": "string"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "path",
+                  "kind": "identity",
+                  "label": "任务路径",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "status": "known",
+                  "value": "\\示例文件夹\\另一个任务",
+                  "value_type": "string"
+                },
+                {
+                  "derivation": "source_provided",
+                  "field_id": "principal",
+                  "kind": "configuration",
+                  "label": "运行账户",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "status": "not_applicable",
+                  "value_type": "string"
+                },
+                {
+                  "derivation": "source_provided",
+                  "evidence": [
+                    {
+                      "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                      "kind": "snapshot"
+                    }
+                  ],
+                  "field_id": "triggers",
+                  "kind": "configuration",
+                  "label": "触发条件",
+                  "observed_at": "2026-09-12T09:00:00Z",
+                  "status": "not_provided",
+                  "value_type": "unknown"
+                }
+              ],
+              "summary": {
+                "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\另一个任务#1",
+                "category": "startup",
+                "coverage": [
+                  {
+                    "configured": true,
+                    "history_state": "caught_up",
+                    "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                    "last_result": "success",
+                    "last_success_at": "2026-09-12T09:00:00.000Z",
+                    "projection": {
+                      "done": 0,
+                      "failed": 0,
+                      "pending": 0
+                    },
+                    "scope": "install:example-install",
+                    "source": "pcscope.example"
+                  }
+                ],
+                "display_name": "\\示例文件夹\\另一个任务",
+                "identity_status": "confirmed",
+                "instance_id": 2,
+                "key_facts": [
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "path",
+                    "kind": "identity",
+                    "label": "任务路径",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "\\示例文件夹\\另一个任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "actions",
+                    "kind": "configuration",
+                    "label": "执行动作",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "enabled",
+                    "kind": "configuration",
+                    "label": "是否启用",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "name",
+                    "kind": "configuration",
+                    "label": "名称",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "source_time": "2026-09-12T09:00:00.000Z",
+                    "status": "known",
+                    "value": "另一个任务",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "field_id": "principal",
+                    "kind": "configuration",
+                    "label": "运行账户",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_applicable",
+                    "value_type": "string"
+                  },
+                  {
+                    "derivation": "source_provided",
+                    "evidence": [
+                      {
+                        "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                        "kind": "snapshot"
+                      }
+                    ],
+                    "field_id": "triggers",
+                    "kind": "configuration",
+                    "label": "触发条件",
+                    "observed_at": "2026-09-12T09:00:00Z",
+                    "status": "not_provided",
+                    "value_type": "unknown"
+                  }
+                ],
+                "lifecycle": "active",
+                "scope": "install:example-install",
+                "seen_at": "2026-09-12T09:00:00Z",
+                "type_id": "startup.scheduled_task",
+                "type_name": "计划任务"
+              }
+            },
+            "status": "loaded"
+          }
+        },
+        {
+          "query": "instance_actions",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 0,
+              "evidence": 2,
+              "instances": 2,
+              "source_records": 2
+            },
+            "data": [],
+            "page": {
+              "has_more": false,
+              "limit": 50,
+              "watermark": "drill-06-sensitive-value-and-mask-154b198b4b59a0f3c2c26a39105bf11037f57e1baf44561bff1b11be6d8c181b"
+            },
+            "status": "empty"
+          }
+        },
+        {
+          "query": "evidence_detail",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "data": {
+              "decoding": "available",
+              "ingested_at": "2026-09-12T09:00:00Z",
+              "observed_at": "2026-09-12T09:00:00Z",
+              "raw_available": true,
+              "reference": {
+                "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c6-run-1",
+                "kind": "snapshot"
+              },
+              "source": "pcscope.startup.tasks",
+              "state": "available"
+            },
+            "status": "loaded"
+          }
+        }
+      ]
+    },
+    {
+      "case": "07-unattributable-log-and-gap",
+      "counts": {
+        "actions": 0,
+        "instances": 0,
+        "responses": 2
+      },
+      "lifecycle": [],
+      "problems": [
+        {
+          "problem": "event id 999999 is not mapped to a target type; the raw record is retained without a candidate",
+          "source": "pcscope.eventlog.application"
+        }
+      ],
+      "responses": [
+        {
+          "query": "instance_list",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 0,
+              "evidence": 0,
+              "instances": 0,
+              "source_records": 1
+            },
+            "data": [],
+            "page": {
+              "has_more": false,
+              "limit": 50,
+              "watermark": "drill-07-unattributable-log-and-gap-154b198b4b59a0f3c2c26a39105bf11037f57e1baf44561bff1b11be6d8c181b"
+            },
+            "status": "empty",
+            "warnings": [
+              {
+                "at": "pcscope.eventlog.application",
+                "code": "material_not_attributed",
+                "message": "event id 999999 is not mapped to a target type; the raw record is retained without a candidate"
+              }
+            ]
+          }
+        },
+        {
+          "query": "instance_actions",
+          "response": {
+            "catalog_version": "1.2.0",
+            "contract_version": 1,
+            "counts": {
+              "actions": 0,
+              "evidence": 0,
+              "instances": 0,
+              "source_records": 1
+            },
+            "data": [],
+            "page": {
+              "has_more": false,
+              "limit": 50,
+              "watermark": "drill-07-unattributable-log-and-gap-154b198b4b59a0f3c2c26a39105bf11037f57e1baf44561bff1b11be6d8c181b"
+            },
+            "status": "empty"
+          }
+        }
+      ]
+    }
+  ],
+  "catalog_version": "1.2.0",
+  "generated_by": "crates/contracts/examples/drill.rs",
+  "note": "最小贯通演练。投影是内存中的替身，未经过存储层；S05–S08 会替换它。",
+  "rule_version": "154b198b4b59a0f3c2c26a39105bf11037f57e1baf44561bff1b11be6d8c181b"
+}

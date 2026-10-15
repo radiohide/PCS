@@ -1,0 +1,41 @@
+{
+  "name": "04-late-log-and-conflicting-value",
+  "description": "较新的快照先入库、较旧的记录后补采；同一字段在两个来源之间无法消解。",
+  "machine_id": "example-machine",
+  "installation_id": "example-install",
+  "collected_scope": "install:example-install",
+  "configured": true,
+  "complete": true,
+  "assertions": [
+    {
+      "what": "迟到的旧观察不会回退当前值",
+      "path": "current_values",
+      "contains": { "field_id": "actions", "selection": { "state": "known", "value": [{ "execute": "C:\\示例\\程序\\示例程序.exe", "arguments": "--示例程序 B" }] } },
+      "basis": "当前值按生效时间选取；10:00 的观察晚到但它更旧，不成为当前值"
+    },
+    {
+      "what": "较旧的观察仍然被保留为历史观察，只是不参与当前值选择",
+      "path": "current_values",
+      "contains": { "field_id": "actions", "observations": 3, "selection": { "state": "known", "sources": ["pcscope.startup.tasks"] } },
+      "basis": "三份材料里两份给出了值、一份声明来源未提供该字段；当前值只由最新的那一份决定"
+    },
+    {
+      "what": "同一生效时间上的分歧保留为冲突",
+      "path": "current_values",
+      "contains": { "field_id": "principal", "selection": { "state": "conflict" } },
+      "basis": "两个来源在 10:05 给出不同的运行账户，且目录未声明优先级规则"
+    },
+    {
+      "what": "冲突保留全部候选值而不是取其一",
+      "path": "current_values",
+      "contains": { "field_id": "principal", "selection": { "candidates": [{ "value": "示例账户乙" }, { "value": "示例账户甲" }] } },
+      "basis": "候选值按生效时间倒序保留，各自带来源"
+    },
+    {
+      "what": "只有一个任务实例",
+      "path": "instances.length",
+      "equals": 1,
+      "basis": "三份材料指向同一个任务路径"
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+(function(global){
+  'use strict';
+  // One automatic request per window. IPC also serializes queries, but this avoids filling its queue.
+  const controllers=new Set(),waiting=[];let running=false,timer=null,frame=null;
+  function recheck(){
+    if(frame!==null)return;
+    frame=requestAnimationFrame(()=>{frame=null;for(const controller of [...controllers])controller.check();});
+  }
+  // Scroll can occur before IntersectionObserver samples a sentinel moving out and back in.
+  // One passive listener also covers nested object-tree scroll areas.
+  document.addEventListener('scroll',recheck,{capture:true,passive:true});
+  global.addEventListener('resize',recheck,{passive:true});
+  function pump(){
+    if(running||timer)return;
+    timer=setTimeout(async()=>{
+      timer=null;
+      const controller=waiting.shift();if(!controller)return;
+      running=true;
+      try{await controller.advance();}finally{running=false;pump();}
+    },120);
+  }
+  function mount(anchor,{query,apply,onStart=()=>{},onError=()=>{},active=()=>true,endLabel='已显示全部结果'}){
+    let generation=0,cursor=null,more=false,loaded=false,busy=false,disposed=false,fault=null,emptyPages=0,queued=false,restart=false,restartOnRetry=false;
+    const requested=new Set();
+    anchor.classList.add('auto-page');anchor.hidden=true;
+    const status=document.createElement('span');status.setAttribute('role','status');
+    const retry=document.createElement('button');retry.type='button';retry.textContent='重试';retry.hidden=true;
+    const details=document.createElement('details'),summary=document.createElement('summary'),reason=document.createElement('pre');
+    summary.textContent='问题详情';details.append(summary,reason);details.hidden=true;
+    anchor.replaceChildren(status,retry,details);
+    const alive=()=>!disposed&&anchor.isConnected;
+    const near=()=>{
+      if(!alive()||!active()||!anchor.getClientRects().length)return false;
+      const rect=anchor.getBoundingClientRect();if(!rect.width||!rect.height||rect.bottom<0||rect.top>innerHeight+160)return false;
+      for(let parent=anchor.parentElement;parent;parent=parent.parentElement){
+        const style=getComputedStyle(parent);
+        if(/auto|scroll|hidden|clip/.test(style.overflowY)){
+          const bounds=parent.getBoundingClientRect();
+          if(rect.bottom<bounds.top||rect.top>bounds.bottom+120)return false;
+        }
+      }
+      return true;
+    };
+    function paint(){
+      anchor.hidden=!loaded&&!busy&&!fault||!active();
+      status.textContent=fault?(loaded?'后续内容暂时无法读取。':'读取未完成。'):busy?'正在读取…':more?'向下滚动自动加载':endLabel;
+      retry.hidden=!fault;retry.disabled=busy;
+      details.hidden=!fault;reason.textContent=fault?.message||'';
+    }
+    function enqueue(){
+      if(!alive()){dispose();return;}
+      if(queued||busy||fault||!more||!near())return;
+      queued=true;waiting.push(controller);pump();
+    }
+    async function run(append){
+      if(!alive()||busy||!active())return;
+      const revision=generation,previous=append?cursor:null;
+      busy=true;fault=null;restartOnRetry=false;paint();
+      try{
+        onStart({append});
+        const response=await query(previous);
+        if(!alive()||revision!==generation)return;
+        if(!['loaded','empty','partial'].includes(response.status))throw Error('本次读取未完成，请重试。');
+        await apply(response,{append});
+        if(!alive()||revision!==generation)return;
+        loaded=true;requested.add(previous);
+        more=!!response.page?.has_more;cursor=response.page?.next_cursor||null;
+        emptyPages=Array.isArray(response.data)&&response.data.length?0:emptyPages+1;
+        if(more&&(!cursor||requested.has(cursor)||emptyPages>=3)){restartOnRetry=true;throw Error('分页未能继续，已停止自动读取。');}
+      }catch(error){
+        if(alive()&&revision===generation){fault=error;onError(error,{append:append||loaded});}
+      }finally{
+        busy=false;
+        if(alive()){
+          paint();
+          if(restart){restart=false;run(false);}else if(revision===generation)enqueue();
+        }
+      }
+    }
+    async function reset({load=true}={}){
+      generation++;cursor=null;more=false;loaded=false;fault=null;emptyPages=0;restartOnRetry=false;requested.clear();restart=busy&&load;details.open=false;paint();
+      if(load&&!busy)return run(false);
+    }
+    function dispose(){if(disposed)return;disposed=true;generation++;observer.disconnect();controllers.delete(controller);}
+    const controller={reset,pause:()=>reset({load:false}),resume:()=>{if(alive()){paint();enqueue();}},check:enqueue,dispose,advance:async()=>{queued=false;if(alive()&&!busy&&!fault&&more&&near())await run(true);}};
+    retry.onclick=()=>{if(!busy){if(restartOnRetry)reset();else{fault=null;run(loaded);}}};
+    const observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting))enqueue();},{root:null,rootMargin:'0px 0px 160px 0px'});
+    observer.observe(anchor);controllers.add(controller);return controller;
+  }
+  function disposeWithin(container){for(const controller of [...controllers])if(controller.anchor&&container.contains(controller.anchor))controller.dispose();}
+  // Keep ownership of anchors explicit so page changes release observers and pending continuations.
+  const create=(anchor,options)=>{const controller=mount(anchor,options);controller.anchor=anchor;return controller;};
+  global.PCScopeAutoPage={mount:create,disposeWithin};
+})(typeof window!=='undefined'?window:globalThis);

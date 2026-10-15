@@ -1,0 +1,2616 @@
+[
+  {
+    "plugin": "pcscope-software.exe",
+    "id": "pcscope.software",
+    "source": "pcscope.software",
+    "name": "本机软件安装登记",
+    "category": "software"
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.system.version",
+    "source": "pcscope.system.version",
+    "name": "操作系统版本与安装时间",
+    "category": "system"
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.system.boot-state",
+    "source": "pcscope.system.boot-state",
+    "name": "最近启动时间与时区",
+    "category": "system"
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.identity.accounts",
+    "source": "pcscope.identity.accounts",
+    "name": "本机用户账户",
+    "category": "identity"
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.identity.groups",
+    "source": "pcscope.identity.groups",
+    "name": "本机用户组与成员",
+    "category": "identity"
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.startup.services",
+    "source": "pcscope.startup.services",
+    "name": "服务运行状态",
+    "category": "services"
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.startup.tasks",
+    "source": "pcscope.startup.tasks",
+    "name": "计划任务基础配置",
+    "category": "startup"
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.storage.volumes",
+    "source": "pcscope.storage.volumes",
+    "name": "卷与文件系统",
+    "category": "storage"
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.network.adapters",
+    "source": "pcscope.network.adapters",
+    "name": "网络适配器",
+    "category": "network"
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.network.addresses",
+    "source": "pcscope.network.addresses",
+    "name": "IP 地址",
+    "category": "network"
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.virtualization.platform",
+    "source": "pcscope.virtualization.platform",
+    "name": "虚拟化能力与平台",
+    "category": "virtualization"
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.hardware.devices",
+    "source": "pcscope.hardware.devices",
+    "name": "即插即用设备",
+    "category": "hardware"
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.system.hotfixes",
+    "source": "pcscope.system.hotfixes",
+    "name": "QFE 更新登记",
+    "category": "system"
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.shell.registrations.preview",
+    "source": "pcscope.shell.registrations",
+    "name": "第三方预览处理程序",
+    "category": "shell",
+    "contains": [
+      "\\previewhandlers"
+    ],
+    "priority": 1
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.shell.registrations.overlay",
+    "source": "pcscope.shell.registrations",
+    "name": "图标覆盖处理程序",
+    "category": "shell",
+    "contains": [
+      "\\shelliconoverlayidentifiers"
+    ],
+    "priority": 2
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.shell.registrations.approval",
+    "source": "pcscope.shell.registrations",
+    "name": "Shell 扩展允许与阻止列表",
+    "category": "shell",
+    "contains": [
+      "\\shell extensions\\approved",
+      "\\shell extensions\\blocked"
+    ],
+    "priority": 3
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.shell.registrations.namespace",
+    "source": "pcscope.shell.registrations",
+    "name": "桌面与此电脑命名空间",
+    "category": "shell",
+    "contains": [
+      "\\desktop\\namespace",
+      "\\mycomputer\\namespace"
+    ],
+    "priority": 4
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.shell.registrations.file-association",
+    "source": "pcscope.shell.registrations",
+    "name": "右键菜单、文件关联与默认图标",
+    "category": "shell",
+    "contains": [
+      "\\classes\\"
+    ],
+    "priority": 5
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.shell.registrations.com",
+    "source": "pcscope.shell.registrations",
+    "name": "COM 实现与扩展文件元数据",
+    "category": "shell",
+    "contains": [
+      "\\classes\\clsid\\"
+    ],
+    "priority": 0
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.startup.logon.registry",
+    "source": "pcscope.startup.logon",
+    "name": "登录启动登记",
+    "category": "startup",
+    "contains": [
+      "/run/",
+      "/runonce/",
+      "\\startupapproved"
+    ]
+  },
+  {
+    "plugin": "pcscope-powershell-adapter.exe",
+    "id": "pcscope.startup.logon.folders",
+    "source": "pcscope.startup.logon",
+    "name": "用户与公共启动文件夹",
+    "category": "startup",
+    "contains": [
+      ":\\"
+    ]
+  },
+  {
+    "plugin": "system",
+    "id": "pcscope.identity.machine",
+    "source": "pcscope.identity.machine",
+    "name": "计算机身份与域信息",
+    "category": "identity"
+  },
+  {
+    "plugin": "system",
+    "id": "pcscope.system.clock",
+    "source": "pcscope.system.clock",
+    "name": "时间同步配置与时区",
+    "category": "system"
+  },
+  {
+    "plugin": "system",
+    "id": "pcscope.system.update-history",
+    "source": "pcscope.system.update-history",
+    "name": "Windows Update 历史",
+    "category": "system"
+  },
+  {
+    "plugin": "system",
+    "id": "pcscope.system.reboot-pending",
+    "source": "pcscope.system.reboot-pending",
+    "name": "待重启标志",
+    "category": "system"
+  },
+  {
+    "plugin": "system",
+    "id": "pcscope.system.restore-points",
+    "source": "pcscope.system.restore-points",
+    "name": "系统还原点",
+    "category": "system"
+  },
+  {
+    "plugin": "system",
+    "id": "pcscope.software.appx-user",
+    "source": "pcscope.software.appx-user",
+    "name": "当前用户 AppX 包",
+    "category": "software"
+  },
+  {
+    "plugin": "system",
+    "id": "pcscope.software.provisioned",
+    "source": "pcscope.software.provisioned",
+    "name": "预配 AppX 包",
+    "category": "software"
+  },
+  {
+    "plugin": "system",
+    "id": "pcscope.software.optional-features",
+    "source": "pcscope.software.optional-features",
+    "name": "Windows 可选组件",
+    "category": "software"
+  },
+  {
+    "plugin": "system",
+    "id": "pcscope.software.user-inventory",
+    "source": "pcscope.software.user-inventory",
+    "name": "当前用户软件登记",
+    "category": "software"
+  },
+  {
+    "plugin": "system",
+    "id": "pcscope.identity.profiles",
+    "source": "pcscope.identity.profiles",
+    "name": "用户配置文件",
+    "category": "identity"
+  },
+  {
+    "plugin": "system",
+    "id": "pcscope.identity.logon-sessions",
+    "source": "pcscope.identity.logon-sessions",
+    "name": "登录会话",
+    "category": "identity"
+  },
+  {
+    "plugin": "system",
+    "id": "pcscope.identity.interactive-sessions",
+    "source": "pcscope.identity.interactive-sessions",
+    "name": "交互式终端会话",
+    "category": "identity"
+  },
+  {
+    "plugin": "system",
+    "id": "pcscope.identity.assigned-rights",
+    "source": "pcscope.identity.assigned-rights",
+    "name": "账户权限分配",
+    "category": "identity"
+  },
+  {
+    "plugin": "system",
+    "id": "pcscope.execution.processes",
+    "source": "pcscope.execution.processes",
+    "name": "进程清单",
+    "category": "execution"
+  },
+  {
+    "plugin": "system",
+    "id": "pcscope.execution.resources",
+    "source": "pcscope.execution.resources",
+    "name": "内存与 CPU 采样",
+    "category": "execution"
+  },
+  {
+    "plugin": "security",
+    "id": "pcscope.security.protection",
+    "source": "pcscope.security.protection",
+    "name": "Defender 防护状态",
+    "category": "security"
+  },
+  {
+    "plugin": "security",
+    "id": "pcscope.security.protection-policy",
+    "source": "pcscope.security.protection-policy",
+    "name": "Defender 策略与排除项",
+    "category": "security"
+  },
+  {
+    "plugin": "security",
+    "id": "pcscope.security.products",
+    "source": "pcscope.security.products",
+    "name": "安全产品登记",
+    "category": "security"
+  },
+  {
+    "plugin": "security",
+    "id": "pcscope.security.detections",
+    "source": "pcscope.security.detections",
+    "name": "Defender 检测记录",
+    "category": "security"
+  },
+  {
+    "plugin": "security",
+    "id": "pcscope.security.deviceguard",
+    "source": "pcscope.security.deviceguard",
+    "name": "Device Guard / VBS",
+    "category": "security"
+  },
+  {
+    "plugin": "security",
+    "id": "pcscope.security.tpm",
+    "source": "pcscope.security.tpm",
+    "name": "TPM 状态",
+    "category": "security"
+  },
+  {
+    "plugin": "security",
+    "id": "pcscope.security.secureboot",
+    "source": "pcscope.security.secureboot",
+    "name": "安全启动状态",
+    "category": "security"
+  },
+  {
+    "plugin": "security",
+    "id": "pcscope.security.key-metadata",
+    "source": "pcscope.security.key-metadata",
+    "name": "CNG 密钥元数据",
+    "category": "security"
+  },
+  {
+    "plugin": "security",
+    "id": "pcscope.security.certificates.localmachine",
+    "source": "pcscope.security.certificates.localmachine",
+    "name": "计算机证书",
+    "category": "security"
+  },
+  {
+    "plugin": "security",
+    "id": "pcscope.security.certificates.currentuser",
+    "source": "pcscope.security.certificates.currentuser",
+    "name": "当前用户证书",
+    "category": "security"
+  },
+  {
+    "plugin": "security",
+    "id": "pcscope.security.encryption",
+    "source": "pcscope.security.encryption",
+    "name": "BitLocker 卷状态",
+    "category": "security"
+  },
+  {
+    "plugin": "security",
+    "id": "pcscope.policy.configuration",
+    "source": "pcscope.policy.configuration",
+    "name": "UAC、资源管理器与软件限制策略",
+    "category": "policy"
+  },
+  {
+    "plugin": "security",
+    "id": "pcscope.security.ssh-public-keys",
+    "source": "pcscope.security.ssh-public-keys",
+    "name": "SSH 公钥指纹",
+    "category": "security"
+  },
+  {
+    "plugin": "security",
+    "id": "pcscope.collector.event-channel-coverage",
+    "source": "pcscope.collector.event-channel-coverage",
+    "name": "事件通道可读性",
+    "category": "collector"
+  },
+  {
+    "plugin": "network",
+    "id": "pcscope.network.routes",
+    "source": "pcscope.network.routes",
+    "name": "路由表",
+    "category": "network"
+  },
+  {
+    "plugin": "network",
+    "id": "pcscope.network.dns-configuration",
+    "source": "pcscope.network.dns-configuration",
+    "name": "DNS 配置",
+    "category": "network"
+  },
+  {
+    "plugin": "network",
+    "id": "pcscope.network.profiles",
+    "source": "pcscope.network.profiles",
+    "name": "网络连接配置文件",
+    "category": "network"
+  },
+  {
+    "plugin": "network",
+    "id": "pcscope.network.tcp",
+    "source": "pcscope.network.tcp",
+    "name": "TCP 连接与监听",
+    "category": "network"
+  },
+  {
+    "plugin": "network",
+    "id": "pcscope.network.udp",
+    "source": "pcscope.network.udp",
+    "name": "UDP 端点",
+    "category": "network"
+  },
+  {
+    "plugin": "network",
+    "id": "pcscope.network.firewall-profiles",
+    "source": "pcscope.network.firewall-profiles",
+    "name": "防火墙配置文件",
+    "category": "network"
+  },
+  {
+    "plugin": "network",
+    "id": "pcscope.network.firewall-rules",
+    "source": "pcscope.network.firewall-rules",
+    "name": "防火墙规则及过滤条件",
+    "category": "network"
+  },
+  {
+    "plugin": "network",
+    "id": "pcscope.network.ipsec",
+    "source": "pcscope.network.ipsec",
+    "name": "IPsec 规则",
+    "category": "network"
+  },
+  {
+    "plugin": "network",
+    "id": "pcscope.network.access",
+    "source": "pcscope.network.access",
+    "name": "代理、远程桌面与 VPN",
+    "category": "network"
+  },
+  {
+    "plugin": "network",
+    "id": "pcscope.network.shares",
+    "source": "pcscope.network.shares",
+    "name": "SMB 共享与访问授权",
+    "category": "network"
+  },
+  {
+    "plugin": "network",
+    "id": "pcscope.network.mapped-drives",
+    "source": "pcscope.network.mapped-drives",
+    "name": "SMB 驱动器映射",
+    "category": "network"
+  },
+  {
+    "plugin": "network",
+    "id": "pcscope.network.dns-cache",
+    "source": "pcscope.network.dns-cache",
+    "name": "DNS 缓存",
+    "category": "network"
+  },
+  {
+    "plugin": "network",
+    "id": "pcscope.network.hosts",
+    "source": "pcscope.network.hosts",
+    "name": "hosts 静态映射",
+    "category": "network"
+  },
+  {
+    "plugin": "network",
+    "id": "pcscope.network.share-sessions",
+    "source": "pcscope.network.share-sessions",
+    "name": "SMB 客户端会话",
+    "category": "network"
+  },
+  {
+    "plugin": "network",
+    "id": "pcscope.network.winrm-configuration",
+    "source": "pcscope.network.winrm-configuration",
+    "name": "WinRM 配置",
+    "category": "network"
+  },
+  {
+    "plugin": "storage",
+    "id": "pcscope.storage.disks",
+    "source": "pcscope.storage.disks",
+    "name": "磁盘清单",
+    "category": "storage"
+  },
+  {
+    "plugin": "storage",
+    "id": "pcscope.storage.partitions",
+    "source": "pcscope.storage.partitions",
+    "name": "分区清单",
+    "category": "storage"
+  },
+  {
+    "plugin": "storage",
+    "id": "pcscope.hardware.driver-packages",
+    "source": "pcscope.hardware.driver-packages",
+    "name": "驱动仓库包",
+    "category": "drivers"
+  },
+  {
+    "plugin": "storage",
+    "id": "pcscope.hardware.driver-bindings",
+    "source": "pcscope.hardware.driver-bindings",
+    "name": "设备驱动绑定",
+    "category": "drivers"
+  },
+  {
+    "plugin": "storage",
+    "id": "pcscope.hardware.driver-services",
+    "source": "pcscope.hardware.driver-services",
+    "name": "驱动服务",
+    "category": "drivers"
+  },
+  {
+    "plugin": "storage",
+    "id": "pcscope.hardware.firmware",
+    "source": "pcscope.hardware.firmware",
+    "name": "BIOS 固件",
+    "category": "hardware"
+  },
+  {
+    "plugin": "storage",
+    "id": "pcscope.hardware.disk-health",
+    "source": "pcscope.hardware.disk-health",
+    "name": "物理磁盘健康",
+    "category": "hardware"
+  },
+  {
+    "plugin": "storage",
+    "id": "pcscope.hardware.battery",
+    "source": "pcscope.hardware.battery",
+    "name": "电池状态",
+    "category": "hardware"
+  },
+  {
+    "plugin": "storage",
+    "id": "pcscope.power.configuration",
+    "source": "pcscope.power.configuration",
+    "name": "电源计划与休眠配置",
+    "category": "power"
+  },
+  {
+    "plugin": "startup",
+    "id": "pcscope.startup.service-configuration",
+    "source": "pcscope.startup.service-configuration",
+    "name": "服务详细配置",
+    "category": "startup"
+  },
+  {
+    "plugin": "startup",
+    "id": "pcscope.startup.session-hooks",
+    "source": "pcscope.startup.session-hooks",
+    "name": "会话与登录初始化入口",
+    "category": "startup"
+  },
+  {
+    "plugin": "startup",
+    "id": "pcscope.startup.advanced-extensions",
+    "source": "pcscope.startup.advanced-extensions",
+    "name": "IFEO、AppInit 与 AppCert 入口",
+    "category": "startup"
+  },
+  {
+    "plugin": "startup",
+    "id": "pcscope.startup.wmi-filters",
+    "source": "pcscope.startup.wmi-filters",
+    "name": "WMI 永久订阅过滤器",
+    "category": "startup"
+  },
+  {
+    "plugin": "startup",
+    "id": "pcscope.startup.wmi-consumers",
+    "source": "pcscope.startup.wmi-consumers",
+    "name": "WMI 永久订阅消费者",
+    "category": "startup"
+  },
+  {
+    "plugin": "startup",
+    "id": "pcscope.startup.wmi-bindings",
+    "source": "pcscope.startup.wmi-bindings",
+    "name": "WMI 过滤器与消费者绑定",
+    "category": "startup"
+  },
+  {
+    "plugin": "startup",
+    "id": "pcscope.startup.task-details",
+    "source": "pcscope.startup.task-details",
+    "name": "计划任务执行记录与条件",
+    "category": "startup"
+  },
+  {
+    "plugin": "startup",
+    "id": "pcscope.environment.configuration",
+    "source": "pcscope.environment.configuration",
+    "name": "环境变量与默认文件关联",
+    "category": "environment"
+  },
+  {
+    "plugin": "desktop",
+    "id": "pcscope.desktop.printing",
+    "source": "pcscope.desktop.printing",
+    "name": "打印机清单",
+    "category": "desktop"
+  },
+  {
+    "plugin": "desktop",
+    "id": "pcscope.desktop.printer-drivers",
+    "source": "pcscope.desktop.printer-drivers",
+    "name": "打印驱动",
+    "category": "drivers"
+  },
+  {
+    "plugin": "desktop",
+    "id": "pcscope.desktop.printer-ports",
+    "source": "pcscope.desktop.printer-ports",
+    "name": "打印端口",
+    "category": "desktop"
+  },
+  {
+    "plugin": "desktop",
+    "id": "pcscope.desktop.print-jobs",
+    "source": "pcscope.desktop.print-jobs",
+    "name": "打印作业队列",
+    "category": "desktop"
+  },
+  {
+    "plugin": "desktop",
+    "id": "pcscope.desktop.input",
+    "source": "pcscope.desktop.input",
+    "name": "键盘、输入法与过滤驱动配置",
+    "category": "desktop"
+  },
+  {
+    "plugin": "desktop",
+    "id": "pcscope.desktop.clipboard",
+    "source": "pcscope.desktop.clipboard",
+    "name": "剪贴板设置",
+    "category": "desktop"
+  },
+  {
+    "plugin": "desktop",
+    "id": "pcscope.desktop.shell-settings",
+    "source": "pcscope.desktop.shell-settings",
+    "name": "桌面与资源管理器设置",
+    "category": "desktop"
+  },
+  {
+    "plugin": "desktop",
+    "id": "pcscope.desktop.shortcuts",
+    "source": "pcscope.desktop.shortcuts",
+    "name": "桌面与开始菜单快捷方式",
+    "category": "desktop"
+  },
+  {
+    "plugin": "virtualization",
+    "id": "pcscope.virtualization.hyperv-vms",
+    "source": "pcscope.virtualization.hyperv-vms",
+    "name": "Hyper-V 虚拟机",
+    "category": "virtualization"
+  },
+  {
+    "plugin": "virtualization",
+    "id": "pcscope.virtualization.hyperv-switches",
+    "source": "pcscope.virtualization.hyperv-switches",
+    "name": "Hyper-V 虚拟交换机",
+    "category": "virtualization"
+  },
+  {
+    "plugin": "virtualization",
+    "id": "pcscope.virtualization.hyperv-disks",
+    "source": "pcscope.virtualization.hyperv-disks",
+    "name": "虚拟机磁盘连接",
+    "category": "virtualization"
+  },
+  {
+    "plugin": "virtualization",
+    "id": "pcscope.virtualization.hyperv-checkpoints",
+    "source": "pcscope.virtualization.hyperv-checkpoints",
+    "name": "虚拟机检查点",
+    "category": "virtualization"
+  },
+  {
+    "plugin": "virtualization",
+    "id": "pcscope.virtualization.wsl-registration",
+    "source": "pcscope.virtualization.wsl-registration",
+    "name": "WSL 发行版登记",
+    "category": "virtualization"
+  },
+  {
+    "plugin": "applications",
+    "id": "pcscope.apps.browser-policies",
+    "source": "pcscope.apps.browser-policies",
+    "name": "Chrome、Edge 与 Firefox 策略",
+    "category": "apps"
+  },
+  {
+    "plugin": "applications",
+    "id": "pcscope.apps.ide-extensions",
+    "source": "pcscope.apps.ide-extensions",
+    "name": "VS Code 扩展清单",
+    "category": "apps"
+  },
+  {
+    "plugin": "applications",
+    "id": "pcscope.apps.dotnet-runtimes",
+    "source": "pcscope.apps.dotnet-runtimes",
+    "name": ".NET 运行时登记",
+    "category": "apps"
+  },
+  {
+    "plugin": "applications",
+    "id": "pcscope.apps.npm-global-packages",
+    "source": "pcscope.apps.npm-global-packages",
+    "name": "全局 npm 包清单",
+    "category": "apps"
+  },
+  {
+    "plugin": "applications",
+    "id": "pcscope.apps.onedrive-registration",
+    "source": "pcscope.apps.onedrive-registration",
+    "name": "OneDrive 账户与同步登记",
+    "category": "apps"
+  },
+  {
+    "plugin": "applications",
+    "id": "pcscope.apps.chromium-extensions",
+    "source": "pcscope.apps.chromium-extensions",
+    "name": "Chrome / Edge 扩展",
+    "category": "apps"
+  },
+  {
+    "plugin": "applications",
+    "id": "pcscope.apps.firefox-extensions",
+    "source": "pcscope.apps.firefox-extensions",
+    "name": "Firefox 扩展",
+    "category": "apps"
+  },
+  {
+    "plugin": "scoped",
+    "id": "pcscope.collector.scoped-configuration",
+    "source": "pcscope.collector.scoped-configuration",
+    "name": "指定范围配置",
+    "category": "collector"
+  },
+  {
+    "plugin": "scoped",
+    "id": "pcscope.files.directory-security",
+    "source": "pcscope.files.directory-security",
+    "name": "指定目录与直接子项",
+    "category": "files"
+  },
+  {
+    "plugin": "scoped",
+    "id": "pcscope.files.metadata-security",
+    "source": "pcscope.files.metadata-security",
+    "name": "指定文件、ACL 与 ADS",
+    "category": "files"
+  },
+  {
+    "plugin": "scoped",
+    "id": "pcscope.software.portable",
+    "source": "pcscope.software.portable",
+    "name": "便携软件文件登记",
+    "category": "software"
+  },
+  {
+    "plugin": "scoped",
+    "id": "pcscope.execution.modules",
+    "source": "pcscope.execution.modules",
+    "name": "指定进程加载模块",
+    "category": "execution"
+  },
+  {
+    "plugin": "scoped",
+    "id": "pcscope.execution.module-scan-status",
+    "source": "pcscope.execution.module-scan-status",
+    "name": "模块发现与读取范围",
+    "category": "execution"
+  },
+  {
+    "plugin": "scoped",
+    "id": "pcscope.execution.module-file-state",
+    "source": "pcscope.execution.module-file-state",
+    "name": "已观察模块的磁盘文件变化",
+    "category": "execution"
+  },
+  {
+    "plugin": "scoped",
+    "id": "pcscope.apps.mihomo",
+    "source": "pcscope.apps.mihomo",
+    "name": "Mihomo 本地运行配置",
+    "category": "apps"
+  },
+  {
+    "plugin": "scoped",
+    "id": "pcscope.virtualization.docker",
+    "source": "pcscope.virtualization.docker",
+    "name": "Docker 容器、镜像、卷与网络",
+    "category": "virtualization"
+  },
+  {
+    "plugin": "usn",
+    "id": "pcscope.usn.volumes",
+    "source": "pcscope.usn.volumes",
+    "name": "固定 NTFS 卷发现",
+    "category": "usn"
+  },
+  {
+    "plugin": "usn",
+    "id": "pcscope.usn.changes",
+    "source": "pcscope.usn.",
+    "prefix": true,
+    "name": "文件变更记录",
+    "category": "files"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.system.services",
+    "source": "pcscope.eventlog.system",
+    "name": "系统与服务事件 / 服务运行事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "services",
+      "leaf": "服务运行事件",
+      "provider": "Service Control Manager"
+    },
+    "group": "系统与服务事件",
+    "leaf": "服务运行事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.system.lifecycle",
+    "source": "pcscope.eventlog.system",
+    "name": "系统与服务事件 / 系统启动与关闭",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "lifecycle",
+      "leaf": "系统启动与关闭",
+      "provider": "Microsoft-Windows-Kernel-General",
+      "event_ids": [
+        12,
+        13
+      ]
+    },
+    "group": "系统与服务事件",
+    "leaf": "系统启动与关闭"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.system.power",
+    "source": "pcscope.eventlog.system",
+    "name": "系统与服务事件 / 电源与异常重启",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "power",
+      "leaf": "电源与异常重启",
+      "provider": "Microsoft-Windows-Kernel-Power"
+    },
+    "group": "系统与服务事件",
+    "leaf": "电源与异常重启"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.system.registry-maintenance",
+    "source": "pcscope.eventlog.system",
+    "name": "系统与服务事件 / 系统注册表维护",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "registry-maintenance",
+      "leaf": "系统注册表维护",
+      "provider": "Microsoft-Windows-Kernel-General",
+      "event_ids": [
+        11,
+        15
+      ]
+    },
+    "group": "系统与服务事件",
+    "leaf": "系统注册表维护"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.system.time-source",
+    "source": "pcscope.eventlog.system",
+    "name": "系统与服务事件 / 系统时间同步",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "time-source",
+      "leaf": "系统时间同步",
+      "provider": "Microsoft-Windows-Time-Service",
+      "event_ids": [
+        37
+      ]
+    },
+    "group": "系统与服务事件",
+    "leaf": "系统时间同步"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.system.status",
+    "source": "pcscope.eventlog.system",
+    "name": "系统与服务事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "系统与服务事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.system.other",
+    "source": "pcscope.eventlog.system",
+    "name": "系统与服务事件 / 其他事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "其他事件"
+    },
+    "group": "系统与服务事件",
+    "leaf": "其他事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.application.installer",
+    "source": "pcscope.eventlog.application",
+    "name": "应用程序事件 / 软件安装事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "installer",
+      "leaf": "软件安装事件",
+      "provider": "MsiInstaller"
+    },
+    "group": "应用程序事件",
+    "leaf": "软件安装事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.application.errors",
+    "source": "pcscope.eventlog.application",
+    "name": "应用程序事件 / 应用程序错误",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "errors",
+      "leaf": "应用程序错误",
+      "provider": "Application Error"
+    },
+    "group": "应用程序事件",
+    "leaf": "应用程序错误"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.application.hangs",
+    "source": "pcscope.eventlog.application",
+    "name": "应用程序事件 / 应用程序无响应",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "hangs",
+      "leaf": "应用程序无响应",
+      "provider": "Application Hang"
+    },
+    "group": "应用程序事件",
+    "leaf": "应用程序无响应"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.application.nvwmi",
+    "source": "pcscope.eventlog.application",
+    "name": "应用程序事件 / NVIDIA WMI 服务状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "nvwmi",
+      "leaf": "NVIDIA WMI 服务状态",
+      "provider": "NVWMI",
+      "event_ids": [
+        3
+      ]
+    },
+    "group": "应用程序事件",
+    "leaf": "NVIDIA WMI 服务状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.application.vss",
+    "source": "pcscope.eventlog.application",
+    "name": "应用程序事件 / 卷影复制服务状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "vss",
+      "leaf": "卷影复制服务状态",
+      "provider": "VSS",
+      "event_ids": [
+        8224
+      ]
+    },
+    "group": "应用程序事件",
+    "leaf": "卷影复制服务状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.application.wer",
+    "source": "pcscope.eventlog.application",
+    "name": "应用程序事件 / Windows 错误报告",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "wer",
+      "leaf": "Windows 错误报告",
+      "provider": "Windows Error Reporting",
+      "event_ids": [
+        1001
+      ]
+    },
+    "group": "应用程序事件",
+    "leaf": "Windows 错误报告"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.application.licensing",
+    "source": "pcscope.eventlog.application",
+    "name": "应用程序事件 / 软件保护与授权维护",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "licensing",
+      "leaf": "软件保护与授权维护",
+      "provider": "Microsoft-Windows-Security-SPP",
+      "event_ids": [
+        16384,
+        16394
+      ]
+    },
+    "group": "应用程序事件",
+    "leaf": "软件保护与授权维护"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.application.optimization",
+    "source": "pcscope.eventlog.application",
+    "name": "应用程序事件 / 存储优化作业",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "optimization",
+      "leaf": "存储优化作业",
+      "provider": "Microsoft-Windows-Defrag",
+      "event_ids": [
+        258,
+        264
+      ]
+    },
+    "group": "应用程序事件",
+    "leaf": "存储优化作业"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.application.status",
+    "source": "pcscope.eventlog.application",
+    "name": "应用程序事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "应用程序事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.application.other",
+    "source": "pcscope.eventlog.application",
+    "name": "应用程序事件 / 其他事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "其他事件"
+    },
+    "group": "应用程序事件",
+    "leaf": "其他事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.sessions",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 登录、登出与会话",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "sessions",
+      "leaf": "登录、登出与会话",
+      "event_ids": [
+        4624,
+        4625,
+        4634,
+        4647,
+        4800,
+        4801,
+        4778,
+        4779
+      ],
+      "provider": "Microsoft-Windows-Security-Auditing"
+    },
+    "group": "Windows 安全审计",
+    "leaf": "登录、登出与会话"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.accounts",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 账户管理",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "accounts",
+      "leaf": "账户管理",
+      "event_ids": [
+        4720,
+        4722,
+        4725,
+        4726,
+        4738,
+        4740,
+        4767,
+        4781
+      ],
+      "provider": "Microsoft-Windows-Security-Auditing"
+    },
+    "group": "Windows 安全审计",
+    "leaf": "账户管理"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.groups",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 用户组成员变更",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "groups",
+      "leaf": "用户组成员变更",
+      "event_ids": [
+        4732,
+        4733
+      ],
+      "provider": "Microsoft-Windows-Security-Auditing"
+    },
+    "group": "Windows 安全审计",
+    "leaf": "用户组成员变更"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.privileges",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 特殊权限分配",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "privileges",
+      "leaf": "特殊权限分配",
+      "event_ids": [
+        4672
+      ],
+      "provider": "Microsoft-Windows-Security-Auditing"
+    },
+    "group": "Windows 安全审计",
+    "leaf": "特殊权限分配"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.processes",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 进程生命周期",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "processes",
+      "leaf": "进程生命周期",
+      "event_ids": [
+        4688,
+        4689
+      ],
+      "provider": "Microsoft-Windows-Security-Auditing"
+    },
+    "group": "Windows 安全审计",
+    "leaf": "进程生命周期"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.files",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 文件访问与权限",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "files",
+      "leaf": "文件访问与权限",
+      "event_ids": [
+        4663,
+        4670
+      ],
+      "provider": "Microsoft-Windows-Security-Auditing"
+    },
+    "group": "Windows 安全审计",
+    "leaf": "文件访问与权限"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.registry",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 注册表操作",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "registry",
+      "leaf": "注册表操作",
+      "event_ids": [
+        4657
+      ],
+      "provider": "Microsoft-Windows-Security-Auditing"
+    },
+    "group": "Windows 安全审计",
+    "leaf": "注册表操作"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.services",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 服务安装",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "services",
+      "leaf": "服务安装",
+      "event_ids": [
+        4697
+      ],
+      "provider": "Microsoft-Windows-Security-Auditing"
+    },
+    "group": "Windows 安全审计",
+    "leaf": "服务安装"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.tasks",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 计划任务变更",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "tasks",
+      "leaf": "计划任务变更",
+      "event_ids": [
+        4698,
+        4699,
+        4702
+      ],
+      "provider": "Microsoft-Windows-Security-Auditing"
+    },
+    "group": "Windows 安全审计",
+    "leaf": "计划任务变更"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.audit-policy",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 审计策略变更",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "audit-policy",
+      "leaf": "审计策略变更",
+      "event_ids": [
+        4719
+      ],
+      "provider": "Microsoft-Windows-Security-Auditing"
+    },
+    "group": "Windows 安全审计",
+    "leaf": "审计策略变更"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.network",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 网络连接与共享访问",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "network",
+      "leaf": "网络连接与共享访问",
+      "event_ids": [
+        5140,
+        5156,
+        5157
+      ],
+      "provider": "Microsoft-Windows-Security-Auditing"
+    },
+    "group": "Windows 安全审计",
+    "leaf": "网络连接与共享访问"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.log-clear",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 审计日志清除",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "log-clear",
+      "leaf": "审计日志清除",
+      "event_ids": [
+        1102
+      ],
+      "provider": "Microsoft-Windows-Eventlog"
+    },
+    "group": "Windows 安全审计",
+    "leaf": "审计日志清除"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.crypto-keys",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 加密密钥操作",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "crypto-keys",
+      "leaf": "加密密钥操作",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "event_ids": [
+        5058,
+        5059,
+        5061
+      ]
+    },
+    "group": "Windows 安全审计",
+    "leaf": "加密密钥操作"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.crypto-integrity",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 密码组件自检与验证",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "crypto-integrity",
+      "leaf": "密码组件自检与验证",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "event_ids": [
+        5056,
+        5057,
+        5060,
+        5062,
+        6417
+      ]
+    },
+    "group": "Windows 安全审计",
+    "leaf": "密码组件自检与验证"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.crypto-configuration",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 密码提供程序与上下文配置",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "crypto-configuration",
+      "leaf": "密码提供程序与上下文配置",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "event_ids": [
+        5063,
+        5064,
+        5065,
+        5066,
+        5067,
+        5068,
+        5069,
+        5070
+      ]
+    },
+    "group": "Windows 安全审计",
+    "leaf": "密码提供程序与上下文配置"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.data-protection",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / DPAPI 数据保护与主密钥",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "data-protection",
+      "leaf": "DPAPI 数据保护与主密钥",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "event_ids": [
+        4692,
+        4693,
+        4694,
+        4695
+      ]
+    },
+    "group": "Windows 安全审计",
+    "leaf": "DPAPI 数据保护与主密钥"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.credential-access",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 凭据读取与账户检查",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "credential-access",
+      "leaf": "凭据读取与账户检查",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "event_ids": [
+        4648,
+        4797,
+        5379,
+        5382
+      ]
+    },
+    "group": "Windows 安全审计",
+    "leaf": "凭据读取与账户检查"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.membership-queries",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 用户组成员查询",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "membership-queries",
+      "leaf": "用户组成员查询",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "event_ids": [
+        4798,
+        4799
+      ]
+    },
+    "group": "Windows 安全审计",
+    "leaf": "用户组成员查询"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.object-access",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / WMI 与目录对象访问审计",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "object-access",
+      "leaf": "WMI 与目录对象访问审计",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "event_ids": [
+        4662
+      ]
+    },
+    "group": "Windows 安全审计",
+    "leaf": "WMI 与目录对象访问审计"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.files-audit-settings",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 对象访问记录规则",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "files-audit-settings",
+      "leaf": "对象访问记录规则",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "event_ids": [
+        4907
+      ]
+    },
+    "group": "Windows 安全审计",
+    "leaf": "对象访问记录规则"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.process-tokens",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 进程访问令牌分配",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "process-tokens",
+      "leaf": "进程访问令牌分配",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "event_ids": [
+        4696
+      ]
+    },
+    "group": "Windows 安全审计",
+    "leaf": "进程访问令牌分配"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.system-audit",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 系统启动、时间与审计配置",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "system-audit",
+      "leaf": "系统启动、时间与审计配置",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "event_ids": [
+        4608,
+        4616,
+        4826,
+        4902
+      ]
+    },
+    "group": "Windows 安全审计",
+    "leaf": "系统启动、时间与审计配置"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.firewall-lifecycle",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 防火墙组件生命周期",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "firewall-lifecycle",
+      "leaf": "防火墙组件生命周期",
+      "provider": "Microsoft-Windows-Security-Auditing",
+      "event_ids": [
+        5024,
+        5033
+      ]
+    },
+    "group": "Windows 安全审计",
+    "leaf": "防火墙组件生命周期"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.audit-service",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 审计日志服务",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "audit-service",
+      "leaf": "审计日志服务",
+      "provider": "Microsoft-Windows-Eventlog",
+      "event_ids": [
+        1100
+      ]
+    },
+    "group": "Windows 安全审计",
+    "leaf": "审计日志服务"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.status",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "Windows 安全审计",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.security.other",
+    "source": "pcscope.eventlog.security",
+    "name": "Windows 安全审计 / 其他事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "其他事件"
+    },
+    "group": "Windows 安全审计",
+    "leaf": "其他事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-taskscheduler/operational.execution",
+    "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+    "name": "计划任务执行事件 / 任务触发与执行过程",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "execution",
+      "leaf": "任务触发与执行过程",
+      "provider": "Microsoft-Windows-TaskScheduler",
+      "event_ids": [
+        100,
+        102,
+        107,
+        110,
+        114,
+        129,
+        200,
+        201,
+        322,
+        325,
+        328
+      ]
+    },
+    "group": "计划任务执行事件",
+    "leaf": "任务触发与执行过程"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-taskscheduler/operational.configuration",
+    "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+    "name": "计划任务执行事件 / 任务登记与配置变更",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "configuration",
+      "leaf": "任务登记与配置变更",
+      "provider": "Microsoft-Windows-TaskScheduler",
+      "event_ids": [
+        140
+      ]
+    },
+    "group": "计划任务执行事件",
+    "leaf": "任务登记与配置变更"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-taskscheduler/operational.status",
+    "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+    "name": "计划任务执行事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "计划任务执行事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-taskscheduler/operational.other",
+    "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+    "name": "计划任务执行事件 / 其他事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "其他事件"
+    },
+    "group": "计划任务执行事件",
+    "leaf": "其他事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-windowsupdateclient/operational.discovery",
+    "source": "pcscope.eventlog.microsoft-windows-windowsupdateclient/operational",
+    "name": "Windows 更新事件 / 更新检查",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "discovery",
+      "leaf": "更新检查",
+      "provider": "Microsoft-Windows-WindowsUpdateClient",
+      "event_ids": [
+        26
+      ]
+    },
+    "group": "Windows 更新事件",
+    "leaf": "更新检查"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-windowsupdateclient/operational.status",
+    "source": "pcscope.eventlog.microsoft-windows-windowsupdateclient/operational",
+    "name": "Windows 更新事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "Windows 更新事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-windowsupdateclient/operational.other",
+    "source": "pcscope.eventlog.microsoft-windows-windowsupdateclient/operational",
+    "name": "Windows 更新事件 / 其他事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "其他事件"
+    },
+    "group": "Windows 更新事件",
+    "leaf": "其他事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-windows defender/operational.health",
+    "source": "pcscope.eventlog.microsoft-windows-windows defender/operational",
+    "name": "Defender 防护事件 / Defender 健康与情报",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "health",
+      "leaf": "Defender 健康与情报",
+      "provider": "Microsoft-Windows-Windows Defender",
+      "event_ids": [
+        1150,
+        1151,
+        2010
+      ]
+    },
+    "group": "Defender 防护事件",
+    "leaf": "Defender 健康与情报"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-windows defender/operational.status",
+    "source": "pcscope.eventlog.microsoft-windows-windows defender/operational",
+    "name": "Defender 防护事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "Defender 防护事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-windows defender/operational.other",
+    "source": "pcscope.eventlog.microsoft-windows-windows defender/operational",
+    "name": "Defender 防护事件 / 其他事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "其他事件"
+    },
+    "group": "Defender 防护事件",
+    "leaf": "其他事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-powershell/operational.commands",
+    "source": "pcscope.eventlog.microsoft-windows-powershell/operational",
+    "name": "PowerShell 运行事件 / PowerShell 命令与脚本",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "commands",
+      "leaf": "PowerShell 命令与脚本",
+      "provider": "Microsoft-Windows-PowerShell",
+      "event_ids": [
+        4100,
+        4103,
+        4104
+      ]
+    },
+    "group": "PowerShell 运行事件",
+    "leaf": "PowerShell 命令与脚本"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-powershell/operational.host",
+    "source": "pcscope.eventlog.microsoft-windows-powershell/operational",
+    "name": "PowerShell 运行事件 / PowerShell 宿主生命周期",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "host",
+      "leaf": "PowerShell 宿主生命周期",
+      "provider": "Microsoft-Windows-PowerShell",
+      "event_ids": [
+        40961,
+        40962,
+        53504
+      ]
+    },
+    "group": "PowerShell 运行事件",
+    "leaf": "PowerShell 宿主生命周期"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-powershell/operational.status",
+    "source": "pcscope.eventlog.microsoft-windows-powershell/operational",
+    "name": "PowerShell 运行事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "PowerShell 运行事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-powershell/operational.other",
+    "source": "pcscope.eventlog.microsoft-windows-powershell/operational",
+    "name": "PowerShell 运行事件 / 其他事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "其他事件"
+    },
+    "group": "PowerShell 运行事件",
+    "leaf": "其他事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-wmi-activity/operational.operations",
+    "source": "pcscope.eventlog.microsoft-windows-wmi-activity/operational",
+    "name": "WMI 活动事件 / WMI 提供程序与调用",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "operations",
+      "leaf": "WMI 提供程序与调用",
+      "provider": "Microsoft-Windows-WMI-Activity",
+      "event_ids": [
+        5857,
+        5858
+      ]
+    },
+    "group": "WMI 活动事件",
+    "leaf": "WMI 提供程序与调用"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-wmi-activity/operational.status",
+    "source": "pcscope.eventlog.microsoft-windows-wmi-activity/operational",
+    "name": "WMI 活动事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "WMI 活动事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-wmi-activity/operational.other",
+    "source": "pcscope.eventlog.microsoft-windows-wmi-activity/operational",
+    "name": "WMI 活动事件 / 其他事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "其他事件"
+    },
+    "group": "WMI 活动事件",
+    "leaf": "其他事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-grouppolicy/operational.service",
+    "source": "pcscope.eventlog.microsoft-windows-grouppolicy/operational",
+    "name": "组策略处理事件 / 组策略服务生命周期",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "service",
+      "leaf": "组策略服务生命周期",
+      "provider": "Microsoft-Windows-GroupPolicy",
+      "event_ids": [
+        4115,
+        4116,
+        5115,
+        5116
+      ]
+    },
+    "group": "组策略处理事件",
+    "leaf": "组策略服务生命周期"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-grouppolicy/operational.processing",
+    "source": "pcscope.eventlog.microsoft-windows-grouppolicy/operational",
+    "name": "组策略处理事件 / 策略处理开始与完成",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "processing",
+      "leaf": "策略处理开始与完成",
+      "provider": "Microsoft-Windows-GroupPolicy",
+      "event_ids": [
+        4000,
+        4001,
+        4004,
+        4005,
+        8000,
+        8001,
+        8004,
+        8005
+      ]
+    },
+    "group": "组策略处理事件",
+    "leaf": "策略处理开始与完成"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-grouppolicy/operational.sessions",
+    "source": "pcscope.eventlog.microsoft-windows-grouppolicy/operational",
+    "name": "组策略处理事件 / 策略会话与登录通知",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "sessions",
+      "leaf": "策略会话与登录通知",
+      "provider": "Microsoft-Windows-GroupPolicy",
+      "event_ids": [
+        4117,
+        5117,
+        5324,
+        5325,
+        5351,
+        6339
+      ]
+    },
+    "group": "组策略处理事件",
+    "leaf": "策略会话与登录通知"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-grouppolicy/operational.applicability",
+    "source": "pcscope.eventlog.microsoft-windows-grouppolicy/operational",
+    "name": "组策略处理事件 / 策略获取、适用与排除",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "applicability",
+      "leaf": "策略获取、适用与排除",
+      "provider": "Microsoft-Windows-GroupPolicy",
+      "event_ids": [
+        4126,
+        5126,
+        5257,
+        5312,
+        5313
+      ]
+    },
+    "group": "组策略处理事件",
+    "leaf": "策略获取、适用与排除"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-grouppolicy/operational.diagnostics",
+    "source": "pcscope.eventlog.microsoft-windows-grouppolicy/operational",
+    "name": "组策略处理事件 / 处理模式与内部诊断",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "diagnostics",
+      "leaf": "处理模式与内部诊断",
+      "provider": "Microsoft-Windows-GroupPolicy",
+      "event_ids": [
+        5311,
+        5320,
+        5321,
+        5340
+      ]
+    },
+    "group": "组策略处理事件",
+    "leaf": "处理模式与内部诊断"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-grouppolicy/operational.status",
+    "source": "pcscope.eventlog.microsoft-windows-grouppolicy/operational",
+    "name": "组策略处理事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "组策略处理事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-grouppolicy/operational.other",
+    "source": "pcscope.eventlog.microsoft-windows-grouppolicy/operational",
+    "name": "组策略处理事件 / 其他事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "其他事件"
+    },
+    "group": "组策略处理事件",
+    "leaf": "其他事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational.deployment",
+    "source": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational",
+    "name": "AppX 部署事件 / 应用包部署",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "deployment",
+      "leaf": "应用包部署",
+      "provider": "Microsoft-Windows-AppXDeployment-Server",
+      "event_ids": [
+        404,
+        603,
+        613
+      ]
+    },
+    "group": "AppX 部署事件",
+    "leaf": "应用包部署"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational.service",
+    "source": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational",
+    "name": "AppX 部署事件 / 应用包部署服务状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "service",
+      "leaf": "应用包部署服务状态",
+      "provider": "Microsoft-Windows-AppXDeployment-Server",
+      "event_ids": [
+        939,
+        940,
+        941,
+        942
+      ]
+    },
+    "group": "AppX 部署事件",
+    "leaf": "应用包部署服务状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational.status",
+    "source": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational",
+    "name": "AppX 部署事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "AppX 部署事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational.other",
+    "source": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational",
+    "name": "AppX 部署事件 / 其他事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "其他事件"
+    },
+    "group": "AppX 部署事件",
+    "leaf": "其他事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-terminalservices-localsessionmanager/operational.status",
+    "source": "pcscope.eventlog.microsoft-windows-terminalservices-localsessionmanager/operational",
+    "name": "终端会话登录、断开与注销 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "终端会话登录、断开与注销",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-terminalservices-localsessionmanager/operational.other",
+    "source": "pcscope.eventlog.microsoft-windows-terminalservices-localsessionmanager/operational",
+    "name": "终端会话登录、断开与注销 / 运行事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "运行事件"
+    },
+    "group": "终端会话登录、断开与注销",
+    "leaf": "运行事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-terminalservices-remoteconnectionmanager/operational.status",
+    "source": "pcscope.eventlog.microsoft-windows-terminalservices-remoteconnectionmanager/operational",
+    "name": "远程连接管理事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "远程连接管理事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-terminalservices-remoteconnectionmanager/operational.other",
+    "source": "pcscope.eventlog.microsoft-windows-terminalservices-remoteconnectionmanager/operational",
+    "name": "远程连接管理事件 / 运行事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "运行事件"
+    },
+    "group": "远程连接管理事件",
+    "leaf": "运行事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-wlan-autoconfig/operational.status",
+    "source": "pcscope.eventlog.microsoft-windows-wlan-autoconfig/operational",
+    "name": "无线网络连接事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "无线网络连接事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-wlan-autoconfig/operational.other",
+    "source": "pcscope.eventlog.microsoft-windows-wlan-autoconfig/operational",
+    "name": "无线网络连接事件 / 运行事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "运行事件"
+    },
+    "group": "无线网络连接事件",
+    "leaf": "运行事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-networkprofile/operational.status",
+    "source": "pcscope.eventlog.microsoft-windows-networkprofile/operational",
+    "name": "网络配置文件事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "网络配置文件事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-networkprofile/operational.other",
+    "source": "pcscope.eventlog.microsoft-windows-networkprofile/operational",
+    "name": "网络配置文件事件 / 运行事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "运行事件"
+    },
+    "group": "网络配置文件事件",
+    "leaf": "运行事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-driverframeworks-usermode/operational.status",
+    "source": "pcscope.eventlog.microsoft-windows-driverframeworks-usermode/operational",
+    "name": "用户模式驱动事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "用户模式驱动事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-driverframeworks-usermode/operational.other",
+    "source": "pcscope.eventlog.microsoft-windows-driverframeworks-usermode/operational",
+    "name": "用户模式驱动事件 / 运行事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "运行事件"
+    },
+    "group": "用户模式驱动事件",
+    "leaf": "运行事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-printservice/operational.status",
+    "source": "pcscope.eventlog.microsoft-windows-printservice/operational",
+    "name": "打印服务事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "打印服务事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-printservice/operational.other",
+    "source": "pcscope.eventlog.microsoft-windows-printservice/operational",
+    "name": "打印服务事件 / 运行事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "运行事件"
+    },
+    "group": "打印服务事件",
+    "leaf": "运行事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-bitlocker/bitlocker management.status",
+    "source": "pcscope.eventlog.microsoft-windows-bitlocker/bitlocker management",
+    "name": "BitLocker 管理事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "BitLocker 管理事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-bitlocker/bitlocker management.other",
+    "source": "pcscope.eventlog.microsoft-windows-bitlocker/bitlocker management",
+    "name": "BitLocker 管理事件 / 运行事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "运行事件"
+    },
+    "group": "BitLocker 管理事件",
+    "leaf": "运行事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-codeintegrity/operational.status",
+    "source": "pcscope.eventlog.microsoft-windows-codeintegrity/operational",
+    "name": "代码完整性事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "代码完整性事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-codeintegrity/operational.other",
+    "source": "pcscope.eventlog.microsoft-windows-codeintegrity/operational",
+    "name": "代码完整性事件 / 运行事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "运行事件"
+    },
+    "group": "代码完整性事件",
+    "leaf": "运行事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-applocker/exe and dll.status",
+    "source": "pcscope.eventlog.microsoft-windows-applocker/exe and dll",
+    "name": "AppLocker 程序与 DLL 事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "AppLocker 程序与 DLL 事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-applocker/exe and dll.other",
+    "source": "pcscope.eventlog.microsoft-windows-applocker/exe and dll",
+    "name": "AppLocker 程序与 DLL 事件 / 运行事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "运行事件"
+    },
+    "group": "AppLocker 程序与 DLL 事件",
+    "leaf": "运行事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-applocker/msi and script.status",
+    "source": "pcscope.eventlog.microsoft-windows-applocker/msi and script",
+    "name": "AppLocker 安装包与脚本事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "AppLocker 安装包与脚本事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-applocker/msi and script.other",
+    "source": "pcscope.eventlog.microsoft-windows-applocker/msi and script",
+    "name": "AppLocker 安装包与脚本事件 / 运行事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "运行事件"
+    },
+    "group": "AppLocker 安装包与脚本事件",
+    "leaf": "运行事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-sysmon/operational.processes",
+    "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+    "name": "Sysmon / 进程生命周期",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "processes",
+      "leaf": "进程生命周期",
+      "event_ids": [
+        1,
+        5
+      ],
+      "provider": "Microsoft-Windows-Sysmon"
+    },
+    "group": "Sysmon",
+    "leaf": "进程生命周期"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-sysmon/operational.process-access",
+    "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+    "name": "Sysmon / 进程访问与异常活动",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "process-access",
+      "leaf": "进程访问与异常活动",
+      "event_ids": [
+        8,
+        10,
+        25
+      ],
+      "provider": "Microsoft-Windows-Sysmon"
+    },
+    "group": "Sysmon",
+    "leaf": "进程访问与异常活动"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-sysmon/operational.network",
+    "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+    "name": "Sysmon / 网络连接",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "network",
+      "leaf": "网络连接",
+      "event_ids": [
+        3
+      ],
+      "provider": "Microsoft-Windows-Sysmon"
+    },
+    "group": "Sysmon",
+    "leaf": "网络连接"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-sysmon/operational.dns",
+    "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+    "name": "Sysmon / DNS 查询",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "dns",
+      "leaf": "DNS 查询",
+      "event_ids": [
+        22
+      ],
+      "provider": "Microsoft-Windows-Sysmon"
+    },
+    "group": "Sysmon",
+    "leaf": "DNS 查询"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-sysmon/operational.files",
+    "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+    "name": "Sysmon / 文件操作",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "files",
+      "leaf": "文件操作",
+      "event_ids": [
+        2,
+        11,
+        15,
+        23,
+        26,
+        27,
+        28,
+        29
+      ],
+      "provider": "Microsoft-Windows-Sysmon"
+    },
+    "group": "Sysmon",
+    "leaf": "文件操作"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-sysmon/operational.registry",
+    "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+    "name": "Sysmon / 注册表操作",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "registry",
+      "leaf": "注册表操作",
+      "event_ids": [
+        12,
+        13,
+        14
+      ],
+      "provider": "Microsoft-Windows-Sysmon"
+    },
+    "group": "Sysmon",
+    "leaf": "注册表操作"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-sysmon/operational.modules",
+    "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+    "name": "Sysmon / 模块与驱动加载",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "modules",
+      "leaf": "模块与驱动加载",
+      "event_ids": [
+        6,
+        7
+      ],
+      "provider": "Microsoft-Windows-Sysmon"
+    },
+    "group": "Sysmon",
+    "leaf": "模块与驱动加载"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-sysmon/operational.wmi",
+    "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+    "name": "Sysmon / WMI 持久订阅",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "wmi",
+      "leaf": "WMI 持久订阅",
+      "event_ids": [
+        19,
+        20,
+        21
+      ],
+      "provider": "Microsoft-Windows-Sysmon"
+    },
+    "group": "Sysmon",
+    "leaf": "WMI 持久订阅"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-sysmon/operational.pipes",
+    "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+    "name": "Sysmon / 命名管道",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "pipes",
+      "leaf": "命名管道",
+      "event_ids": [
+        17,
+        18
+      ],
+      "provider": "Microsoft-Windows-Sysmon"
+    },
+    "group": "Sysmon",
+    "leaf": "命名管道"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-sysmon/operational.raw-disk",
+    "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+    "name": "Sysmon / 原始磁盘读取",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "raw-disk",
+      "leaf": "原始磁盘读取",
+      "event_ids": [
+        9
+      ],
+      "provider": "Microsoft-Windows-Sysmon"
+    },
+    "group": "Sysmon",
+    "leaf": "原始磁盘读取"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-sysmon/operational.clipboard",
+    "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+    "name": "Sysmon / 剪贴板活动",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "clipboard",
+      "leaf": "剪贴板活动",
+      "event_ids": [
+        24
+      ],
+      "provider": "Microsoft-Windows-Sysmon"
+    },
+    "group": "Sysmon",
+    "leaf": "剪贴板活动"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-sysmon/operational.monitor",
+    "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+    "name": "Sysmon / Sysmon 服务与配置",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "monitor",
+      "leaf": "Sysmon 服务与配置",
+      "event_ids": [
+        4,
+        16,
+        255
+      ],
+      "provider": "Microsoft-Windows-Sysmon"
+    },
+    "group": "Sysmon",
+    "leaf": "Sysmon 服务与配置"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-sysmon/operational.status",
+    "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+    "name": "Sysmon / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "Sysmon",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-sysmon/operational.other",
+    "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+    "name": "Sysmon / 其他事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "其他事件"
+    },
+    "group": "Sysmon",
+    "leaf": "其他事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-hyper-v-vmms/admin.status",
+    "source": "pcscope.eventlog.microsoft-windows-hyper-v-vmms/admin",
+    "name": "Hyper-V 管理事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "Hyper-V 管理事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-hyper-v-vmms/admin.other",
+    "source": "pcscope.eventlog.microsoft-windows-hyper-v-vmms/admin",
+    "name": "Hyper-V 管理事件 / 运行事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "运行事件"
+    },
+    "group": "Hyper-V 管理事件",
+    "leaf": "运行事件"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-backup.status",
+    "source": "pcscope.eventlog.microsoft-windows-backup",
+    "name": "Windows 备份事件 / 来源采集状态",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "status",
+      "leaf": "来源采集状态",
+      "status": true
+    },
+    "group": "Windows 备份事件",
+    "leaf": "来源采集状态"
+  },
+  {
+    "plugin": "eventlog",
+    "id": "pcscope.eventlog.microsoft-windows-backup.other",
+    "source": "pcscope.eventlog.microsoft-windows-backup",
+    "name": "Windows 备份事件 / 运行事件",
+    "category": "eventlog",
+    "event_rule": {
+      "suffix": "other",
+      "leaf": "运行事件"
+    },
+    "group": "Windows 备份事件",
+    "leaf": "运行事件"
+  }
+]

@@ -1,0 +1,508 @@
+{
+  "version": "1",
+  "note": "R07 代码与目录所有权。所有权指改动整合责任，不限制必要的跨模块修复。每个文件必须恰好被一个工作线或一个共享入口认领；scripts/check-ownership.cjs 强制这一点。",
+  "workstreams": [
+    {
+      "id": "base-data",
+      "name": "基础数据线",
+      "owns": [
+        "pcscope/crates/storage/src/lib.rs",
+        "pcscope/crates/storage/src/evidence.rs",
+        "pcscope/crates/storage/src/identity.rs",
+        "pcscope/crates/storage/src/projection.rs",
+        "pcscope/crates/storage/src/collection.rs",
+        "pcscope/crates/storage/src/coverage.rs",
+        "pcscope/crates/storage/src/item_controls.rs",
+        "pcscope/crates/storage/src/related.rs",
+        "pcscope/crates/storage/src/registration_dictionary.rs",
+        "pcscope/crates/storage/src/registration_dictionary.json",
+        "pcscope/crates/storage/src/search_index.rs",
+        "pcscope/crates/storage/src/self_activity.rs",
+        "pcscope/crates/storage/src/flow.rs",
+        "pcscope/crates/storage/Cargo.toml",
+        "pcscope/crates/contracts/src/reference.rs",
+        "pcscope/scripts/build-parallel-boundaries.cjs"
+      ],
+      "must_not_modify": [
+        "前端展示规则",
+        "其他类型专属的来源解析"
+      ]
+    },
+    {
+      "id": "type-adapters",
+      "name": "类型适配线",
+      "owns": [
+        "pcscope/crates/contracts/src/adapters/**",
+        "pcscope/fixtures/**",
+        "pcscope/scripts/build-fixtures.cjs"
+      ],
+      "reserved": [
+        "pcscope/crates/adapters/**"
+      ],
+      "must_not_modify": [
+        "schema 编号",
+        "最终对象 ID 算法",
+        "公共枚举"
+      ]
+    },
+    {
+      "id": "query-ui",
+      "name": "查询与界面线",
+      "owns": [
+        "pcscope/crates/ipc/**",
+        "pcscope/crates/storage/src/query.rs",
+        "pcscope/crates/storage/src/history_labels.rs",
+        "pcscope/scripts/audit-history-readability.cjs",
+        "pcscope/apps/desktop/ui/**",
+        "pcscope/apps/desktop/src-tauri/**",
+        "pcscope/scripts/check-collection-view.cjs",
+        "pcscope/scripts/check-model-view.cjs",
+        "pcscope/scripts/check-source-type-map.cjs",
+        "pcscope/scripts/check-query-consumers.cjs",
+        "pcscope/scripts/check-query-queue.cjs",
+        "pcscope/scripts/check-auto-page.cjs",
+        "pcscope/scripts/check-overview-load.cjs",
+        "pcscope/scripts/check-status-issues.cjs",
+        "pcscope/scripts/check-status-issues-ui.cjs",
+        "pcscope/scripts/check-object-tree-ui.cjs",
+        "pcscope/scripts/build-source-type-map.cjs",
+        "pcscope/scripts/check-readable-details.cjs",
+        "pcscope/scripts/check-snapshot-diff.cjs",
+        "pcscope/scripts/check-front-refresh.cjs",
+        "pcscope/scripts/check-backend-connection.cjs",
+        "pcscope/scripts/check-monitoring-ui.cjs",
+        "pcscope/scripts/check-product-status-copy.cjs",
+        "pcscope/scripts/check-object-names.cjs",
+        "pcscope/scripts/check-object-name-rules.cjs",
+        "pcscope/scripts/check-account-presentation.cjs",
+        "pcscope/scripts/check-state-first-plan.cjs",
+        "pcscope/scripts/check-object-interactions.cjs",
+        "pcscope/scripts/open-preview.ps1",
+        "pcscope/scripts/prepare-desktop-preview.ps1",
+        "pcscope/scripts/prepare-debug-runtime.ps1",
+        "pcscope/scripts/build-debug-desktop.ps1",
+        "pcscope/scripts/check-settings-isolation.cjs",
+        "pcscope/scripts/check-source-gaps.cjs",
+        "pcscope/scripts/generate-presentation.cjs",
+        "pcscope/scripts/check-state-presentation.cjs"
+      ],
+      "must_not_modify": [
+        "原始证据语义",
+        "适配器私有格式"
+      ]
+    },
+    {
+      "id": "migration",
+      "name": "迁移验证线",
+      "owns": [
+        "pcscope/crates/cli/**",
+        "pcscope/crates/storage/src/reconcile.rs",
+        "pcscope/crates/storage/src/faults.rs",
+        "pcscope/crates/storage/examples/**",
+        "pcscope/scripts/archive-legacy-store.cjs"
+      ],
+      "must_not_modify": [
+        "运行库数据",
+        "用户配置",
+        "未协调的保留规则"
+      ]
+    },
+    {
+      "id": "existing-runtime",
+      "name": "既有采集运行实现（不属于本次四条工作线）",
+      "owns": [
+        "pcscope/crates/service/**",
+        "pcscope/crates/supervisor/**",
+        "pcscope/plugins/**",
+        "pcscope/scripts/stage-dev.ps1",
+        "pcscope/scripts/test-*.ps1",
+        "pcscope/scripts/test-native-network.cjs",
+        "pcscope/scripts/test-native-tasks.cjs",
+        "pcscope/scripts/test-native-registry.cjs",
+        "pcscope/scripts/test-native-application-fixtures.cjs",
+        "pcscope/scripts/test-native-logon.cjs",
+        "pcscope/scripts/test-native-mihomo.cjs",
+        "pcscope/scripts/check-item-controls.cjs",
+        "pcscope/scripts/check-plugin-sources.cjs",
+        "pcscope/scripts/check-source-inventory.cjs",
+        "pcscope/scripts/check-event-*.cjs",
+        "pcscope/scripts/check-evidence.cjs",
+        "pcscope/scripts/check-wmi-presentation.cjs",
+        "pcscope/scripts/check-item-query-skips.ps1",
+        "pcscope/scripts/export-collector-schema.ps1",
+        "pcscope/scripts/build-collection-catalog.cjs",
+        "pcscope/scripts/build-native-migration.cjs",
+        "pcscope/scripts/build-data-display-reference.cjs",
+        "pcscope/scripts/data-display-glossary.cjs",
+        "pcscope/scripts/test-native-docker.cjs",
+        "pcscope/scripts/check-native-provisioned-public.cjs",
+        "pcscope/scripts/check-native-enhanced-assessment.cjs",
+        "pcscope/scripts/test-native-eventlog-only.cjs"
+      ],
+      "note": "并行方案只列了四条工作线。服务、监督进程、现有采集插件与既有检查脚本不属于其中任何一条，单列在此以免出现无人认领的空白；改动它们需要与对应整合责任人确认。"
+    }
+  ],
+  "shared_entry_points": [
+    {
+      "area": "中立模型目录",
+      "paths": [
+        "pcscope/model/**"
+      ],
+      "integrator": "base-data",
+      "generated_by": "pcscope/scripts/check-model-catalog.cjs",
+      "rule": "只修改 model/*.cjs 编写源，随后运行生成器；不手工修改生成结果。版本号在 model/vocabulary.cjs 与 crates/contracts/src/model.rs 两处，必须一起改。 model/presentation.json 是人工维护的类型展示配置；scripts/generate-presentation.cjs 生成 UI 镜像，后端直接嵌入同份配置。"
+    },
+    {
+      "area": "公共契约",
+      "paths": [
+        "pcscope/crates/contracts/src/adapter.rs",
+        "pcscope/crates/contracts/src/identity.rs",
+        "pcscope/crates/contracts/src/semantics.rs",
+        "pcscope/crates/contracts/src/query.rs",
+        "pcscope/crates/contracts/src/model.rs",
+        "pcscope/crates/contracts/src/lib.rs",
+        "pcscope/crates/contracts/src/sensitive.rs",
+        "pcscope/crates/contracts/examples/**",
+        "pcscope/crates/contracts/Cargo.toml",
+        "pcscope/Cargo.toml",
+        "pcscope/Cargo.lock",
+        "pcscope/crates/contracts/src/event_state.rs"
+      ],
+      "integrator": "base-data",
+      "generated_by": null,
+      "rule": "删除字段、改枚举、改身份或时间语义属破坏性变更，先停止依赖旧语义的集成再统一升级；只增加兼容字段时更新版本与样例。契约示例是验收证据，改动意味着重新走对应步骤的检查。"
+    },
+    {
+      "area": "数据库 schema 与迁移号",
+      "paths": [
+        "pcscope/crates/storage/src/model.rs"
+      ],
+      "integrator": "base-data",
+      "generated_by": null,
+      "rule": "结构与迁移号在 model.rs 定义，迁移块在 storage/src/lib.rs 执行；两者同属一个整合责任人，其他工作线通过声明提出需求，不自行编号。"
+    },
+    {
+      "area": "契约检查",
+      "paths": [
+        "pcscope/scripts/check-model-catalog.cjs",
+        "pcscope/scripts/check-query-contract.cjs",
+        "pcscope/scripts/check-contract-cases.cjs",
+        "pcscope/scripts/check-ownership.cjs",
+        "pcscope/scripts/check-drill.cjs",
+        "pcscope/scripts/check-adapter-coverage.cjs",
+        "pcscope/scripts/check-history-state.cjs"
+      ],
+      "integrator": "base-data",
+      "generated_by": null,
+      "rule": "检查脚本的添加与放宽都需要说明理由；不得为了让某次改动通过而放宽既有规则。"
+    },
+    {
+      "area": "文档与仓库元数据",
+      "paths": [
+        "pcscope/docs/**",
+        "pcscope/README.md",
+        "pcscope/AGENTS.md",
+        "pcscope/.gitignore",
+        "pcscope/build.ps1",
+        "pcscope/scripts/verify-workstream.ps1"
+      ],
+      "integrator": "base-data",
+      "generated_by": null,
+      "rule": "验收记录不改写已提交的历史结论，需要更正时追加新的记录。构建与验证入口（build.ps1、verify-workstream.ps1）同属此处，改动会影响所有工作线。"
+    }
+  ],
+  "generated": [
+    {
+      "path": "pcscope/model/catalog.json",
+      "generator": "pcscope/scripts/check-model-catalog.cjs"
+    },
+    {
+      "path": "pcscope/model/sources.json",
+      "generator": "pcscope/scripts/check-source-inventory.cjs"
+    },
+    {
+      "path": "pcscope/model/query-samples.json",
+      "generator": "pcscope/crates/contracts/examples/query-contract.rs"
+    },
+    {
+      "path": "pcscope/model/contract-observed.json",
+      "generator": "pcscope/crates/contracts/examples/contract-cases.rs"
+    },
+    {
+      "path": "pcscope/model/adapter-coverage.json",
+      "generator": "pcscope/crates/contracts/examples/adapter-coverage.rs"
+    },
+    {
+      "path": "pcscope/apps/desktop/ui/source-type-map.json",
+      "generator": "pcscope/scripts/build-source-type-map.cjs"
+    },
+    {
+      "path": "pcscope/apps/desktop/ui/collection-catalog.json",
+      "generator": "pcscope/scripts/build-collection-catalog.cjs"
+    },
+    {
+      "path": "pcscope/apps/desktop/ui/collection-controls.json",
+      "generator": "pcscope/scripts/build-collection-catalog.cjs"
+    },
+    {
+      "path": "pcscope/docs/refactor/parallel-boundaries.md",
+      "generator": "pcscope/scripts/build-parallel-boundaries.cjs"
+    },
+    {
+      "path": "pcscope/apps/desktop/ui/type-presentation-data.js",
+      "generator": "pcscope/scripts/generate-presentation.cjs"
+    }
+  ],
+  "type_owners": {
+    "account": {
+      "step": "S09",
+      "workstream": "type-adapters"
+    },
+    "software": {
+      "step": "S10",
+      "workstream": "type-adapters"
+    },
+    "runtime": {
+      "step": "S11",
+      "workstream": "type-adapters"
+    },
+    "startup": {
+      "step": "S12",
+      "workstream": "type-adapters"
+    },
+    "shell": {
+      "step": "S13",
+      "workstream": "type-adapters"
+    },
+    "file": {
+      "step": "S14",
+      "workstream": "type-adapters"
+    },
+    "policy": {
+      "step": "S15",
+      "workstream": "type-adapters"
+    },
+    "network": {
+      "step": "S16",
+      "workstream": "type-adapters"
+    },
+    "security": {
+      "step": "S17",
+      "workstream": "type-adapters"
+    },
+    "hardware": {
+      "step": "S18",
+      "workstream": "type-adapters"
+    },
+    "virtualization": {
+      "step": "S19",
+      "workstream": "type-adapters"
+    },
+    "desktop": {
+      "step": "S20",
+      "workstream": "type-adapters"
+    }
+  },
+  "adapter_owner_rules": [
+    {
+      "pattern": "pcscope.software",
+      "workstream": "type-adapters",
+      "step": "S10",
+      "note": "软件安装登记"
+    },
+    {
+      "pattern": "pcscope.software.user-inventory",
+      "workstream": "type-adapters",
+      "step": "S10",
+      "note": "用户范围登记，与机器范围登记同一适配器"
+    },
+    {
+      "pattern": "pcscope.software.appx-user",
+      "workstream": "type-adapters",
+      "step": "S10",
+      "note": "AppX 包"
+    },
+    {
+      "pattern": "pcscope.software.provisioned",
+      "workstream": "type-adapters",
+      "step": "S10",
+      "note": "预配包"
+    },
+    {
+      "pattern": "pcscope.software.optional-features",
+      "workstream": "type-adapters",
+      "step": "S10",
+      "note": "可选组件"
+    },
+    {
+      "pattern": "pcscope.software.portable",
+      "workstream": "type-adapters",
+      "step": "S14",
+      "note": "便携程序登记按文件与访问控制归属"
+    },
+    {
+      "pattern": "pcscope.identity.*",
+      "workstream": "type-adapters",
+      "step": "S09",
+      "note": "账户与身份"
+    },
+    {
+      "pattern": "pcscope.execution.*",
+      "workstream": "type-adapters",
+      "step": "S11",
+      "note": "运行实例"
+    },
+    {
+      "pattern": "pcscope.startup.*",
+      "workstream": "type-adapters",
+      "step": "S12",
+      "note": "自动执行入口"
+    },
+    {
+      "pattern": "pcscope.shell.*",
+      "workstream": "type-adapters",
+      "step": "S13",
+      "note": "系统扩展与关联"
+    },
+    {
+      "pattern": "pcscope.apps.browser-policies",
+      "workstream": "type-adapters",
+      "step": "S15",
+      "note": "浏览器策略主归策略与配置"
+    },
+    {
+      "pattern": "pcscope.apps.chromium-extensions",
+      "workstream": "type-adapters",
+      "step": "S13",
+      "note": "浏览器扩展主归系统扩展与关联"
+    },
+    {
+      "pattern": "pcscope.apps.firefox-extensions",
+      "workstream": "type-adapters",
+      "step": "S13",
+      "note": "浏览器扩展主归系统扩展与关联"
+    },
+    {
+      "pattern": "pcscope.apps.ide-extensions",
+      "workstream": "type-adapters",
+      "step": "S20",
+      "note": "编辑器扩展归桌面与应用集成"
+    },
+    {
+      "pattern": "pcscope.apps.npm-global-packages",
+      "workstream": "type-adapters",
+      "step": "S10",
+      "note": "语言包登记归软件与组件"
+    },
+    {
+      "pattern": "pcscope.apps.dotnet-runtimes",
+      "workstream": "type-adapters",
+      "step": "S10",
+      "note": "运行时登记归软件与组件"
+    },
+    {
+      "pattern": "pcscope.apps.onedrive-registration",
+      "workstream": "type-adapters",
+      "step": "S20",
+      "note": "同步账户登记归桌面与应用集成"
+    },
+    {
+      "pattern": "pcscope.apps.mihomo",
+      "workstream": "type-adapters",
+      "step": "S16",
+      "note": "本地代理配置归网络与远程访问"
+    },
+    {
+      "pattern": "pcscope.files.*",
+      "workstream": "type-adapters",
+      "step": "S14",
+      "note": "文件与访问控制"
+    },
+    {
+      "pattern": "pcscope.policy.*",
+      "workstream": "type-adapters",
+      "step": "S15",
+      "note": "策略与配置"
+    },
+    {
+      "pattern": "pcscope.environment.*",
+      "workstream": "type-adapters",
+      "step": "S15",
+      "note": "环境变量与文件关联；文件关联注册在 shell 类型上，适配器仍归策略与配置来源"
+    },
+    {
+      "pattern": "pcscope.system.*",
+      "workstream": "type-adapters",
+      "step": "S15",
+      "note": "操作系统配置与状态；更新历史作为动作证据同属此来源"
+    },
+    {
+      "pattern": "pcscope.network.*",
+      "workstream": "type-adapters",
+      "step": "S16",
+      "note": "网络与远程访问"
+    },
+    {
+      "pattern": "pcscope.security.*",
+      "workstream": "type-adapters",
+      "step": "S17",
+      "note": "安全与信任；其中 TPM 注向 hardware.tpm，类型归属不变，适配器仍是一个"
+    },
+    {
+      "pattern": "pcscope.storage.*",
+      "workstream": "type-adapters",
+      "step": "S18",
+      "note": "磁盘、分区、卷归硬件与驱动"
+    },
+    {
+      "pattern": "pcscope.hardware.*",
+      "workstream": "type-adapters",
+      "step": "S18",
+      "note": "硬件与驱动"
+    },
+    {
+      "pattern": "pcscope.power.*",
+      "workstream": "type-adapters",
+      "step": "S15",
+      "note": "电源计划归策略与配置"
+    },
+    {
+      "pattern": "pcscope.virtualization.*",
+      "workstream": "type-adapters",
+      "step": "S19",
+      "note": "虚拟环境"
+    },
+    {
+      "pattern": "pcscope.desktop.*",
+      "workstream": "type-adapters",
+      "step": "S20",
+      "note": "桌面与应用集成"
+    },
+    {
+      "pattern": "pcscope.eventlog.*",
+      "workstream": "type-adapters",
+      "step": "S21",
+      "note": "全部日志通道由同一个事件证据适配器处理；它产出的类型分属多个类别，但适配器只有一个归属，这正是重叠类型的主实现归属"
+    },
+    {
+      "pattern": "pcscope.usn.*",
+      "workstream": "base-data",
+      "step": "S05",
+      "note": "USN 证据入口与断点，属基础数据线"
+    },
+    {
+      "pattern": "pcscope.collector.*",
+      "workstream": "base-data",
+      "step": "S05",
+      "note": "采集器自身状态来源"
+    }
+  ],
+  "migration_numbers": {
+    "paths": [
+      "pcscope/crates/storage/src/model.rs",
+      "pcscope/crates/storage/src/lib.rs"
+    ],
+    "integrator": "base-data",
+    "rule": "数据库结构版本号只在模型定义处分配、在迁移块执行。其他工作线通过声明提出需求，不得自行编号或改写 PRAGMA user_version。"
+  }
+}

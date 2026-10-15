@@ -1,0 +1,51 @@
+{
+  "name": "05-disabled-unreadable-pruned",
+  "description": "采集项已停用、一个字段无法读取、一个字段的支撑证据已被保留策略清理。",
+  "machine_id": "example-machine",
+  "installation_id": "example-install",
+  "collected_scope": "install:example-install",
+  "configured": false,
+  "complete": true,
+  "field_status_overrides": {
+    "triggers": "unreadable",
+    "principal": "evidence_pruned"
+  },
+  "assertions": [
+    {
+      "what": "采集项停用时缺失去资格",
+      "path": "coverage",
+      "contains": { "verdict": { "verdict": "ineligible" } },
+      "basis": "停用期间的缺失不构成未发现"
+    },
+    {
+      "what": "缺失去资格的原因明确指出是停用",
+      "path": "coverage",
+      "contains": { "verdict": { "reason": "该采集项已停用；停用期间的缺失不构成未发现" } },
+      "basis": "界面需要说明为什么不能下结论，而不是显示为对象消失"
+    },
+    {
+      "what": "无法读取的字段报为无法读取，而不是值缺失",
+      "path": "current_values",
+      "contains": { "field_id": "triggers", "selection": { "state": "absent", "status": "unreadable" } },
+      "basis": "字段存在但读取失败，与来源根本没有该字段不同"
+    },
+    {
+      "what": "证据已清理的字段报为证据已清理",
+      "path": "current_values",
+      "contains": { "field_id": "principal", "selection": { "state": "absent", "status": "evidence_pruned" } },
+      "basis": "值曾采集到，支撑证据已按保留策略清理"
+    },
+    {
+      "what": "证据已清理比无法读取更具体，优先显示",
+      "path": "current_values",
+      "contains": { "field_id": "principal", "selection": { "state": "absent" } },
+      "basis": "缺失状态按信息量排序，取最具体的一个显示"
+    },
+    {
+      "what": "仍然可读的字段保持已知值",
+      "path": "current_values",
+      "contains": { "field_id": "name", "selection": { "state": "known", "value": "示例任务" } },
+      "basis": "单个字段不可读不影响其他字段的可用性"
+    }
+  ]
+}

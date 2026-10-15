@@ -1,0 +1,11 @@
+{
+  "file_roots": [],
+  "portable_roots": [],
+  "module_process_names": ["sihost"],
+  "hash_files": false,
+  "docker_metadata": false,
+  "mihomo_metadata": false,
+  "mihomo_port": 9090,
+  "max_files_per_root": 20000,
+  "max_hash_bytes": 16777216
+}

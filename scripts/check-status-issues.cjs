@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict'),{createModel}=require('../apps/desktop/ui/status-issues.js');
+let draws=0;const issues=createModel(()=>draws++);
+const failed={last_collection:{ok:false,plugins:[{plugin:'system',ok:false,error:'denied'}]},event_collection:{channels:{System:{ok:false,error:'blocked'}}}};
+issues.syncStatus(failed);assert.equal(issues.list().length,2);const changed=draws;issues.syncStatus(failed);assert.equal(draws,changed,'unchanged polls must not redraw the open list');
+issues.syncStatus({collecting:true,last_collection:{completed:1,total:2}});assert.equal(issues.list().length,2,'running or unknown is not recovery');
+issues.syncStatus({last_collection:{ok:true,plugins:[{plugin:'network',ok:true}]}});assert.equal(issues.list().length,2,'another collector succeeding cannot clear a failure');
+issues.set('backend',{title:'offline'});issues.syncStatus({last_collection:{ok:true,plugins:[{plugin:'system',ok:true}]}});assert.deepEqual(issues.list().map(i=>i.id),['logs']);
+issues.syncStatus({event_collection:{channels:{System:{ok:true}}}});assert.equal(issues.list().length,0);
+issues.syncStatus({usn_collection:{ok:false,error:'failed'},projection_worker:{state:'retrying',error:'failed'}});assert.equal(issues.list().length,2);
+issues.syncStatus({usn_collection:{ok:true},projection_worker:{state:'idle'}});assert.equal(issues.list().length,0);
+issues.monitoring({settings:{configured:true,mode:'enhanced'},elevated:false});assert.equal(issues.list()[0].action,'permissions');
+issues.monitoring({settings:{configured:true,mode:'low'},elevated:false});assert.equal(issues.list().length,0,'ordinary mode chosen by the user is not an authorization error');
+issues.monitoring({report:{error:'failed'}});issues.monitoring({checking:true,report:{}});assert.equal(issues.list().length,1);issues.monitoring({report:{checked_at:'now'}});assert.equal(issues.list().length,0);
+console.log('PASS status issues: deduplication, explicit recovery, partial success, pending reads, privilege choices, independent failure groups');

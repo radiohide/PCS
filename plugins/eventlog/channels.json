@@ -1,0 +1,23 @@
+[
+ "System", "Application", "Security",
+ "Microsoft-Windows-TaskScheduler/Operational",
+ "Microsoft-Windows-WindowsUpdateClient/Operational",
+ "Microsoft-Windows-Windows Defender/Operational",
+ "Microsoft-Windows-PowerShell/Operational",
+ "Microsoft-Windows-WMI-Activity/Operational",
+ "Microsoft-Windows-GroupPolicy/Operational",
+ "Microsoft-Windows-AppXDeploymentServer/Operational",
+ "Microsoft-Windows-TerminalServices-LocalSessionManager/Operational",
+ "Microsoft-Windows-TerminalServices-RemoteConnectionManager/Operational",
+ "Microsoft-Windows-WLAN-AutoConfig/Operational",
+ "Microsoft-Windows-NetworkProfile/Operational",
+ "Microsoft-Windows-DriverFrameworks-UserMode/Operational",
+ "Microsoft-Windows-PrintService/Operational",
+ "Microsoft-Windows-BitLocker/BitLocker Management",
+ "Microsoft-Windows-CodeIntegrity/Operational",
+ "Microsoft-Windows-AppLocker/EXE and DLL",
+ "Microsoft-Windows-AppLocker/MSI and Script",
+ "Microsoft-Windows-Sysmon/Operational",
+ "Microsoft-Windows-Hyper-V-VMMS/Admin",
+ "Microsoft-Windows-Backup"
+]

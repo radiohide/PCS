@@ -1,0 +1,2009 @@
+{
+  "generated_by": "crates/contracts/examples/query-contract.rs",
+  "note": "开发用固定响应集。每条响应都带 mock:true；正式后台不产生该标记。",
+  "samples": [
+    {
+      "name": "type_catalog",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "data": [
+          {
+            "category": "account",
+            "name": "用户",
+            "supplied_by_source": true,
+            "type_id": "account.user"
+          },
+          {
+            "category": "account",
+            "name": "用户组",
+            "supplied_by_source": true,
+            "type_id": "account.group"
+          },
+          {
+            "category": "account",
+            "name": "组成员登记",
+            "supplied_by_source": true,
+            "type_id": "account.group_membership"
+          },
+          {
+            "category": "account",
+            "name": "用户配置文件",
+            "supplied_by_source": true,
+            "type_id": "account.user_profile"
+          },
+          {
+            "category": "account",
+            "name": "账户权限分配",
+            "supplied_by_source": true,
+            "type_id": "account.right_assignment"
+          },
+          {
+            "category": "account",
+            "name": "计算机身份与域信息",
+            "supplied_by_source": true,
+            "type_id": "account.machine_identity"
+          },
+          {
+            "category": "software",
+            "name": "软件安装登记",
+            "supplied_by_source": true,
+            "type_id": "software.installation_registration"
+          },
+          {
+            "category": "software",
+            "name": "AppX 包",
+            "supplied_by_source": true,
+            "type_id": "software.appx_package"
+          },
+          {
+            "category": "software",
+            "name": "预配包",
+            "supplied_by_source": true,
+            "type_id": "software.provisioned_package"
+          },
+          {
+            "category": "software",
+            "name": "Windows 可选组件",
+            "supplied_by_source": true,
+            "type_id": "software.optional_feature"
+          },
+          {
+            "category": "software",
+            "name": "运行时",
+            "supplied_by_source": true,
+            "type_id": "software.runtime"
+          },
+          {
+            "category": "software",
+            "name": "便携程序登记",
+            "supplied_by_source": true,
+            "type_id": "software.portable_registration"
+          },
+          {
+            "category": "software",
+            "name": "系统更新组件",
+            "supplied_by_source": true,
+            "type_id": "software.system_update"
+          },
+          {
+            "category": "software",
+            "name": "语言包登记",
+            "supplied_by_source": true,
+            "type_id": "software.language_package"
+          },
+          {
+            "category": "runtime",
+            "name": "进程",
+            "supplied_by_source": true,
+            "type_id": "runtime.process"
+          },
+          {
+            "category": "runtime",
+            "name": "模块加载实例",
+            "supplied_by_source": true,
+            "type_id": "runtime.module_instance"
+          },
+          {
+            "category": "runtime",
+            "name": "登录会话",
+            "supplied_by_source": true,
+            "type_id": "runtime.logon_session"
+          },
+          {
+            "category": "runtime",
+            "name": "终端会话",
+            "supplied_by_source": true,
+            "type_id": "runtime.terminal_session"
+          },
+          {
+            "category": "startup",
+            "name": "服务",
+            "supplied_by_source": true,
+            "type_id": "startup.service"
+          },
+          {
+            "category": "startup",
+            "name": "计划任务",
+            "supplied_by_source": true,
+            "type_id": "startup.scheduled_task"
+          },
+          {
+            "category": "startup",
+            "name": "登录启动项",
+            "supplied_by_source": true,
+            "type_id": "startup.logon_startup_entry"
+          },
+          {
+            "category": "startup",
+            "name": "登录初始化配置",
+            "supplied_by_source": true,
+            "type_id": "startup.logon_initialization"
+          },
+          {
+            "category": "startup",
+            "name": "WMI 订阅筛选器",
+            "supplied_by_source": true,
+            "type_id": "startup.wmi_filter"
+          },
+          {
+            "category": "startup",
+            "name": "WMI 订阅消费者",
+            "supplied_by_source": true,
+            "type_id": "startup.wmi_consumer"
+          },
+          {
+            "category": "startup",
+            "name": "WMI 订阅绑定",
+            "supplied_by_source": true,
+            "type_id": "startup.wmi_binding"
+          },
+          {
+            "category": "startup",
+            "name": "IFEO 与注入入口",
+            "supplied_by_source": true,
+            "type_id": "startup.ifeo_configuration"
+          },
+          {
+            "category": "shell",
+            "name": "预览处理程序",
+            "supplied_by_source": true,
+            "type_id": "shell.preview_handler"
+          },
+          {
+            "category": "shell",
+            "name": "图标覆盖处理程序",
+            "supplied_by_source": true,
+            "type_id": "shell.icon_overlay_handler"
+          },
+          {
+            "category": "shell",
+            "name": "Shell 扩展登记",
+            "supplied_by_source": true,
+            "type_id": "shell.shell_extension"
+          },
+          {
+            "category": "shell",
+            "name": "命名空间扩展",
+            "supplied_by_source": true,
+            "type_id": "shell.namespace_extension"
+          },
+          {
+            "category": "shell",
+            "name": "右键菜单登记",
+            "supplied_by_source": true,
+            "type_id": "shell.context_menu_registration"
+          },
+          {
+            "category": "shell",
+            "name": "文件关联",
+            "supplied_by_source": true,
+            "type_id": "shell.file_association"
+          },
+          {
+            "category": "shell",
+            "name": "COM 注册",
+            "supplied_by_source": true,
+            "type_id": "shell.com_registration"
+          },
+          {
+            "category": "shell",
+            "name": "浏览器扩展",
+            "supplied_by_source": true,
+            "type_id": "shell.browser_extension"
+          },
+          {
+            "category": "file",
+            "name": "监控文件",
+            "supplied_by_source": true,
+            "type_id": "file.watched_file"
+          },
+          {
+            "category": "file",
+            "name": "文件系统权限登记",
+            "supplied_by_source": true,
+            "type_id": "file.acl_entry"
+          },
+          {
+            "category": "file",
+            "name": "备用数据流",
+            "supplied_by_source": true,
+            "type_id": "file.alternate_data_stream"
+          },
+          {
+            "category": "file",
+            "name": "监控目录",
+            "supplied_by_source": true,
+            "type_id": "file.watched_directory"
+          },
+          {
+            "category": "policy",
+            "name": "环境变量",
+            "supplied_by_source": true,
+            "type_id": "policy.environment_variable"
+          },
+          {
+            "category": "policy",
+            "name": "UAC 策略",
+            "supplied_by_source": true,
+            "type_id": "policy.uac_policy"
+          },
+          {
+            "category": "policy",
+            "name": "软件限制策略",
+            "supplied_by_source": true,
+            "type_id": "policy.software_restriction_policy"
+          },
+          {
+            "category": "policy",
+            "name": "浏览器策略",
+            "supplied_by_source": true,
+            "type_id": "policy.browser_policy"
+          },
+          {
+            "category": "policy",
+            "name": "时间同步配置",
+            "supplied_by_source": true,
+            "type_id": "policy.time_sync_configuration"
+          },
+          {
+            "category": "policy",
+            "name": "电源计划",
+            "supplied_by_source": true,
+            "type_id": "policy.power_plan"
+          },
+          {
+            "category": "policy",
+            "name": "操作系统配置与状态",
+            "supplied_by_source": true,
+            "type_id": "policy.os_configuration"
+          },
+          {
+            "category": "policy",
+            "name": "系统还原点",
+            "supplied_by_source": true,
+            "type_id": "policy.system_restore_point"
+          },
+          {
+            "category": "network",
+            "name": "网络适配器",
+            "supplied_by_source": true,
+            "type_id": "network.adapter"
+          },
+          {
+            "category": "network",
+            "name": "IP 地址配置",
+            "supplied_by_source": true,
+            "type_id": "network.address_configuration"
+          },
+          {
+            "category": "network",
+            "name": "路由",
+            "supplied_by_source": true,
+            "type_id": "network.route"
+          },
+          {
+            "category": "network",
+            "name": "DNS 配置",
+            "supplied_by_source": true,
+            "type_id": "network.dns_configuration"
+          },
+          {
+            "category": "network",
+            "name": "DNS 缓存项",
+            "supplied_by_source": true,
+            "type_id": "network.dns_cache_entry"
+          },
+          {
+            "category": "network",
+            "name": "hosts 静态映射",
+            "supplied_by_source": true,
+            "type_id": "network.hosts_entry"
+          },
+          {
+            "category": "network",
+            "name": "代理配置",
+            "supplied_by_source": true,
+            "type_id": "network.proxy_configuration"
+          },
+          {
+            "category": "network",
+            "name": "VPN 配置",
+            "supplied_by_source": true,
+            "type_id": "network.vpn_configuration"
+          },
+          {
+            "category": "network",
+            "name": "远程访问配置",
+            "supplied_by_source": true,
+            "type_id": "network.remote_access_configuration"
+          },
+          {
+            "category": "network",
+            "name": "防火墙配置集",
+            "supplied_by_source": true,
+            "type_id": "network.firewall_profile"
+          },
+          {
+            "category": "network",
+            "name": "防火墙规则",
+            "supplied_by_source": true,
+            "type_id": "network.firewall_rule"
+          },
+          {
+            "category": "network",
+            "name": "IPsec 规则",
+            "supplied_by_source": true,
+            "type_id": "network.ipsec_rule"
+          },
+          {
+            "category": "network",
+            "name": "网络连接与监听端点",
+            "supplied_by_source": true,
+            "type_id": "network.endpoint"
+          },
+          {
+            "category": "network",
+            "name": "SMB 共享",
+            "supplied_by_source": true,
+            "type_id": "network.smb_share"
+          },
+          {
+            "category": "network",
+            "name": "SMB 驱动器映射",
+            "supplied_by_source": true,
+            "type_id": "network.smb_mapping"
+          },
+          {
+            "category": "network",
+            "name": "SMB 客户端会话",
+            "supplied_by_source": true,
+            "type_id": "network.smb_session"
+          },
+          {
+            "category": "network",
+            "name": "网络连接配置文件",
+            "supplied_by_source": true,
+            "type_id": "network.connection_profile"
+          },
+          {
+            "category": "security",
+            "name": "证书登记",
+            "supplied_by_source": true,
+            "type_id": "security.certificate_registration"
+          },
+          {
+            "category": "security",
+            "name": "密钥元数据对象",
+            "supplied_by_source": true,
+            "type_id": "security.key_metadata"
+          },
+          {
+            "category": "security",
+            "name": "防护配置与状态",
+            "supplied_by_source": true,
+            "type_id": "security.protection"
+          },
+          {
+            "category": "security",
+            "name": "防护排除项",
+            "supplied_by_source": true,
+            "type_id": "security.exclusion"
+          },
+          {
+            "category": "security",
+            "name": "安全产品登记",
+            "supplied_by_source": true,
+            "type_id": "security.security_product"
+          },
+          {
+            "category": "security",
+            "name": "BitLocker 配置",
+            "supplied_by_source": true,
+            "type_id": "security.bitlocker_configuration"
+          },
+          {
+            "category": "security",
+            "name": "SSH 公钥登记",
+            "supplied_by_source": true,
+            "type_id": "security.ssh_public_key"
+          },
+          {
+            "category": "security",
+            "name": "Device Guard 配置",
+            "supplied_by_source": true,
+            "type_id": "security.device_guard_configuration"
+          },
+          {
+            "category": "security",
+            "name": "安全启动配置",
+            "supplied_by_source": true,
+            "type_id": "security.secure_boot_configuration"
+          },
+          {
+            "category": "hardware",
+            "name": "设备",
+            "supplied_by_source": true,
+            "type_id": "hardware.device"
+          },
+          {
+            "category": "hardware",
+            "name": "设备驱动绑定",
+            "supplied_by_source": true,
+            "type_id": "hardware.driver_binding"
+          },
+          {
+            "category": "hardware",
+            "name": "驱动服务",
+            "supplied_by_source": true,
+            "type_id": "hardware.driver_service"
+          },
+          {
+            "category": "hardware",
+            "name": "磁盘",
+            "supplied_by_source": true,
+            "type_id": "hardware.disk"
+          },
+          {
+            "category": "hardware",
+            "name": "分区",
+            "supplied_by_source": true,
+            "type_id": "hardware.partition"
+          },
+          {
+            "category": "hardware",
+            "name": "卷",
+            "supplied_by_source": true,
+            "type_id": "hardware.volume"
+          },
+          {
+            "category": "hardware",
+            "name": "驱动包",
+            "supplied_by_source": true,
+            "type_id": "hardware.driver_package"
+          },
+          {
+            "category": "hardware",
+            "name": "固件",
+            "supplied_by_source": true,
+            "type_id": "hardware.firmware"
+          },
+          {
+            "category": "hardware",
+            "name": "TPM",
+            "supplied_by_source": true,
+            "type_id": "hardware.tpm"
+          },
+          {
+            "category": "hardware",
+            "name": "电池",
+            "supplied_by_source": true,
+            "type_id": "hardware.battery"
+          },
+          {
+            "category": "virtualization",
+            "name": "虚拟机",
+            "supplied_by_source": true,
+            "type_id": "virtualization.virtual_machine"
+          },
+          {
+            "category": "virtualization",
+            "name": "虚拟交换机",
+            "supplied_by_source": true,
+            "type_id": "virtualization.virtual_switch"
+          },
+          {
+            "category": "virtualization",
+            "name": "虚拟磁盘连接",
+            "supplied_by_source": true,
+            "type_id": "virtualization.disk_attachment"
+          },
+          {
+            "category": "virtualization",
+            "name": "虚拟机检查点",
+            "supplied_by_source": true,
+            "type_id": "virtualization.checkpoint"
+          },
+          {
+            "category": "virtualization",
+            "name": "WSL 发行版",
+            "supplied_by_source": true,
+            "type_id": "virtualization.wsl_distribution"
+          },
+          {
+            "category": "virtualization",
+            "name": "容器",
+            "supplied_by_source": true,
+            "type_id": "virtualization.container"
+          },
+          {
+            "category": "virtualization",
+            "name": "容器镜像",
+            "supplied_by_source": true,
+            "type_id": "virtualization.image"
+          },
+          {
+            "category": "virtualization",
+            "name": "容器卷",
+            "supplied_by_source": true,
+            "type_id": "virtualization.container_volume"
+          },
+          {
+            "category": "virtualization",
+            "name": "容器网络",
+            "supplied_by_source": true,
+            "type_id": "virtualization.container_network"
+          },
+          {
+            "category": "virtualization",
+            "name": "虚拟化能力与平台",
+            "supplied_by_source": true,
+            "type_id": "virtualization.platform_capability"
+          },
+          {
+            "category": "desktop",
+            "name": "打印机",
+            "supplied_by_source": true,
+            "type_id": "desktop.printer"
+          },
+          {
+            "category": "desktop",
+            "name": "打印端口",
+            "supplied_by_source": true,
+            "type_id": "desktop.printer_port"
+          },
+          {
+            "category": "desktop",
+            "name": "打印驱动",
+            "supplied_by_source": true,
+            "type_id": "desktop.printer_driver"
+          },
+          {
+            "category": "desktop",
+            "name": "打印作业",
+            "supplied_by_source": true,
+            "type_id": "desktop.print_job"
+          },
+          {
+            "category": "desktop",
+            "name": "输入法配置",
+            "supplied_by_source": true,
+            "type_id": "desktop.input_configuration"
+          },
+          {
+            "category": "desktop",
+            "name": "桌面与资源管理器配置",
+            "supplied_by_source": true,
+            "type_id": "desktop.shell_configuration"
+          },
+          {
+            "category": "desktop",
+            "name": "快捷方式",
+            "supplied_by_source": true,
+            "type_id": "desktop.shortcut"
+          },
+          {
+            "category": "desktop",
+            "name": "编辑器扩展",
+            "supplied_by_source": true,
+            "type_id": "desktop.editor_extension"
+          },
+          {
+            "category": "desktop",
+            "name": "同步账户登记",
+            "supplied_by_source": true,
+            "type_id": "desktop.sync_account"
+          }
+        ],
+        "mock": true,
+        "status": "loaded"
+      }
+    },
+    {
+      "name": "instance_list",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "counts": {
+          "actions": 7,
+          "evidence": 9,
+          "instances": 3,
+          "source_records": 41
+        },
+        "data": [
+          {
+            "alias": "startup.scheduled_task@示例机器|示例安装|install|\\示例文件夹\\示例任务#1",
+            "category": "startup",
+            "changed_at": "2026-09-12T08:00:00.000Z",
+            "coverage": [
+              {
+                "configured": true,
+                "history_state": "caught_up",
+                "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                "last_result": "success",
+                "last_success_at": "2026-09-12T09:00:00.000Z",
+                "projection": {
+                  "done": 4096,
+                  "failed": 0,
+                  "pending": 0
+                },
+                "scope": "machine:示例机器/install:示例安装",
+                "source": "pcscope.startup.tasks"
+              }
+            ],
+            "display_name": "示例任务",
+            "identity_status": "confirmed",
+            "instance_id": 1041,
+            "key_facts": [
+              {
+                "derivation": "source_provided",
+                "evidence": [
+                  {
+                    "id": "11",
+                    "kind": "record"
+                  }
+                ],
+                "field_id": "path",
+                "kind": "identity",
+                "label": "任务路径",
+                "observed_at": "2026-09-12T09:00:00.000Z",
+                "status": "known",
+                "value": "\\示例文件夹\\示例任务",
+                "value_type": "string"
+              },
+              {
+                "derivation": "source_provided",
+                "evidence": [
+                  {
+                    "id": "11",
+                    "kind": "record"
+                  }
+                ],
+                "field_id": "enabled",
+                "kind": "configuration",
+                "label": "是否启用",
+                "observed_at": "2026-09-12T09:00:00.000Z",
+                "status": "known",
+                "value": true,
+                "value_type": "boolean"
+              },
+              {
+                "derivation": "source_provided",
+                "evidence": [
+                  {
+                    "id": "11",
+                    "kind": "record"
+                  }
+                ],
+                "field_id": "next_run",
+                "kind": "state",
+                "label": "下次运行时间",
+                "observed_at": "2026-09-12T09:00:00.000Z",
+                "status": "known",
+                "value": "2026-09-12T18:00:00.000Z",
+                "value_type": "string"
+              }
+            ],
+            "lifecycle": "active",
+            "scope": "install",
+            "seen_at": "2026-09-12T09:00:00.000Z",
+            "type_id": "startup.scheduled_task",
+            "type_name": "计划任务"
+          },
+          {
+            "alias": "runtime.process@示例机器|示例安装|install|4100|?created_at#1",
+            "category": "runtime",
+            "coverage": [
+              {
+                "configured": true,
+                "history_state": "catching_up",
+                "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                "last_result": "partial",
+                "projection": {
+                  "done": 4096,
+                  "failed": 2,
+                  "pending": 0
+                },
+                "scope": "machine:示例机器/install:示例安装",
+                "source": "pcscope.execution.processes"
+              }
+            ],
+            "display_name": "示例程序.exe",
+            "identity_status": "provisional",
+            "key_facts": [
+              {
+                "derivation": "source_provided",
+                "evidence": [
+                  {
+                    "id": "12",
+                    "kind": "record"
+                  }
+                ],
+                "field_id": "pid",
+                "kind": "identity",
+                "label": "进程 ID",
+                "observed_at": "2026-09-12T09:00:00.000Z",
+                "status": "known",
+                "value": "4100",
+                "value_type": "string"
+              }
+            ],
+            "lifecycle": "active",
+            "scope": "install",
+            "seen_at": "2026-09-12T09:00:00.000Z",
+            "type_id": "runtime.process",
+            "type_name": "进程"
+          },
+          {
+            "alias": "startup.service@示例机器|示例安装|install|示例服务#1",
+            "category": "startup",
+            "changed_at": "2026-09-11T09:00:00.000Z",
+            "coverage": [
+              {
+                "configured": true,
+                "history_state": "caught_up",
+                "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                "last_result": "success",
+                "last_success_at": "2026-09-12T09:00:00.000Z",
+                "projection": {
+                  "done": 4096,
+                  "failed": 0,
+                  "pending": 0
+                },
+                "scope": "machine:示例机器/install:示例安装",
+                "source": "pcscope.startup.services"
+              }
+            ],
+            "display_name": "示例服务",
+            "identity_status": "confirmed",
+            "instance_id": 77,
+            "key_facts": [
+              {
+                "derivation": "source_provided",
+                "evidence": [
+                  {
+                    "id": "9",
+                    "kind": "record"
+                  }
+                ],
+                "field_id": "state",
+                "kind": "state",
+                "label": "状态",
+                "observed_at": "2026-09-11T09:00:00.000Z",
+                "status": "known",
+                "value": "Stopped",
+                "value_type": "string"
+              }
+            ],
+            "lifecycle": "not_observed",
+            "scope": "install",
+            "seen_at": "2026-09-11T09:00:00.000Z",
+            "type_id": "startup.service",
+            "type_name": "服务"
+          }
+        ],
+        "mock": true,
+        "page": {
+          "has_more": false,
+          "limit": 50,
+          "watermark": "wm-2026-09-12T09:00:00.000Z-1"
+        },
+        "status": "loaded"
+      }
+    },
+    {
+      "name": "instance_detail",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "counts": {
+          "actions": 7,
+          "evidence": 4,
+          "instances": 1,
+          "source_records": 2
+        },
+        "data": {
+          "actions_preview": [
+            {
+              "action_id": "startup.task_updated",
+              "evidence": [
+                {
+                  "id": "11",
+                  "kind": "record"
+                }
+              ],
+              "observed_at": "2026-09-12T09:00:00.000Z",
+              "occurred_at": "2026-09-12T08:00:00.000Z",
+              "phase": "task lifecycle",
+              "precision": "exact",
+              "result": "succeeded",
+              "time_derived": false,
+              "title": "任务更新"
+            },
+            {
+              "action_id": "observed.configuration_changed",
+              "after": "--示例程序 B",
+              "before": "--示例程序 A",
+              "evidence": [
+                {
+                  "id": "11",
+                  "kind": "record"
+                },
+                {
+                  "id": "13",
+                  "kind": "record"
+                }
+              ],
+              "field_id": "actions",
+              "interval_from": "2026-09-12T07:00:00.000Z",
+              "interval_until": "2026-09-12T08:00:00.000Z",
+              "observed_at": "2026-09-12T08:00:00.000Z",
+              "precision": "interval",
+              "result": "observed",
+              "time_derived": true,
+              "title": "观察到配置变化"
+            },
+            {
+              "action_id": "files.usn_changed",
+              "evidence": [
+                {
+                  "id": "pcscope.usn.c|usn-epoch-1|9001",
+                  "kind": "event"
+                }
+              ],
+              "observed_at": "2026-09-12T09:00:00.000Z",
+              "precision": "observation_only",
+              "result": "observed",
+              "time_derived": true,
+              "title": "文件变更记录",
+              "unassigned_reason": "来源未提供可解析的完整路径，无法确定目标对象"
+            }
+          ],
+          "bindings": [
+            {
+              "item_id": "pcscope.startup.tasks",
+              "native_record_id": "\\示例文件夹\\示例任务",
+              "scope": "install",
+              "source": "pcscope.startup.tasks",
+              "valid_from": "2026-09-10T00:00:00.000Z"
+            },
+            {
+              "item_id": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+              "native_record_id": "\\示例文件夹\\示例任务",
+              "scope": "install",
+              "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+              "valid_from": "2026-09-12T08:00:00.000Z"
+            }
+          ],
+          "fields": [
+            {
+              "derivation": "source_provided",
+              "evidence": [
+                {
+                  "id": "11",
+                  "kind": "record"
+                }
+              ],
+              "field_id": "path",
+              "kind": "identity",
+              "label": "任务路径",
+              "observed_at": "2026-09-12T09:00:00.000Z",
+              "status": "known",
+              "value": "\\示例文件夹\\示例任务",
+              "value_type": "string"
+            },
+            {
+              "derivation": "source_provided",
+              "evidence": [
+                {
+                  "id": "11",
+                  "kind": "record"
+                }
+              ],
+              "field_id": "name",
+              "kind": "configuration",
+              "label": "名称",
+              "observed_at": "2026-09-12T09:00:00.000Z",
+              "status": "known",
+              "value": "示例任务",
+              "value_type": "string"
+            },
+            {
+              "derivation": "source_provided",
+              "evidence": [
+                {
+                  "id": "11",
+                  "kind": "record"
+                }
+              ],
+              "field_id": "enabled",
+              "kind": "configuration",
+              "label": "是否启用",
+              "observed_at": "2026-09-12T09:00:00.000Z",
+              "status": "known",
+              "value": true,
+              "value_type": "boolean"
+            },
+            {
+              "derivation": "source_provided",
+              "evidence": [
+                {
+                  "id": "11",
+                  "kind": "record"
+                }
+              ],
+              "field_id": "principal",
+              "kind": "configuration",
+              "label": "运行账户",
+              "observed_at": "2026-09-12T09:00:00.000Z",
+              "status": "masked",
+              "value": "******",
+              "value_type": "string"
+            },
+            {
+              "conflicts": [
+                {
+                  "source": "pcscope.startup.tasks",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "value": "--示例程序 B"
+                },
+                {
+                  "source": "pcscope.eventlog.system",
+                  "source_time": "2026-09-12T09:00:00.000Z",
+                  "value": "--示例程序 A"
+                }
+              ],
+              "derivation": "source_provided",
+              "evidence": [
+                {
+                  "id": "11",
+                  "kind": "record"
+                },
+                {
+                  "id": "13",
+                  "kind": "record"
+                }
+              ],
+              "field_id": "actions",
+              "kind": "configuration",
+              "label": "执行动作",
+              "observed_at": "2026-09-12T09:00:00.000Z",
+              "status": "conflicting",
+              "value": "--示例程序 B",
+              "value_type": "string"
+            },
+            {
+              "derivation": "source_provided",
+              "field_id": "triggers",
+              "kind": "configuration",
+              "label": "触发条件",
+              "observed_at": "2026-09-12T09:00:00.000Z",
+              "status": "evidence_pruned",
+              "value_type": "unknown"
+            },
+            {
+              "derivation": "source_provided",
+              "evidence": [
+                {
+                  "id": "11",
+                  "kind": "record"
+                }
+              ],
+              "field_id": "next_run",
+              "kind": "state",
+              "label": "下次运行时间",
+              "observed_at": "2026-09-12T09:00:00.000Z",
+              "status": "known",
+              "value": "2026-09-12T18:00:00.000Z",
+              "value_type": "string"
+            },
+            {
+              "derivation": "source_provided",
+              "field_id": "last_run",
+              "kind": "state",
+              "label": "最近运行",
+              "observed_at": "2026-09-12T09:00:00.000Z",
+              "status": "not_provided",
+              "value_type": "unknown"
+            }
+          ],
+          "summary": {
+            "alias": "startup.scheduled_task@示例机器|示例安装|install|\\示例文件夹\\示例任务#1",
+            "category": "startup",
+            "changed_at": "2026-09-12T08:00:00.000Z",
+            "coverage": [
+              {
+                "configured": true,
+                "history_state": "caught_up",
+                "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                "last_result": "success",
+                "last_success_at": "2026-09-12T09:00:00.000Z",
+                "projection": {
+                  "done": 4096,
+                  "failed": 0,
+                  "pending": 0
+                },
+                "scope": "machine:示例机器/install:示例安装",
+                "source": "pcscope.startup.tasks"
+              }
+            ],
+            "display_name": "示例任务",
+            "identity_status": "confirmed",
+            "instance_id": 1041,
+            "key_facts": [
+              {
+                "derivation": "source_provided",
+                "evidence": [
+                  {
+                    "id": "11",
+                    "kind": "record"
+                  }
+                ],
+                "field_id": "path",
+                "kind": "identity",
+                "label": "任务路径",
+                "observed_at": "2026-09-12T09:00:00.000Z",
+                "status": "known",
+                "value": "\\示例文件夹\\示例任务",
+                "value_type": "string"
+              },
+              {
+                "derivation": "source_provided",
+                "evidence": [
+                  {
+                    "id": "11",
+                    "kind": "record"
+                  }
+                ],
+                "field_id": "enabled",
+                "kind": "configuration",
+                "label": "是否启用",
+                "observed_at": "2026-09-12T09:00:00.000Z",
+                "status": "known",
+                "value": true,
+                "value_type": "boolean"
+              },
+              {
+                "derivation": "source_provided",
+                "evidence": [
+                  {
+                    "id": "11",
+                    "kind": "record"
+                  }
+                ],
+                "field_id": "next_run",
+                "kind": "state",
+                "label": "下次运行时间",
+                "observed_at": "2026-09-12T09:00:00.000Z",
+                "status": "known",
+                "value": "2026-09-12T18:00:00.000Z",
+                "value_type": "string"
+              }
+            ],
+            "lifecycle": "active",
+            "scope": "install",
+            "seen_at": "2026-09-12T09:00:00.000Z",
+            "type_id": "startup.scheduled_task",
+            "type_name": "计划任务"
+          }
+        },
+        "mock": true,
+        "status": "loaded"
+      }
+    },
+    {
+      "name": "instance_actions",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "counts": {
+          "actions": 3,
+          "evidence": 5,
+          "instances": 1,
+          "source_records": 3
+        },
+        "data": [
+          {
+            "action_id": "startup.task_updated",
+            "evidence": [
+              {
+                "id": "11",
+                "kind": "record"
+              }
+            ],
+            "observed_at": "2026-09-12T09:00:00.000Z",
+            "occurred_at": "2026-09-12T08:00:00.000Z",
+            "phase": "task lifecycle",
+            "precision": "exact",
+            "result": "succeeded",
+            "time_derived": false,
+            "title": "任务更新"
+          },
+          {
+            "action_id": "observed.configuration_changed",
+            "after": "--示例程序 B",
+            "before": "--示例程序 A",
+            "evidence": [
+              {
+                "id": "11",
+                "kind": "record"
+              },
+              {
+                "id": "13",
+                "kind": "record"
+              }
+            ],
+            "field_id": "actions",
+            "interval_from": "2026-09-12T07:00:00.000Z",
+            "interval_until": "2026-09-12T08:00:00.000Z",
+            "observed_at": "2026-09-12T08:00:00.000Z",
+            "precision": "interval",
+            "result": "observed",
+            "time_derived": true,
+            "title": "观察到配置变化"
+          },
+          {
+            "action_id": "files.usn_changed",
+            "evidence": [
+              {
+                "id": "pcscope.usn.c|usn-epoch-1|9001",
+                "kind": "event"
+              }
+            ],
+            "observed_at": "2026-09-12T09:00:00.000Z",
+            "precision": "observation_only",
+            "result": "observed",
+            "time_derived": true,
+            "title": "文件变更记录",
+            "unassigned_reason": "来源未提供可解析的完整路径，无法确定目标对象"
+          }
+        ],
+        "mock": true,
+        "page": {
+          "has_more": false,
+          "limit": 50,
+          "watermark": "wm-2026-09-12T09:00:00.000Z-2"
+        },
+        "status": "loaded"
+      }
+    },
+    {
+      "name": "evidence_available",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "data": {
+          "decoding": "available",
+          "ingested_at": "2026-09-12T09:00:01.000Z",
+          "observed_at": "2026-09-12T09:00:00.000Z",
+          "raw_available": true,
+          "reference": {
+            "id": "11",
+            "kind": "record"
+          },
+          "source": "pcscope.startup.tasks",
+          "state": "available"
+        },
+        "mock": true,
+        "status": "loaded"
+      }
+    },
+    {
+      "name": "evidence_pruned",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "data": {
+          "decoding": "available",
+          "ingested_at": "2026-08-30T09:00:01.000Z",
+          "observed_at": "2026-08-30T09:00:00.000Z",
+          "problems": [
+            "原始材料已按保留策略清理"
+          ],
+          "pruned_at": "2026-09-12T00:00:00.000Z",
+          "raw_available": false,
+          "reference": {
+            "id": "7",
+            "kind": "record"
+          },
+          "retained_from": "2026-09-01T00:00:00.000Z",
+          "source": "pcscope.startup.services",
+          "state": "pruned"
+        },
+        "mock": true,
+        "status": "evidence_pruned",
+        "warnings": [
+          {
+            "at": "record",
+            "code": "evidence_pruned",
+            "message": "支撑证据已按保留策略清理；当前结论及其观察时间仍然保留，完整历史材料不可用"
+          }
+        ]
+      }
+    },
+    {
+      "name": "source_coverage",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "data": [
+          {
+            "configured": true,
+            "history_state": "caught_up",
+            "last_attempt_at": "2026-09-12T09:00:00.000Z",
+            "last_result": "success",
+            "last_success_at": "2026-09-12T09:00:00.000Z",
+            "projection": {
+              "done": 4096,
+              "failed": 0,
+              "pending": 0
+            },
+            "scope": "machine:示例机器/install:示例安装",
+            "source": "pcscope.startup.tasks"
+          },
+          {
+            "configured": true,
+            "history_state": "catching_up",
+            "last_attempt_at": "2026-09-12T09:00:00.000Z",
+            "last_result": "denied",
+            "projection": {
+              "done": 4096,
+              "failed": 0,
+              "pending": 128
+            },
+            "scope": "machine:示例机器/install:示例安装",
+            "source": "pcscope.eventlog.security"
+          },
+          {
+            "configured": true,
+            "history_state": "catching_up",
+            "last_attempt_at": "2026-09-12T09:00:00.000Z",
+            "last_result": "denied",
+            "projection": {
+              "done": 4096,
+              "failed": 0,
+              "pending": 128
+            },
+            "scope": "machine:示例机器/install:示例安装",
+            "source": "pcscope.security.encryption"
+          },
+          {
+            "configured": true,
+            "history_state": "source_missing",
+            "last_attempt_at": "2026-09-12T09:00:00.000Z",
+            "last_result": "missing",
+            "projection": {
+              "done": 4096,
+              "failed": 0,
+              "pending": 0
+            },
+            "scope": "machine:示例机器/install:示例安装",
+            "source": "pcscope.virtualization.hyperv-vms"
+          },
+          {
+            "configured": false,
+            "history_state": "caught_up",
+            "last_attempt_at": "2026-09-12T09:00:00.000Z",
+            "last_result": "never",
+            "projection": {
+              "done": 4096,
+              "failed": 0,
+              "pending": 0
+            },
+            "scope": "machine:示例机器/install:示例安装",
+            "source": "pcscope.apps.mihomo"
+          }
+        ],
+        "mock": true,
+        "status": "partial",
+        "warnings": [
+          {
+            "at": "pcscope.eventlog.security",
+            "code": "source_denied",
+            "message": "来源读取被拒绝；本对象的这部分属性暂不可用"
+          },
+          {
+            "at": "pcscope.virtualization.hyperv-vms",
+            "code": "source_missing",
+            "message": "来源不存在或组件未安装"
+          }
+        ]
+      }
+    },
+    {
+      "name": "projection_status",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "data": [
+          {
+            "cursor": "4100",
+            "failed": 0,
+            "pending": 0,
+            "projection": "objects",
+            "rule_version": "e947e462e9728ab3535487ce5679368b7b4ced889b1c0097e3a2374cdbf333b9",
+            "schema_version": 6,
+            "updated_at": "2026-09-12T09:00:05.000Z",
+            "watermark": "wm-1"
+          },
+          {
+            "cursor": "2080",
+            "failed": 2,
+            "last_error": "示例解析问题：来源结构版本不受支持",
+            "pending": 128,
+            "projection": "facts",
+            "rule_version": "e947e462e9728ab3535487ce5679368b7b4ced889b1c0097e3a2374cdbf333b9",
+            "schema_version": 6,
+            "updated_at": "2026-09-12T09:00:05.000Z",
+            "watermark": "wm-1"
+          }
+        ],
+        "mock": true,
+        "status": "loaded"
+      }
+    },
+    {
+      "name": "action_timeline",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "counts": {
+          "actions": 210,
+          "evidence": 4,
+          "instances": 2,
+          "source_records": 3
+        },
+        "data": [
+          {
+            "action_id": "startup.task_started",
+            "evidence": [
+              {
+                "id": "pcscope.eventlog.microsoft-windows-taskscheduler/operational|1|100",
+                "kind": "event"
+              }
+            ],
+            "observed_at": "2026-09-12T08:00:01.000Z",
+            "occurred_at": "2026-09-12T08:00:00.000Z",
+            "phase": "task run",
+            "precision": "exact",
+            "result": "started",
+            "time_derived": false,
+            "title": "计划任务开始运行"
+          },
+          {
+            "action_id": "observed.configuration_changed",
+            "after": false,
+            "before": true,
+            "evidence": [
+              {
+                "id": "pcscope.startup.tasks|machine:m/install:i/schema:1/context:/shard:0|run-7",
+                "kind": "snapshot"
+              }
+            ],
+            "field_id": "enabled",
+            "interval_from": "2026-09-12T07:00:00.000Z",
+            "interval_until": "2026-09-12T07:30:00.000Z",
+            "observed_at": "2026-09-12T07:30:00.000Z",
+            "precision": "interval",
+            "result": "observed",
+            "time_derived": true,
+            "title": "观察到配置变化"
+          },
+          {
+            "action_id": "identity.logon_failed",
+            "evidence": [
+              {
+                "id": "pcscope.eventlog.security|1|4625",
+                "kind": "event"
+              }
+            ],
+            "observed_at": "2026-09-12T06:00:02.000Z",
+            "occurred_at": "2026-09-12T06:00:00.000Z",
+            "phase": "session",
+            "precision": "exact",
+            "result": "failed",
+            "time_derived": false,
+            "title": "登录失败",
+            "unassigned_reason": "事件只提供了用户名，没有可确认的账户标识；不猜测是哪一个账户"
+          }
+        ],
+        "mock": true,
+        "page": {
+          "has_more": true,
+          "limit": 50,
+          "next_cursor": "e4102i88a210~2026-09-12T06:00:00.000Z~210",
+          "watermark": "e4102i88a210"
+        },
+        "status": "loaded"
+      }
+    },
+    {
+      "name": "source_readings",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "data": [
+          {
+            "destination": "sampling",
+            "evidence": {
+              "id": "sample-reading",
+              "kind": "snapshot"
+            },
+            "item_id": "memory",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "payload": {
+              "free_kib": 512,
+              "total_kib": 1024
+            },
+            "progress": null,
+            "scope": "machine:M",
+            "source": "pcscope.execution.resources",
+            "source_time": null
+          }
+        ],
+        "mock": true,
+        "status": "loaded"
+      }
+    },
+    {
+      "name": "update_operation",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "data": [
+          {
+            "action_id": "software.update_history",
+            "instance_id": null,
+            "observed_at": "2026-10-12T00:01:00Z",
+            "occurred_at": "2026-10-12T00:00:00Z",
+            "phase": "installation",
+            "precision": "exact",
+            "result": "failed",
+            "source_record": {
+              "hresult": -1,
+              "operation": 1,
+              "result": 4,
+              "revision": 1,
+              "title": "示例更新",
+              "update_id": "U"
+            },
+            "title": "Windows 更新操作记录",
+            "unassigned_reason": "更新操作不证明当前安装状态"
+          }
+        ],
+        "mock": true,
+        "status": "loaded"
+      }
+    },
+    {
+      "name": "instance_list_empty",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "counts": {
+          "actions": 0,
+          "evidence": 0,
+          "instances": 0,
+          "source_records": 0
+        },
+        "data": [],
+        "mock": true,
+        "page": {
+          "has_more": false,
+          "limit": 50,
+          "watermark": "wm-2026-09-12T09:00:00.000Z-3"
+        },
+        "status": "empty"
+      }
+    },
+    {
+      "name": "unsupported",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "mock": true,
+        "status": "unsupported",
+        "warnings": [
+          {
+            "code": "unsupported_type",
+            "message": "该类型尚未接入来源；显示为未支持而不是空列表"
+          }
+        ]
+      }
+    },
+    {
+      "name": "permission_denied",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "mock": true,
+        "status": "permission_denied",
+        "warnings": [
+          {
+            "code": "permission_denied",
+            "message": "读取该来源需要更高权限；请以管理员身份运行后台"
+          }
+        ]
+      }
+    },
+    {
+      "name": "version_mismatch",
+      "response": {
+        "catalog_version": "9.9.9",
+        "contract_version": 1,
+        "mock": true,
+        "status": "version_mismatch",
+        "warnings": [
+          {
+            "code": "catalog_version_mismatch",
+            "message": "前端与后台的模型目录版本不一致；请重新构建"
+          }
+        ]
+      }
+    },
+    {
+      "name": "instance_list_presentation",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "data": [
+          {
+            "alias": "startup.scheduled_task@示例机器|示例安装|install|\\示例文件夹\\示例任务#1",
+            "category": "startup",
+            "changed_at": "2026-09-12T08:00:00.000Z",
+            "coverage": [
+              {
+                "configured": true,
+                "history_state": "caught_up",
+                "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                "last_result": "success",
+                "last_success_at": "2026-09-12T09:00:00.000Z",
+                "projection": {
+                  "done": 4096,
+                  "failed": 0,
+                  "pending": 0
+                },
+                "scope": "machine:示例机器/install:示例安装",
+                "source": "pcscope.startup.tasks"
+              }
+            ],
+            "display_name": "示例任务",
+            "identity_status": "confirmed",
+            "instance_id": 1041,
+            "key_facts": [
+              {
+                "derivation": "source_provided",
+                "evidence": [
+                  {
+                    "id": "11",
+                    "kind": "record"
+                  }
+                ],
+                "field_id": "path",
+                "kind": "identity",
+                "label": "任务路径",
+                "observed_at": "2026-09-12T09:00:00.000Z",
+                "status": "known",
+                "value": "\\示例文件夹\\示例任务",
+                "value_type": "string"
+              },
+              {
+                "derivation": "source_provided",
+                "evidence": [
+                  {
+                    "id": "11",
+                    "kind": "record"
+                  }
+                ],
+                "field_id": "enabled",
+                "kind": "configuration",
+                "label": "是否启用",
+                "observed_at": "2026-09-12T09:00:00.000Z",
+                "status": "known",
+                "value": true,
+                "value_type": "boolean"
+              },
+              {
+                "derivation": "source_provided",
+                "evidence": [
+                  {
+                    "id": "11",
+                    "kind": "record"
+                  }
+                ],
+                "field_id": "next_run",
+                "kind": "state",
+                "label": "下次运行时间",
+                "observed_at": "2026-09-12T09:00:00.000Z",
+                "status": "known",
+                "value": "2026-09-12T18:00:00.000Z",
+                "value_type": "string"
+              }
+            ],
+            "lifecycle": "active",
+            "presentation": {
+              "basis": "object_facts",
+              "name": "示例任务",
+              "name_status": "source_provided"
+            },
+            "scope": "install",
+            "seen_at": "2026-09-12T09:00:00.000Z",
+            "type_id": "startup.scheduled_task",
+            "type_name": "计划任务"
+          },
+          {
+            "alias": "software.installation_registration@示例机器|示例安装|install|unnamed-registration#1",
+            "category": "software",
+            "coverage": [
+              {
+                "configured": true,
+                "history_state": "caught_up",
+                "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                "last_result": "success",
+                "last_success_at": "2026-09-12T09:00:00.000Z",
+                "projection": {
+                  "done": 4096,
+                  "failed": 0,
+                  "pending": 0
+                },
+                "scope": "machine:示例机器/install:示例安装",
+                "source": "pcscope.software.inventory"
+              }
+            ],
+            "display_name": "",
+            "identity_status": "confirmed",
+            "instance_id": 2041,
+            "key_facts": [],
+            "lifecycle": "active",
+            "presentation": {
+              "basis": "registration_without_display_name",
+              "description": "系统保留了这条登记，尚不能据此确认对应软件是否已安装。",
+              "name": "未命名的软件登记",
+              "name_status": "not_provided"
+            },
+            "scope": "install",
+            "seen_at": "2026-09-12T09:00:00.000Z",
+            "type_id": "software.installation_registration",
+            "type_name": "软件安装登记"
+          },
+          {
+            "alias": "software.installation_registration@示例机器|示例安装|install|fixture-component-registration#1",
+            "category": "software",
+            "coverage": [
+              {
+                "configured": true,
+                "history_state": "caught_up",
+                "last_attempt_at": "2026-09-12T09:00:00.000Z",
+                "last_result": "success",
+                "last_success_at": "2026-09-12T09:00:00.000Z",
+                "projection": {
+                  "done": 4096,
+                  "failed": 0,
+                  "pending": 0
+                },
+                "scope": "machine:示例机器/install:示例安装",
+                "source": "pcscope.software.inventory"
+              }
+            ],
+            "display_name": "",
+            "identity_status": "confirmed",
+            "instance_id": 2042,
+            "key_facts": [],
+            "lifecycle": "active",
+            "presentation": {
+              "basis": "registration_dictionary",
+              "description": "用于示例系统组件的安装维护。",
+              "dictionary_entry_id": "fixture-component",
+              "dictionary_id": "fixture-registration-dictionary",
+              "dictionary_revision": 1,
+              "match_basis": "合成样本：精确匹配登记位置与视图",
+              "name": "示例系统组件登记",
+              "name_status": "dictionary_matched",
+              "references": [],
+              "technical_key": "HKLM|Registry64|Software\\Example\\Uninstall\\Fixture"
+            },
+            "scope": "install",
+            "seen_at": "2026-09-12T09:00:00.000Z",
+            "type_id": "software.installation_registration",
+            "type_name": "软件安装登记"
+          }
+        ],
+        "mock": true,
+        "status": "loaded"
+      }
+    },
+    {
+      "name": "action_timeline_context",
+      "response": {
+        "catalog_version": "1.2.6",
+        "contract_version": 1,
+        "data": [
+          {
+            "action_id": "startup.task_updated",
+            "context": {
+              "attribution_reason": "这条记录的对象信息与历史关联不一致，尚不能确认归属。",
+              "attribution_status": "mismatch",
+              "display_name": "示例任务",
+              "field_label": null,
+              "key_facts": [],
+              "presentation": {
+                "basis": "object_facts",
+                "name": "示例任务",
+                "name_status": "source_provided"
+              },
+              "stored_instance_id": 1041,
+              "subject_basis": "event_evidence",
+              "subject_detail": "\\历史文件夹\\历史任务名称",
+              "subject_label": "历史任务名称",
+              "type_id": "startup.scheduled_task",
+              "type_name": "计划任务"
+            },
+            "evidence": [
+              {
+                "id": "11",
+                "kind": "record"
+              }
+            ],
+            "observed_at": "2026-09-12T09:00:00.000Z",
+            "occurred_at": "2026-09-12T08:00:00.000Z",
+            "phase": "task lifecycle",
+            "precision": "exact",
+            "result": "succeeded",
+            "source_record": {
+              "event_id": 4702,
+              "fields": {
+                "TaskName": "\\历史文件夹\\历史任务名称"
+              },
+              "provider": "Microsoft-Windows-Security-Auditing"
+            },
+            "time_derived": false,
+            "title": "任务更新",
+            "unassigned_reason": "这条记录的对象信息与历史关联不一致，尚不能确认归属。"
+          },
+          {
+            "action_id": "identity.logon",
+            "context": {
+              "attribution_reason": "原始账户名称已隐藏，尚不能确认涉及的账户。",
+              "attribution_status": "unassigned",
+              "display_name": null,
+              "field_label": null,
+              "key_facts": [],
+              "logon_type": "5",
+              "presentation": {
+                "basis": "object_facts",
+                "name": null,
+                "name_status": "not_provided"
+              },
+              "stored_instance_id": null,
+              "subject_basis": "unavailable",
+              "subject_detail": null,
+              "subject_label": null,
+              "type_id": "account.user",
+              "type_name": "用户"
+            },
+            "evidence": [
+              {
+                "id": "11",
+                "kind": "record"
+              }
+            ],
+            "observed_at": "2026-09-12T09:00:00.000Z",
+            "occurred_at": "2026-09-12T08:00:00.000Z",
+            "phase": "task lifecycle",
+            "precision": "exact",
+            "result": "succeeded",
+            "source_record": {
+              "event_id": 4624,
+              "fields": {
+                "LogonType": "5",
+                "TargetUserName": "******"
+              },
+              "provider": "Microsoft-Windows-Security-Auditing"
+            },
+            "time_derived": false,
+            "title": "登录记录",
+            "unassigned_reason": "原始账户名称已隐藏，尚不能确认涉及的账户。"
+          }
+        ],
+        "mock": true,
+        "status": "loaded"
+      }
+    }
+  ],
+  "shape": {
+    "action_result": [
+      "succeeded",
+      "failed",
+      "started",
+      "ended",
+      "blocked",
+      "observed",
+      "unknown"
+    ],
+    "catalog_version": "1.2.6",
+    "contract_version": 1,
+    "coverage_history": [
+      "catching_up",
+      "caught_up",
+      "gap",
+      "source_missing",
+      "history_pruned",
+      "unknown"
+    ],
+    "coverage_result": [
+      "success",
+      "partial",
+      "denied",
+      "missing",
+      "failed",
+      "never"
+    ],
+    "default_visibility": "active and not_observed instances are returned by default; ended and removed require an explicit lifecycle filter; provisional instances are included and flagged",
+    "derivation": [
+      "source_provided",
+      "decoded",
+      "snapshot_comparison",
+      "rule"
+    ],
+    "evidence_state": [
+      "available",
+      "pruned"
+    ],
+    "field_kind": [
+      "identity",
+      "configuration",
+      "state"
+    ],
+    "identity_status": [
+      "confirmed",
+      "provisional",
+      "ambiguous"
+    ],
+    "lifecycle": [
+      "active",
+      "not_observed",
+      "ended",
+      "removed"
+    ],
+    "lifecycle_filter": [
+      "active",
+      "not_observed",
+      "ended",
+      "removed",
+      "any"
+    ],
+    "page": {
+      "default": 50,
+      "maximum": 200
+    },
+    "presentation_extensions": {
+      "action_view.context": {
+        "attribution_status": [
+          "verified",
+          "unverified",
+          "mismatch",
+          "unassigned",
+          "stored"
+        ],
+        "classification_status": [
+          "unverified"
+        ],
+        "fields": [
+          "type_id",
+          "type_name",
+          "display_name",
+          "key_facts",
+          "presentation",
+          "subject_label",
+          "subject_detail",
+          "subject_basis",
+          "field_label",
+          "program_label",
+          "logon_type",
+          "attribution_status",
+          "attribution_reason",
+          "stored_instance_id",
+          "classification_status",
+          "stored_action_id"
+        ],
+        "optional": true,
+        "subject_basis": [
+          "event_evidence",
+          "current_object_facts",
+          "unavailable"
+        ]
+      },
+      "compatibility": "Optional display-only additions; missing extensions retain version 1 behavior, unknown extension fields may be ignored. Protected values must not become labels, and unverified associations must not become verified object links.",
+      "instance_summary.presentation": {
+        "fields": [
+          "name",
+          "description",
+          "name_status",
+          "basis",
+          "dictionary_id",
+          "dictionary_revision",
+          "dictionary_entry_id",
+          "match_basis",
+          "technical_key",
+          "references"
+        ],
+        "name_status": [
+          "source_provided",
+          "not_provided",
+          "dictionary_matched"
+        ],
+        "optional": true
+      },
+      "instance_summary.record_basis": {
+        "optional": true,
+        "values": [
+          "observation",
+          "event_only",
+          "unknown"
+        ]
+      }
+    },
+    "presentation_revision": 2,
+    "queries": [
+      "type_catalog",
+      "instance_list",
+      "instance_detail",
+      "instance_actions",
+      "action_timeline",
+      "evidence_detail",
+      "source_coverage",
+      "source_readings",
+      "projection_status"
+    ],
+    "sorts": [
+      "name_asc",
+      "name_desc",
+      "changed_desc",
+      "seen_desc",
+      "type_asc"
+    ],
+    "status": [
+      "loaded",
+      "empty",
+      "unsupported",
+      "permission_denied",
+      "partial",
+      "evidence_pruned",
+      "version_mismatch"
+    ],
+    "time_precision": [
+      "exact",
+      "interval",
+      "observation_only"
+    ],
+    "value_status": [
+      "known",
+      "not_provided",
+      "unreadable",
+      "not_applicable",
+      "conflicting",
+      "masked",
+      "evidence_pruned"
+    ]
+  }
+}

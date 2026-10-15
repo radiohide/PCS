@@ -1,0 +1,1172 @@
+{
+  "cases": [
+    {
+      "actions": [
+        {
+          "action_id": "startup.task_started",
+          "evidence_count": 1,
+          "interval_from": null,
+          "interval_until": null,
+          "occurred_at": "2026-09-12T08:00:00Z",
+          "phase": "task run",
+          "precision": "exact",
+          "result": "started",
+          "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+          "target_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "target_status": "confirmed",
+          "unassigned_reason": null
+        },
+        {
+          "action_id": "startup.task_ended",
+          "evidence_count": 1,
+          "interval_from": null,
+          "interval_until": null,
+          "occurred_at": "2026-09-12T08:00:05Z",
+          "phase": "task run",
+          "precision": "exact",
+          "result": "ended",
+          "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+          "target_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "target_status": "confirmed",
+          "unassigned_reason": null
+        }
+      ],
+      "case": "01-task-two-sources-and-run-log",
+      "coverage": [
+        {
+          "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+          "verdict": {
+            "basis": "完整且成功的快照覆盖了该实例所在范围，且采集项处于启用状态",
+            "verdict": "eligible"
+          }
+        },
+        {
+          "source": "pcscope.startup.task-details",
+          "verdict": {
+            "basis": "完整且成功的快照覆盖了该实例所在范围，且采集项处于启用状态",
+            "verdict": "eligible"
+          }
+        },
+        {
+          "source": "pcscope.startup.tasks",
+          "verdict": {
+            "basis": "完整且成功的快照覆盖了该实例所在范围，且采集项处于启用状态",
+            "verdict": "eligible"
+          }
+        }
+      ],
+      "current_values": [
+        {
+          "field_id": "actions",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 2,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": [
+              {
+                "execute": "C:\\示例\\程序\\示例程序.exe"
+              }
+            ]
+          }
+        },
+        {
+          "field_id": "enabled",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 2,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": true
+          }
+        },
+        {
+          "field_id": "name",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 2,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks",
+              "pcscope.startup.task-details"
+            ],
+            "state": "known",
+            "value": "示例任务"
+          }
+        },
+        {
+          "field_id": "path",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 2,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks",
+              "pcscope.startup.task-details"
+            ],
+            "state": "known",
+            "value": "\\示例文件夹\\示例任务"
+          }
+        },
+        {
+          "field_id": "principal",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 2,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "示例用户"
+          }
+        },
+        {
+          "field_id": "triggers",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 2,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.task-details"
+            ],
+            "state": "known",
+            "value": [
+              {
+                "start_boundary": "2026-09-12T18:00:00Z",
+                "type": "Daily"
+              }
+            ]
+          }
+        }
+      ],
+      "gaps": [],
+      "input_count": 4,
+      "instances": [
+        {
+          "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "identity_status": "confirmed",
+          "instance_id": 1,
+          "missing_keys": [],
+          "outcome": "confirmed:new",
+          "scope": "install:example-install",
+          "type_id": "startup.scheduled_task"
+        }
+      ],
+      "problems": [],
+      "transitions": []
+    },
+    {
+      "actions": [
+        {
+          "action_id": "startup.task_deleted",
+          "evidence_count": 1,
+          "interval_from": null,
+          "interval_until": null,
+          "occurred_at": "2026-09-12T10:00:00Z",
+          "phase": "task lifecycle",
+          "precision": "exact",
+          "result": "succeeded",
+          "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+          "target_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#1",
+          "target_status": "confirmed",
+          "unassigned_reason": null
+        }
+      ],
+      "case": "02-same-name-different-path-and-recreated",
+      "coverage": [
+        {
+          "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+          "verdict": {
+            "basis": "完整且成功的快照覆盖了该实例所在范围，且采集项处于启用状态",
+            "verdict": "eligible"
+          }
+        },
+        {
+          "source": "pcscope.startup.tasks",
+          "verdict": {
+            "basis": "完整且成功的快照覆盖了该实例所在范围，且采集项处于启用状态",
+            "verdict": "eligible"
+          }
+        }
+      ],
+      "current_values": [
+        {
+          "field_id": "actions",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "enabled",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": true
+          }
+        },
+        {
+          "field_id": "name",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "示例任务"
+          }
+        },
+        {
+          "field_id": "path",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "\\另一个文件夹\\示例任务"
+          }
+        },
+        {
+          "field_id": "principal",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "示例用户"
+          }
+        },
+        {
+          "field_id": "triggers",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "actions",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#2",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "enabled",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#2",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T11:00:00.000Z",
+            "observed_at": "2026-09-12T11:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": false
+          }
+        },
+        {
+          "field_id": "name",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#2",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T11:00:00.000Z",
+            "observed_at": "2026-09-12T11:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "示例任务"
+          }
+        },
+        {
+          "field_id": "path",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#2",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T11:00:00.000Z",
+            "observed_at": "2026-09-12T11:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "\\另一个文件夹\\示例任务"
+          }
+        },
+        {
+          "field_id": "principal",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#2",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T11:00:00.000Z",
+            "observed_at": "2026-09-12T11:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "示例用户"
+          }
+        },
+        {
+          "field_id": "triggers",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#2",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "actions",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 2,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "enabled",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 2,
+          "selection": {
+            "effective_time": "2026-09-12T11:00:00.000Z",
+            "observed_at": "2026-09-12T11:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": true
+          }
+        },
+        {
+          "field_id": "name",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 2,
+          "selection": {
+            "effective_time": "2026-09-12T11:00:00.000Z",
+            "observed_at": "2026-09-12T11:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "示例任务"
+          }
+        },
+        {
+          "field_id": "path",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 2,
+          "selection": {
+            "effective_time": "2026-09-12T11:00:00.000Z",
+            "observed_at": "2026-09-12T11:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "\\示例文件夹\\示例任务"
+          }
+        },
+        {
+          "field_id": "principal",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 2,
+          "selection": {
+            "effective_time": "2026-09-12T11:00:00.000Z",
+            "observed_at": "2026-09-12T11:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "示例用户"
+          }
+        },
+        {
+          "field_id": "triggers",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 2,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        }
+      ],
+      "gaps": [],
+      "input_count": 5,
+      "instances": [
+        {
+          "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "identity_status": "confirmed",
+          "instance_id": 1,
+          "missing_keys": [],
+          "outcome": "confirmed:new",
+          "scope": "install:example-install",
+          "type_id": "startup.scheduled_task"
+        },
+        {
+          "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#1",
+          "identity_status": "confirmed",
+          "instance_id": 2,
+          "missing_keys": [],
+          "outcome": "confirmed:new",
+          "scope": "install:example-install",
+          "type_id": "startup.scheduled_task"
+        },
+        {
+          "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#2",
+          "identity_status": "confirmed",
+          "instance_id": 3,
+          "missing_keys": [],
+          "outcome": "confirmed:existing_by_source_binding",
+          "scope": "install:example-install",
+          "type_id": "startup.scheduled_task"
+        }
+      ],
+      "problems": [],
+      "transitions": [
+        {
+          "detail": {
+            "basis": "来源明确声明对象已删除",
+            "transition": "removed_stated"
+          },
+          "instance": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#1",
+          "kind": "removed_stated"
+        },
+        {
+          "detail": {
+            "basis": "the key was previously ended or removed and has reappeared as a new generation",
+            "incarnation": 2,
+            "transition": "reincarnated"
+          },
+          "instance": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\另一个文件夹\\示例任务#2",
+          "kind": "reincarnated"
+        }
+      ]
+    },
+    {
+      "actions": [
+        {
+          "action_id": "execution.process_started",
+          "evidence_count": 1,
+          "interval_from": null,
+          "interval_until": null,
+          "occurred_at": "2026-09-12T09:30:00Z",
+          "phase": "process lifecycle",
+          "precision": "exact",
+          "result": "started",
+          "source": "pcscope.eventlog.security",
+          "target_alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|?pid|?created_at#1",
+          "target_status": "provisional",
+          "unassigned_reason": null
+        }
+      ],
+      "case": "03-pid-reuse-and-incomplete-event",
+      "coverage": [
+        {
+          "source": "pcscope.eventlog.security",
+          "verdict": {
+            "basis": "完整且成功的快照覆盖了该实例所在范围，且采集项处于启用状态",
+            "verdict": "eligible"
+          }
+        },
+        {
+          "source": "pcscope.execution.processes",
+          "verdict": {
+            "basis": "完整且成功的快照覆盖了该实例所在范围，且采集项处于启用状态",
+            "verdict": "eligible"
+          }
+        }
+      ],
+      "current_values": [
+        {
+          "field_id": "command_line",
+          "instance_alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T08:00:00Z#1",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.execution.processes 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "created_at",
+          "instance_alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T08:00:00Z#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T08:00:00.000Z",
+            "observed_at": "2026-09-12T08:00:00Z",
+            "sources": [
+              "pcscope.execution.processes"
+            ],
+            "state": "known",
+            "value": "2026-09-12T08:00:00Z"
+          }
+        },
+        {
+          "field_id": "image",
+          "instance_alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T08:00:00Z#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T08:00:00.000Z",
+            "observed_at": "2026-09-12T08:00:00Z",
+            "sources": [
+              "pcscope.execution.processes"
+            ],
+            "state": "known",
+            "value": "C:\\示例\\程序\\示例程序.exe"
+          }
+        },
+        {
+          "field_id": "parent_pid",
+          "instance_alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T08:00:00Z#1",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.execution.processes 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "pid",
+          "instance_alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T08:00:00Z#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T08:00:00.000Z",
+            "observed_at": "2026-09-12T08:00:00Z",
+            "sources": [
+              "pcscope.execution.processes"
+            ],
+            "state": "known",
+            "value": 4100
+          }
+        },
+        {
+          "field_id": "session",
+          "instance_alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T08:00:00Z#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T08:00:00.000Z",
+            "observed_at": "2026-09-12T08:00:00Z",
+            "sources": [
+              "pcscope.execution.processes"
+            ],
+            "state": "known",
+            "value": 1
+          }
+        },
+        {
+          "field_id": "command_line",
+          "instance_alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T09:00:00Z#1",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.execution.processes 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "created_at",
+          "instance_alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T09:00:00Z#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.execution.processes"
+            ],
+            "state": "known",
+            "value": "2026-09-12T09:00:00Z"
+          }
+        },
+        {
+          "field_id": "image",
+          "instance_alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T09:00:00Z#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.execution.processes"
+            ],
+            "state": "known",
+            "value": "C:\\示例\\程序\\另一个程序.exe"
+          }
+        },
+        {
+          "field_id": "parent_pid",
+          "instance_alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T09:00:00Z#1",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.execution.processes 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "pid",
+          "instance_alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T09:00:00Z#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.execution.processes"
+            ],
+            "state": "known",
+            "value": 4100
+          }
+        },
+        {
+          "field_id": "session",
+          "instance_alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T09:00:00Z#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.execution.processes"
+            ],
+            "state": "known",
+            "value": 1
+          }
+        }
+      ],
+      "gaps": [],
+      "input_count": 3,
+      "instances": [
+        {
+          "alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T08:00:00Z#1",
+          "identity_status": "confirmed",
+          "instance_id": 1,
+          "missing_keys": [],
+          "outcome": "confirmed:new",
+          "scope": "install:example-install",
+          "type_id": "runtime.process"
+        },
+        {
+          "alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|4100|2026-09-12T09:00:00Z#1",
+          "identity_status": "confirmed",
+          "instance_id": 2,
+          "missing_keys": [],
+          "outcome": "confirmed:new",
+          "scope": "install:example-install",
+          "type_id": "runtime.process"
+        },
+        {
+          "alias": "runtime.process@example-machine|example-install|install:example-install|install:example-install|?pid|?created_at#1",
+          "identity_status": "provisional",
+          "instance_id": 3,
+          "missing_keys": [
+            "pid",
+            "created_at"
+          ],
+          "outcome": "provisional",
+          "scope": "install:example-install",
+          "type_id": "runtime.process"
+        }
+      ],
+      "problems": [],
+      "transitions": []
+    },
+    {
+      "actions": [],
+      "case": "04-late-log-and-conflicting-value",
+      "coverage": [
+        {
+          "source": "pcscope.startup.task-details",
+          "verdict": {
+            "basis": "完整且成功的快照覆盖了该实例所在范围，且采集项处于启用状态",
+            "verdict": "eligible"
+          }
+        },
+        {
+          "source": "pcscope.startup.tasks",
+          "verdict": {
+            "basis": "完整且成功的快照覆盖了该实例所在范围，且采集项处于启用状态",
+            "verdict": "eligible"
+          }
+        }
+      ],
+      "current_values": [
+        {
+          "field_id": "actions",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 3,
+          "selection": {
+            "effective_time": "2026-09-12T10:05:00.000Z",
+            "observed_at": "2026-09-12T10:05:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": [
+              {
+                "arguments": "--示例程序 B",
+                "execute": "C:\\示例\\程序\\示例程序.exe"
+              }
+            ]
+          }
+        },
+        {
+          "field_id": "enabled",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 3,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "name",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 3,
+          "selection": {
+            "effective_time": "2026-09-12T10:05:00.000Z",
+            "observed_at": "2026-09-12T10:05:00Z",
+            "sources": [
+              "pcscope.startup.tasks",
+              "pcscope.startup.task-details"
+            ],
+            "state": "known",
+            "value": "示例任务"
+          }
+        },
+        {
+          "field_id": "path",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 3,
+          "selection": {
+            "effective_time": "2026-09-12T10:05:00.000Z",
+            "observed_at": "2026-09-12T10:05:00Z",
+            "sources": [
+              "pcscope.startup.tasks",
+              "pcscope.startup.task-details"
+            ],
+            "state": "known",
+            "value": "\\示例文件夹\\示例任务"
+          }
+        },
+        {
+          "field_id": "principal",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 3,
+          "selection": {
+            "basis": "同一生效时间上来源给出不同值，且没有声明的优先级规则可以消解",
+            "candidates": [
+              {
+                "evidence": [
+                  {
+                    "id": "pcscope.startup.tasks|machine:example-machine/install:example-install/schema:1/context:/shard:0|c4-run-1",
+                    "kind": "snapshot"
+                  }
+                ],
+                "observed_at": "2026-09-12T10:05:00Z",
+                "source": "pcscope.startup.tasks",
+                "source_time": null,
+                "status": "known",
+                "value": "示例账户乙",
+                "value_type": "string"
+              },
+              {
+                "evidence": [
+                  {
+                    "id": "pcscope.startup.task-details|machine:example-machine/install:example-install/schema:1/context:task-detail|c4-run-1",
+                    "kind": "snapshot"
+                  }
+                ],
+                "observed_at": "2026-09-12T10:05:00Z",
+                "source": "pcscope.startup.task-details",
+                "source_time": null,
+                "status": "known",
+                "value": "示例账户甲",
+                "value_type": "string"
+              }
+            ],
+            "state": "conflict"
+          }
+        },
+        {
+          "field_id": "triggers",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 3,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        }
+      ],
+      "gaps": [],
+      "input_count": 3,
+      "instances": [
+        {
+          "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "identity_status": "confirmed",
+          "instance_id": 1,
+          "missing_keys": [],
+          "outcome": "confirmed:new",
+          "scope": "install:example-install",
+          "type_id": "startup.scheduled_task"
+        }
+      ],
+      "problems": [],
+      "transitions": []
+    },
+    {
+      "actions": [],
+      "case": "05-disabled-unreadable-pruned",
+      "coverage": [
+        {
+          "source": "pcscope.startup.tasks",
+          "verdict": {
+            "reason": "该采集项已停用；停用期间的缺失不构成未发现",
+            "verdict": "ineligible"
+          }
+        }
+      ],
+      "current_values": [
+        {
+          "field_id": "actions",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "enabled",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": true
+          }
+        },
+        {
+          "field_id": "name",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "示例任务"
+          }
+        },
+        {
+          "field_id": "path",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "\\示例文件夹\\示例任务"
+          }
+        },
+        {
+          "field_id": "principal",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "evidence_pruned"
+          }
+        },
+        {
+          "field_id": "triggers",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "unreadable"
+          }
+        }
+      ],
+      "gaps": [],
+      "input_count": 1,
+      "instances": [
+        {
+          "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "identity_status": "confirmed",
+          "instance_id": 1,
+          "missing_keys": [],
+          "outcome": "confirmed:new",
+          "scope": "install:example-install",
+          "type_id": "startup.scheduled_task"
+        }
+      ],
+      "problems": [],
+      "transitions": []
+    },
+    {
+      "actions": [],
+      "case": "06-sensitive-value-and-mask",
+      "coverage": [
+        {
+          "source": "pcscope.startup.tasks",
+          "verdict": {
+            "basis": "完整且成功的快照覆盖了该实例所在范围，且采集项处于启用状态",
+            "verdict": "eligible"
+          }
+        }
+      ],
+      "current_values": [
+        {
+          "field_id": "actions",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\另一个任务#1",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "enabled",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\另一个任务#1",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "name",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\另一个任务#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "另一个任务"
+          }
+        },
+        {
+          "field_id": "path",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\另一个任务#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "\\示例文件夹\\另一个任务"
+          }
+        },
+        {
+          "field_id": "principal",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\另一个任务#1",
+          "observations": 1,
+          "selection": {
+            "reason": "来源 pcscope.startup.tasks 提交了显示遮罩作为值；遮罩是显示转换，任何情况下都不得作为持久值或参与比较",
+            "state": "refused"
+          }
+        },
+        {
+          "field_id": "triggers",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\另一个任务#1",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "actions",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "enabled",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        },
+        {
+          "field_id": "name",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "示例任务"
+          }
+        },
+        {
+          "field_id": "path",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "\\示例文件夹\\示例任务"
+          }
+        },
+        {
+          "field_id": "principal",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "effective_time": "2026-09-12T09:00:00.000Z",
+            "observed_at": "2026-09-12T09:00:00Z",
+            "sources": [
+              "pcscope.startup.tasks"
+            ],
+            "state": "known",
+            "value": "示例账户"
+          }
+        },
+        {
+          "field_id": "triggers",
+          "instance_alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "observations": 1,
+          "selection": {
+            "reason": "没有任何来源给出该字段的值；pcscope.startup.tasks 的报告最具体",
+            "state": "absent",
+            "status": "not_provided"
+          }
+        }
+      ],
+      "gaps": [],
+      "input_count": 2,
+      "instances": [
+        {
+          "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\示例任务#1",
+          "identity_status": "confirmed",
+          "instance_id": 1,
+          "missing_keys": [],
+          "outcome": "confirmed:new",
+          "scope": "install:example-install",
+          "type_id": "startup.scheduled_task"
+        },
+        {
+          "alias": "startup.scheduled_task@example-machine|example-install|install:example-install|install:example-install|\\示例文件夹\\另一个任务#1",
+          "identity_status": "confirmed",
+          "instance_id": 2,
+          "missing_keys": [],
+          "outcome": "confirmed:new",
+          "scope": "install:example-install",
+          "type_id": "startup.scheduled_task"
+        }
+      ],
+      "problems": [],
+      "transitions": []
+    },
+    {
+      "actions": [],
+      "case": "07-unattributable-log-and-gap",
+      "coverage": [
+        {
+          "source": "pcscope.eventlog.application",
+          "verdict": {
+            "basis": "完整且成功的快照覆盖了该实例所在范围，且采集项处于启用状态",
+            "verdict": "eligible"
+          }
+        }
+      ],
+      "current_values": [],
+      "gaps": [
+        {
+          "observed_at": "2026-09-12T09:00:00Z",
+          "reason": "Source unavailable; previous state retained: 访问被拒绝。",
+          "source": "pcscope.eventlog.security"
+        }
+      ],
+      "input_count": 1,
+      "instances": [],
+      "problems": [
+        {
+          "problem": "event id 999999 is not mapped to a target type; the raw record is retained without a candidate",
+          "source": "pcscope.eventlog.application"
+        }
+      ],
+      "transitions": []
+    }
+  ],
+  "catalog_version": "1.1.0",
+  "generated_by": "crates/contracts/examples/contract-cases.rs",
+  "note": "契约用例的实测结果。断言在 fixtures/contract/*/case.json 中手写，本工具不生成断言。",
+  "rule_version": "265d6d30ab69dd750791d34be211f6c439d7ac95881455bd4db4ec63110d2101"
+}

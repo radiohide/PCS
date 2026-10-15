@@ -1,0 +1,374 @@
+﻿{
+  "during_backfill": {
+    "errors": [],
+    "median_ms": 4.819,
+    "p95_ms": 16.539,
+    "reads_before_schema_ready": 7,
+    "reads_during_backfill": 104
+  },
+  "environment": {
+    "arch": "x86_64",
+    "fixtures": "fixtures",
+    "os": "windows",
+    "scenario_files": 7
+  },
+  "generated_by": "crates/storage/examples/refactor-baseline.rs",
+  "invalid_fixtures": {
+    "detail": [
+      {
+        "file": "invalid/duplicate-identity.jsonl",
+        "reason": "protocol: empty or duplicate item identity",
+        "rejected": true
+      },
+      {
+        "file": "invalid/empty-source.jsonl",
+        "reason": "protocol: snapshot identity required",
+        "rejected": true
+      },
+      {
+        "file": "invalid/incomplete-snapshot.jsonl",
+        "reason": "ingest: incomplete snapshot: current state and history unchanged",
+        "rejected": true
+      },
+      {
+        "file": "invalid/unknown-event-field.jsonl",
+        "reason": "protocol: unknown field `unexpected_field`, expected one of `id`, `occurred_at`, `kind`, `object_id`, `data` at line 1 column 312",
+        "rejected": true
+      },
+      {
+        "file": "invalid/wrong-protocol-version.jsonl",
+        "reason": "protocol: unsupported protocol version",
+        "rejected": true
+      },
+      {
+        "file": "invalid/zero-batch-seq.jsonl",
+        "reason": "protocol: batch_seq must be a positive signed 64-bit integer",
+        "rejected": true
+      }
+    ],
+    "rejected": 6,
+    "total": 6
+  },
+  "load": {
+    "counts": {
+      "objects": 35,
+      "records": 64,
+      "snapshots": 32
+    },
+    "files": [
+      {
+        "file": "01-baseline.jsonl",
+        "inserted": 32,
+        "messages": 24,
+        "ms": 118
+      },
+      {
+        "file": "02-changes.jsonl",
+        "inserted": 7,
+        "messages": 4,
+        "ms": 21
+      },
+      {
+        "file": "03-gaps.jsonl",
+        "inserted": 2,
+        "messages": 2,
+        "ms": 6
+      },
+      {
+        "file": "04-events.jsonl",
+        "inserted": 13,
+        "messages": 4,
+        "ms": 29
+      },
+      {
+        "file": "05-usn.jsonl",
+        "inserted": 4,
+        "messages": 3,
+        "ms": 13
+      },
+      {
+        "file": "06-edge-cases.jsonl",
+        "inserted": 5,
+        "messages": 2,
+        "ms": 12
+      },
+      {
+        "file": "07-replay-and-late.jsonl",
+        "inserted": 1,
+        "messages": 2,
+        "ms": 4
+      }
+    ],
+    "total_ms": 208
+  },
+  "queries": [
+    {
+      "cold_median_ms": 11.969,
+      "cold_p95_ms": 15.584,
+      "query": "timeline.default",
+      "result": "rows=64 facets=35",
+      "warm_median_ms": 1.461,
+      "warm_p95_ms": 11.308
+    },
+    {
+      "cold_median_ms": 10.056,
+      "cold_p95_ms": 10.927,
+      "query": "timeline.by_category",
+      "result": "rows=7 facets=35",
+      "warm_median_ms": 0.325,
+      "warm_p95_ms": 11.263
+    },
+    {
+      "cold_median_ms": 9.41,
+      "cold_p95_ms": 10.519,
+      "query": "timeline.by_item",
+      "result": "rows=5 facets=35",
+      "warm_median_ms": 0.293,
+      "warm_p95_ms": 8.965
+    },
+    {
+      "cold_median_ms": 9.492,
+      "cold_p95_ms": 9.759,
+      "query": "timeline.by_source",
+      "result": "rows=8 facets=35",
+      "warm_median_ms": 0.335,
+      "warm_p95_ms": 13.71
+    },
+    {
+      "cold_median_ms": 11.659,
+      "cold_p95_ms": 17.115,
+      "query": "timeline.kind_events",
+      "result": "rows=16 facets=35",
+      "warm_median_ms": 1.095,
+      "warm_p95_ms": 12.674
+    },
+    {
+      "cold_median_ms": 9.098,
+      "cold_p95_ms": 11.436,
+      "query": "timeline.kind_coverage",
+      "result": "rows=2 facets=35",
+      "warm_median_ms": 0.206,
+      "warm_p95_ms": 8.313
+    },
+    {
+      "cold_median_ms": 10.216,
+      "cold_p95_ms": 13.901,
+      "query": "timeline.self_activity_hide",
+      "result": "rows=64 facets=35",
+      "warm_median_ms": 1.671,
+      "warm_p95_ms": 11.564
+    },
+    {
+      "cold_median_ms": 9.865,
+      "cold_p95_ms": 11.028,
+      "query": "timeline.keyword_hit",
+      "result": "rows=6 facets=35",
+      "warm_median_ms": 0.478,
+      "warm_p95_ms": 10.266
+    },
+    {
+      "cold_median_ms": 9.578,
+      "cold_p95_ms": 10.178,
+      "query": "timeline.keyword_absent",
+      "result": "rows=0 facets=35",
+      "warm_median_ms": 0.288,
+      "warm_p95_ms": 12.207
+    },
+    {
+      "cold_median_ms": 17.5,
+      "cold_p95_ms": 27.495,
+      "query": "objects.default",
+      "result": "total=35 rows=35",
+      "warm_median_ms": 5.028,
+      "warm_p95_ms": 17.492
+    },
+    {
+      "cold_median_ms": 15.952,
+      "cold_p95_ms": 16.848,
+      "query": "objects.by_category",
+      "result": "total=6 rows=6",
+      "warm_median_ms": 4.402,
+      "warm_p95_ms": 16.342
+    },
+    {
+      "cold_median_ms": 17.437,
+      "cold_p95_ms": 19.356,
+      "query": "objects.by_source",
+      "result": "total=3 rows=3",
+      "warm_median_ms": 4.03,
+      "warm_p95_ms": 20.938
+    },
+    {
+      "cold_median_ms": 20.078,
+      "cold_p95_ms": 21.104,
+      "query": "objects.by_item",
+      "result": "total=0 rows=0",
+      "warm_median_ms": 3.904,
+      "warm_p95_ms": 20.705
+    },
+    {
+      "cold_median_ms": 21.719,
+      "cold_p95_ms": 22.115,
+      "query": "objects.keyword_hit",
+      "result": "total=3 rows=3",
+      "warm_median_ms": 4.311,
+      "warm_p95_ms": 16.81
+    },
+    {
+      "cold_median_ms": 17.87,
+      "cold_p95_ms": 23.616,
+      "query": "objects.keyword_absent",
+      "result": "total=0 rows=0",
+      "warm_median_ms": 4.468,
+      "warm_p95_ms": 14.385
+    },
+    {
+      "cold_median_ms": 14.255,
+      "cold_p95_ms": 19.682,
+      "query": "objects.detail_first_row",
+      "result": "id=\"C:\\\\示例\\\\用户\\\\.ssh\\\\id_ed25519.pub\"",
+      "warm_median_ms": 4.167,
+      "warm_p95_ms": 14.398
+    },
+    {
+      "cold_median_ms": 10.499,
+      "cold_p95_ms": 14.66,
+      "query": "timeline.detail_task_evidence",
+      "result": "keys=7",
+      "warm_median_ms": 0.503,
+      "warm_p95_ms": 10.86
+    },
+    {
+      "cold_median_ms": 12.782,
+      "cold_p95_ms": 16.786,
+      "query": "snapshots.list",
+      "result": "rows=32",
+      "warm_median_ms": 0.134,
+      "warm_p95_ms": 17.35
+    },
+    {
+      "cold_median_ms": 15.824,
+      "cold_p95_ms": 17.751,
+      "query": "retention.status",
+      "result": "mode=\"unlimited\" live_bytes=507904",
+      "warm_median_ms": 0.079,
+      "warm_p95_ms": 12.899
+    }
+  ],
+  "replay": {
+    "errors": [],
+    "snapshot_replay_inserted": 0,
+    "state_unchanged": true
+  },
+  "reproducibility": {
+    "identical": true,
+    "run_a": {
+      "digest": "04155c713a34a5f586ce513fcde456e571ed52c2dd3001dfb9605cc6f0dd8efe",
+      "rows": {
+        "object_times": 35,
+        "objects": 35,
+        "records": 64
+      }
+    },
+    "run_b": {
+      "digest": "04155c713a34a5f586ce513fcde456e571ed52c2dd3001dfb9605cc6f0dd8efe",
+      "rows": {
+        "object_times": 35,
+        "objects": 35,
+        "records": 64
+      }
+    }
+  },
+  "sizes": {
+    "db_bytes": 507904,
+    "shm_bytes": 32768,
+    "wal_bytes": 0
+  },
+  "stages": [
+    {
+      "file": "01-baseline.jsonl",
+      "inserted": 32,
+      "messages": 24,
+      "no_longer_observed_rows": 0,
+      "objects": 32,
+      "projection_added": 32,
+      "projection_removed": 0,
+      "projection_removed_sample": [],
+      "records": 32
+    },
+    {
+      "file": "02-changes.jsonl",
+      "inserted": 7,
+      "messages": 4,
+      "no_longer_observed_rows": 2,
+      "objects": 34,
+      "projection_added": 4,
+      "projection_removed": 2,
+      "projection_removed_sample": [
+        "pcscope.execution.processes | machine:11111111-2222-3333-4444-555555555555/user:S-1-5-21-1000000000-2000000000-3000000000-1001/schema:1/context:/shard:0 | 4100/2026-09-10T00:00:00Z",
+        "pcscope.execution.processes | machine:11111111-2222-3333-4444-555555555555/user:S-1-5-21-1000000000-2000000000-3000000000-1001/schema:1/context:/shard:0 | 4200/2026-09-10T00:00:00Z"
+      ],
+      "records": 39
+    },
+    {
+      "file": "03-gaps.jsonl",
+      "inserted": 2,
+      "messages": 2,
+      "no_longer_observed_rows": 2,
+      "objects": 34,
+      "projection_added": 0,
+      "projection_removed": 0,
+      "projection_removed_sample": [],
+      "records": 41
+    },
+    {
+      "file": "04-events.jsonl",
+      "inserted": 13,
+      "messages": 4,
+      "no_longer_observed_rows": 2,
+      "objects": 34,
+      "projection_added": 0,
+      "projection_removed": 0,
+      "projection_removed_sample": [],
+      "records": 54
+    },
+    {
+      "file": "05-usn.jsonl",
+      "inserted": 4,
+      "messages": 3,
+      "no_longer_observed_rows": 2,
+      "objects": 36,
+      "projection_added": 2,
+      "projection_removed": 0,
+      "projection_removed_sample": [],
+      "records": 58
+    },
+    {
+      "file": "06-edge-cases.jsonl",
+      "inserted": 5,
+      "messages": 2,
+      "no_longer_observed_rows": 4,
+      "objects": 35,
+      "projection_added": 1,
+      "projection_removed": 2,
+      "projection_removed_sample": [
+        "pcscope.desktop.shortcuts | machine:11111111-2222-3333-4444-555555555555/user:S-1-5-21-1000000000-2000000000-3000000000-1001/schema:1/context:/shard:0 | C:\\示例\\桌面\\示例快捷方式.lnk",
+        "pcscope.identity.accounts | machine:11111111-2222-3333-4444-555555555555/user:S-1-5-21-1000000000-2000000000-3000000000-1001/schema:1/context:/shard:0 | S-1-5-21-1000000000-2000000000-3000000000-1001"
+      ],
+      "records": 63
+    },
+    {
+      "file": "07-replay-and-late.jsonl",
+      "inserted": 1,
+      "messages": 2,
+      "no_longer_observed_rows": 4,
+      "objects": 35,
+      "projection_added": 0,
+      "projection_removed": 0,
+      "projection_removed_sample": [],
+      "records": 64
+    }
+  ],
+  "worst_query_cold_p95_ms": 27.495,
+  "worst_query_warm_p95_ms": 20.938
+}

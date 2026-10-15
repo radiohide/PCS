@@ -1,0 +1,4289 @@
+{
+  "generated_by": "scripts/check-source-inventory.cjs",
+  "note": "Ground truth is derived from collector code; catalogs are compared against it. Regenerate after changing any collector.",
+  "collector_digest": "aef4ed8a4b702f9f873c0c72699f19716d626f381678e790ca2849561b1b6754",
+  "counts": {
+    "execution_units": 13,
+    "execution_unit_domains": 9,
+    "implemented_sources": 133,
+    "implemented_collector_sources": 131,
+    "catalog_rows": 224,
+    "catalog_sources": 130,
+    "collection_definitions": 225,
+    "item_controls": 222,
+    "event_channels": 23,
+    "event_item_rules": 109,
+    "catalog_event_rows": 109
+  },
+  "discrepancies": {
+    "implemented_not_catalogued": [
+      "pcscope.usn.watch-list"
+    ],
+    "catalogued_not_implemented": [],
+    "accepted_differences": [
+      {
+        "source": "pcscope.usn.watch-list",
+        "direction": "implemented_not_catalogued",
+        "reason": "USN 空名单状态快照：文件名单为空时报 files=[] 与 active=false。属于采集状态来源，不是可停用的数据项，因此在来源目录中没有对应行。",
+        "resolution": "补录到 plugin-sources.js 并归入 pcscope.usn.changes 控制组，不新增独立采集开关。",
+        "step": "S14"
+      }
+    ],
+    "event_channel_drift": false,
+    "unknown_execution_units": [],
+    "dangling_controls": 0
+  },
+  "sources": [
+    {
+      "source": "pcscope.apps.browser-policies",
+      "execution_units": [
+        "applications"
+      ],
+      "emitters": [
+        "plugins/platform-native/RegistryState.cs:27",
+        "plugins/powershell-adapter/domains/applications.ps1:1"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "applications",
+      "catalog_name": "Chrome、Edge 与 Firefox 策略",
+      "switch_controls": [
+        {
+          "plugin": "applications",
+          "item": "pcscope.apps.browser-policies",
+          "name": "Chrome、Edge 与 Firefox 策略"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.apps.chromium-extensions",
+      "execution_units": [
+        "applications"
+      ],
+      "emitters": [
+        "plugins/platform-native/ApplicationFiles.cs:86",
+        "plugins/powershell-adapter/domains/applications.ps1:12"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "applications",
+      "catalog_name": "Chrome / Edge 扩展",
+      "switch_controls": [
+        {
+          "plugin": "applications",
+          "item": "pcscope.apps.chromium-extensions",
+          "name": "Chrome / Edge 扩展"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.apps.dotnet-runtimes",
+      "execution_units": [
+        "applications"
+      ],
+      "emitters": [
+        "plugins/platform-native/Sources.cs:180",
+        "plugins/powershell-adapter/domains/applications.ps1:3"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "applications",
+      "catalog_name": ".NET 运行时登记",
+      "switch_controls": [
+        {
+          "plugin": "applications",
+          "item": "pcscope.apps.dotnet-runtimes",
+          "name": ".NET 运行时登记"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.apps.firefox-extensions",
+      "execution_units": [
+        "applications"
+      ],
+      "emitters": [
+        "plugins/platform-native/ApplicationFiles.cs:86",
+        "plugins/powershell-adapter/domains/applications.ps1:45"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "applications",
+      "catalog_name": "Firefox 扩展",
+      "switch_controls": [
+        {
+          "plugin": "applications",
+          "item": "pcscope.apps.firefox-extensions",
+          "name": "Firefox 扩展"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.apps.ide-extensions",
+      "execution_units": [
+        "applications"
+      ],
+      "emitters": [
+        "plugins/platform-native/ApplicationFiles.cs:86",
+        "plugins/powershell-adapter/domains/applications.ps1:2"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "applications",
+      "catalog_name": "VS Code 扩展清单",
+      "switch_controls": [
+        {
+          "plugin": "applications",
+          "item": "pcscope.apps.ide-extensions",
+          "name": "VS Code 扩展清单"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.apps.mihomo",
+      "execution_units": [
+        "scoped"
+      ],
+      "emitters": [
+        "plugins/platform-native/Mihomo.cs:25",
+        "plugins/powershell-adapter/domains/scoped.ps1:71"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "scoped",
+      "catalog_name": "Mihomo 本地运行配置",
+      "switch_controls": [
+        {
+          "plugin": "scoped",
+          "item": "pcscope.apps.mihomo",
+          "name": "Mihomo 本地运行配置"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.apps.npm-global-packages",
+      "execution_units": [
+        "applications"
+      ],
+      "emitters": [
+        "plugins/platform-native/ApplicationFiles.cs:86",
+        "plugins/powershell-adapter/domains/applications.ps1:4"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "applications",
+      "catalog_name": "全局 npm 包清单",
+      "switch_controls": [
+        {
+          "plugin": "applications",
+          "item": "pcscope.apps.npm-global-packages",
+          "name": "全局 npm 包清单"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.apps.onedrive-registration",
+      "execution_units": [
+        "applications"
+      ],
+      "emitters": [
+        "plugins/platform-native/RegistryState.cs:28",
+        "plugins/powershell-adapter/domains/applications.ps1:11"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "applications",
+      "catalog_name": "OneDrive 账户与同步登记",
+      "switch_controls": [
+        {
+          "plugin": "applications",
+          "item": "pcscope.apps.onedrive-registration",
+          "name": "OneDrive 账户与同步登记"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.collector.event-channel-coverage",
+      "execution_units": [
+        "security"
+      ],
+      "emitters": [
+        "plugins/platform-native/Sources.cs:198",
+        "plugins/powershell-adapter/domains/security.ps1:43"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "security",
+      "catalog_name": "事件通道可读性",
+      "switch_controls": [
+        {
+          "plugin": "security",
+          "item": "pcscope.collector.event-channel-coverage",
+          "name": "事件通道可读性"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.collector.scoped-configuration",
+      "execution_units": [
+        "scoped"
+      ],
+      "emitters": [
+        "plugins/platform-native/Sources.cs:208",
+        "plugins/powershell-adapter/domains/scoped.ps1:70"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "scoped",
+      "catalog_name": "指定范围配置",
+      "switch_controls": [
+        {
+          "plugin": "scoped",
+          "item": "pcscope.collector.scoped-configuration",
+          "name": "指定范围配置"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.desktop.clipboard",
+      "execution_units": [
+        "desktop"
+      ],
+      "emitters": [
+        "plugins/platform-native/RegistryState.cs:31",
+        "plugins/powershell-adapter/domains/desktop.ps1:6"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "desktop",
+      "catalog_name": "剪贴板设置",
+      "switch_controls": [
+        {
+          "plugin": "desktop",
+          "item": "pcscope.desktop.clipboard",
+          "name": "剪贴板设置"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.desktop.input",
+      "execution_units": [
+        "desktop"
+      ],
+      "emitters": [
+        "plugins/platform-native/RegistryState.cs:30",
+        "plugins/powershell-adapter/domains/desktop.ps1:5"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "desktop",
+      "catalog_name": "键盘、输入法与过滤驱动配置",
+      "switch_controls": [
+        {
+          "plugin": "desktop",
+          "item": "pcscope.desktop.input",
+          "name": "键盘、输入法与过滤驱动配置"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.desktop.print-jobs",
+      "execution_units": [
+        "desktop"
+      ],
+      "emitters": [
+        "plugins/platform-native/PrintingShares.cs:50",
+        "plugins/powershell-adapter/domains/desktop.ps1:4"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "desktop",
+      "catalog_name": "打印作业队列",
+      "switch_controls": [
+        {
+          "plugin": "desktop",
+          "item": "pcscope.desktop.print-jobs",
+          "name": "打印作业队列"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.desktop.printer-drivers",
+      "execution_units": [
+        "desktop"
+      ],
+      "emitters": [
+        "plugins/platform-native/PrintingShares.cs:48",
+        "plugins/powershell-adapter/domains/desktop.ps1:2"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "desktop",
+      "catalog_name": "打印驱动",
+      "switch_controls": [
+        {
+          "plugin": "desktop",
+          "item": "pcscope.desktop.printer-drivers",
+          "name": "打印驱动"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.desktop.printer-ports",
+      "execution_units": [
+        "desktop"
+      ],
+      "emitters": [
+        "plugins/platform-native/PrintingShares.cs:49",
+        "plugins/powershell-adapter/domains/desktop.ps1:3"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "desktop",
+      "catalog_name": "打印端口",
+      "switch_controls": [
+        {
+          "plugin": "desktop",
+          "item": "pcscope.desktop.printer-ports",
+          "name": "打印端口"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.desktop.printing",
+      "execution_units": [
+        "desktop"
+      ],
+      "emitters": [
+        "plugins/platform-native/PrintingShares.cs:47",
+        "plugins/powershell-adapter/domains/desktop.ps1:1"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "desktop",
+      "catalog_name": "打印机清单",
+      "switch_controls": [
+        {
+          "plugin": "desktop",
+          "item": "pcscope.desktop.printing",
+          "name": "打印机清单"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.desktop.shell-settings",
+      "execution_units": [
+        "desktop"
+      ],
+      "emitters": [
+        "plugins/platform-native/RegistryState.cs:32",
+        "plugins/powershell-adapter/domains/desktop.ps1:7"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "desktop",
+      "catalog_name": "桌面与资源管理器设置",
+      "switch_controls": [
+        {
+          "plugin": "desktop",
+          "item": "pcscope.desktop.shell-settings",
+          "name": "桌面与资源管理器设置"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.desktop.shortcuts",
+      "execution_units": [
+        "desktop"
+      ],
+      "emitters": [
+        "plugins/platform-native/DesktopStartup.cs:56",
+        "plugins/powershell-adapter/domains/desktop.ps1:8"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "desktop",
+      "catalog_name": "桌面与开始菜单快捷方式",
+      "switch_controls": [
+        {
+          "plugin": "desktop",
+          "item": "pcscope.desktop.shortcuts",
+          "name": "桌面与开始菜单快捷方式"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.environment.configuration",
+      "execution_units": [
+        "startup"
+      ],
+      "emitters": [
+        "plugins/platform-native/RegistryState.cs:37",
+        "plugins/powershell-adapter/domains/startup.ps1:8"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "startup",
+      "catalog_name": "环境变量与默认文件关联",
+      "switch_controls": [
+        {
+          "plugin": "startup",
+          "item": "pcscope.environment.configuration",
+          "name": "环境变量与默认文件关联"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.application",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Application)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "应用程序事件 / 软件安装事件",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.application.errors",
+          "name": "应用程序事件 / 应用程序错误"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.application.hangs",
+          "name": "应用程序事件 / 应用程序无响应"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.application.installer",
+          "name": "应用程序事件 / 软件安装事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.application.licensing",
+          "name": "应用程序事件 / 软件保护与授权维护"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.application.nvwmi",
+          "name": "应用程序事件 / NVIDIA WMI 服务状态"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.application.optimization",
+          "name": "应用程序事件 / 存储优化作业"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.application.other",
+          "name": "应用程序事件 / 其他事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.application.status",
+          "name": "应用程序事件 / 来源采集状态"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.application.vss",
+          "name": "应用程序事件 / 卷影复制服务状态"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.application.wer",
+          "name": "应用程序事件 / Windows 错误报告"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.import",
+      "execution_units": [],
+      "emitters": [],
+      "message_forms": [],
+      "scope_form": null,
+      "catalogued": false,
+      "catalog_plugin": null,
+      "catalog_name": null,
+      "switch_controls": [],
+      "switchable": false,
+      "virtual": true,
+      "fields_enumeration": "pending: prefix row groups other sources (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-applocker/exe and dll",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-AppLocker/EXE and DLL)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "AppLocker 程序与 DLL 事件 / 来源采集状态",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-applocker/exe and dll.other",
+          "name": "AppLocker 程序与 DLL 事件 / 运行事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-applocker/exe and dll.status",
+          "name": "AppLocker 程序与 DLL 事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-applocker/msi and script",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-AppLocker/MSI and Script)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "AppLocker 安装包与脚本事件 / 来源采集状态",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-applocker/msi and script.other",
+          "name": "AppLocker 安装包与脚本事件 / 运行事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-applocker/msi and script.status",
+          "name": "AppLocker 安装包与脚本事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-AppXDeploymentServer/Operational)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "AppX 部署事件 / 应用包部署",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational.deployment",
+          "name": "AppX 部署事件 / 应用包部署"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational.other",
+          "name": "AppX 部署事件 / 其他事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational.service",
+          "name": "AppX 部署事件 / 应用包部署服务状态"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational.status",
+          "name": "AppX 部署事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-backup",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-Backup)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "Windows 备份事件 / 来源采集状态",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-backup.other",
+          "name": "Windows 备份事件 / 运行事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-backup.status",
+          "name": "Windows 备份事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-bitlocker/bitlocker management",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-BitLocker/BitLocker Management)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "BitLocker 管理事件 / 来源采集状态",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-bitlocker/bitlocker management.other",
+          "name": "BitLocker 管理事件 / 运行事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-bitlocker/bitlocker management.status",
+          "name": "BitLocker 管理事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-codeintegrity/operational",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-CodeIntegrity/Operational)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "代码完整性事件 / 来源采集状态",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-codeintegrity/operational.other",
+          "name": "代码完整性事件 / 运行事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-codeintegrity/operational.status",
+          "name": "代码完整性事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-driverframeworks-usermode/operational",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-DriverFrameworks-UserMode/Operational)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "用户模式驱动事件 / 来源采集状态",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-driverframeworks-usermode/operational.other",
+          "name": "用户模式驱动事件 / 运行事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-driverframeworks-usermode/operational.status",
+          "name": "用户模式驱动事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-grouppolicy/operational",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-GroupPolicy/Operational)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "组策略处理事件 / 组策略服务生命周期",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-grouppolicy/operational.applicability",
+          "name": "组策略处理事件 / 策略获取、适用与排除"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-grouppolicy/operational.diagnostics",
+          "name": "组策略处理事件 / 处理模式与内部诊断"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-grouppolicy/operational.other",
+          "name": "组策略处理事件 / 其他事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-grouppolicy/operational.processing",
+          "name": "组策略处理事件 / 策略处理开始与完成"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-grouppolicy/operational.service",
+          "name": "组策略处理事件 / 组策略服务生命周期"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-grouppolicy/operational.sessions",
+          "name": "组策略处理事件 / 策略会话与登录通知"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-grouppolicy/operational.status",
+          "name": "组策略处理事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-hyper-v-vmms/admin",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-Hyper-V-VMMS/Admin)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "Hyper-V 管理事件 / 来源采集状态",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-hyper-v-vmms/admin.other",
+          "name": "Hyper-V 管理事件 / 运行事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-hyper-v-vmms/admin.status",
+          "name": "Hyper-V 管理事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-networkprofile/operational",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-NetworkProfile/Operational)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "网络配置文件事件 / 来源采集状态",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-networkprofile/operational.other",
+          "name": "网络配置文件事件 / 运行事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-networkprofile/operational.status",
+          "name": "网络配置文件事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-powershell/operational",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-PowerShell/Operational)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "PowerShell 运行事件 / PowerShell 命令与脚本",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-powershell/operational.commands",
+          "name": "PowerShell 运行事件 / PowerShell 命令与脚本"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-powershell/operational.host",
+          "name": "PowerShell 运行事件 / PowerShell 宿主生命周期"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-powershell/operational.other",
+          "name": "PowerShell 运行事件 / 其他事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-powershell/operational.status",
+          "name": "PowerShell 运行事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-printservice/operational",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-PrintService/Operational)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "打印服务事件 / 来源采集状态",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-printservice/operational.other",
+          "name": "打印服务事件 / 运行事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-printservice/operational.status",
+          "name": "打印服务事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-Sysmon/Operational)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "Sysmon / 进程生命周期",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-sysmon/operational.clipboard",
+          "name": "Sysmon / 剪贴板活动"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-sysmon/operational.dns",
+          "name": "Sysmon / DNS 查询"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-sysmon/operational.files",
+          "name": "Sysmon / 文件操作"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-sysmon/operational.modules",
+          "name": "Sysmon / 模块与驱动加载"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-sysmon/operational.monitor",
+          "name": "Sysmon / Sysmon 服务与配置"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-sysmon/operational.network",
+          "name": "Sysmon / 网络连接"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-sysmon/operational.other",
+          "name": "Sysmon / 其他事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-sysmon/operational.pipes",
+          "name": "Sysmon / 命名管道"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-sysmon/operational.process-access",
+          "name": "Sysmon / 进程访问与异常活动"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-sysmon/operational.processes",
+          "name": "Sysmon / 进程生命周期"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-sysmon/operational.raw-disk",
+          "name": "Sysmon / 原始磁盘读取"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-sysmon/operational.registry",
+          "name": "Sysmon / 注册表操作"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-sysmon/operational.status",
+          "name": "Sysmon / 来源采集状态"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-sysmon/operational.wmi",
+          "name": "Sysmon / WMI 持久订阅"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-TaskScheduler/Operational)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "计划任务执行事件 / 任务触发与执行过程",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-taskscheduler/operational.configuration",
+          "name": "计划任务执行事件 / 任务登记与配置变更"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-taskscheduler/operational.execution",
+          "name": "计划任务执行事件 / 任务触发与执行过程"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-taskscheduler/operational.other",
+          "name": "计划任务执行事件 / 其他事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-taskscheduler/operational.status",
+          "name": "计划任务执行事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-terminalservices-localsessionmanager/operational",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-TerminalServices-LocalSessionManager/Operational)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "终端会话登录、断开与注销 / 来源采集状态",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-terminalservices-localsessionmanager/operational.other",
+          "name": "终端会话登录、断开与注销 / 运行事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-terminalservices-localsessionmanager/operational.status",
+          "name": "终端会话登录、断开与注销 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-terminalservices-remoteconnectionmanager/operational",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-TerminalServices-RemoteConnectionManager/Operational)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "远程连接管理事件 / 来源采集状态",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-terminalservices-remoteconnectionmanager/operational.other",
+          "name": "远程连接管理事件 / 运行事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-terminalservices-remoteconnectionmanager/operational.status",
+          "name": "远程连接管理事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-windows defender/operational",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-Windows Defender/Operational)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "Defender 防护事件 / Defender 健康与情报",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-windows defender/operational.health",
+          "name": "Defender 防护事件 / Defender 健康与情报"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-windows defender/operational.other",
+          "name": "Defender 防护事件 / 其他事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-windows defender/operational.status",
+          "name": "Defender 防护事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-windowsupdateclient/operational",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-WindowsUpdateClient/Operational)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "Windows 更新事件 / 更新检查",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-windowsupdateclient/operational.discovery",
+          "name": "Windows 更新事件 / 更新检查"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-windowsupdateclient/operational.other",
+          "name": "Windows 更新事件 / 其他事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-windowsupdateclient/operational.status",
+          "name": "Windows 更新事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-wlan-autoconfig/operational",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-WLAN-AutoConfig/Operational)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "无线网络连接事件 / 来源采集状态",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-wlan-autoconfig/operational.other",
+          "name": "无线网络连接事件 / 运行事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-wlan-autoconfig/operational.status",
+          "name": "无线网络连接事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-wmi-activity/operational",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Microsoft-Windows-WMI-Activity/Operational)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "WMI 活动事件 / WMI 提供程序与调用",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-wmi-activity/operational.operations",
+          "name": "WMI 活动事件 / WMI 提供程序与调用"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-wmi-activity/operational.other",
+          "name": "WMI 活动事件 / 其他事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.microsoft-windows-wmi-activity/operational.status",
+          "name": "WMI 活动事件 / 来源采集状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.security",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (Security)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "Windows 安全审计 / 登录、登出与会话",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.accounts",
+          "name": "Windows 安全审计 / 账户管理"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.audit-policy",
+          "name": "Windows 安全审计 / 审计策略变更"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.audit-service",
+          "name": "Windows 安全审计 / 审计日志服务"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.credential-access",
+          "name": "Windows 安全审计 / 凭据读取与账户检查"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.crypto-configuration",
+          "name": "Windows 安全审计 / 密码提供程序与上下文配置"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.crypto-integrity",
+          "name": "Windows 安全审计 / 密码组件自检与验证"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.crypto-keys",
+          "name": "Windows 安全审计 / 加密密钥操作"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.data-protection",
+          "name": "Windows 安全审计 / DPAPI 数据保护与主密钥"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.files",
+          "name": "Windows 安全审计 / 文件访问与权限"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.files-audit-settings",
+          "name": "Windows 安全审计 / 对象访问记录规则"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.firewall-lifecycle",
+          "name": "Windows 安全审计 / 防火墙组件生命周期"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.groups",
+          "name": "Windows 安全审计 / 用户组成员变更"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.log-clear",
+          "name": "Windows 安全审计 / 审计日志清除"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.membership-queries",
+          "name": "Windows 安全审计 / 用户组成员查询"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.network",
+          "name": "Windows 安全审计 / 网络连接与共享访问"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.object-access",
+          "name": "Windows 安全审计 / WMI 与目录对象访问审计"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.other",
+          "name": "Windows 安全审计 / 其他事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.privileges",
+          "name": "Windows 安全审计 / 特殊权限分配"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.process-tokens",
+          "name": "Windows 安全审计 / 进程访问令牌分配"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.processes",
+          "name": "Windows 安全审计 / 进程生命周期"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.registry",
+          "name": "Windows 安全审计 / 注册表操作"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.services",
+          "name": "Windows 安全审计 / 服务安装"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.sessions",
+          "name": "Windows 安全审计 / 登录、登出与会话"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.status",
+          "name": "Windows 安全审计 / 来源采集状态"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.system-audit",
+          "name": "Windows 安全审计 / 系统启动、时间与审计配置"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.security.tasks",
+          "name": "Windows 安全审计 / 计划任务变更"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.eventlog.system",
+      "execution_units": [
+        "eventlog"
+      ],
+      "emitters": [
+        "plugins/eventlog/channels.json (System)"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap"
+      ],
+      "scope_form": "channel record id checkpoint",
+      "catalogued": true,
+      "catalog_plugin": "eventlog",
+      "catalog_name": "系统与服务事件 / 服务运行事件",
+      "switch_controls": [
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.system.lifecycle",
+          "name": "系统与服务事件 / 系统启动与关闭"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.system.other",
+          "name": "系统与服务事件 / 其他事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.system.power",
+          "name": "系统与服务事件 / 电源与异常重启"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.system.registry-maintenance",
+          "name": "系统与服务事件 / 系统注册表维护"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.system.services",
+          "name": "系统与服务事件 / 服务运行事件"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.system.status",
+          "name": "系统与服务事件 / 来源采集状态"
+        },
+        {
+          "plugin": "eventlog",
+          "item": "pcscope.eventlog.system.time-source",
+          "name": "系统与服务事件 / 系统时间同步"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.execution.module-file-state",
+      "execution_units": [
+        "scoped"
+      ],
+      "emitters": [
+        "plugins/platform-native/Modules.cs:85"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "scoped",
+      "catalog_name": "已观察模块的磁盘文件变化",
+      "switch_controls": [
+        {
+          "plugin": "scoped",
+          "item": "pcscope.execution.module-file-state",
+          "name": "已观察模块的磁盘文件变化"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.execution.module-scan-status",
+      "execution_units": [
+        "scoped"
+      ],
+      "emitters": [
+        "plugins/platform-native/Sources.cs:201"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "scoped",
+      "catalog_name": "模块发现与读取范围",
+      "switch_controls": [
+        {
+          "plugin": "scoped",
+          "item": "pcscope.execution.module-scan-status",
+          "name": "模块发现与读取范围"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.execution.modules",
+      "execution_units": [
+        "scoped"
+      ],
+      "emitters": [
+        "plugins/platform-native/Modules.cs:71",
+        "plugins/powershell-adapter/domains/scoped.ps1:98"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "scoped",
+      "catalog_name": "指定进程加载模块",
+      "switch_controls": [
+        {
+          "plugin": "scoped",
+          "item": "pcscope.execution.modules",
+          "name": "指定进程加载模块"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.execution.processes",
+      "execution_units": [
+        "system"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:287",
+        "plugins/powershell-adapter/domains/system.ps1:25"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "system",
+      "catalog_name": "进程清单",
+      "switch_controls": [
+        {
+          "plugin": "system",
+          "item": "pcscope.execution.processes",
+          "name": "进程清单"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.execution.resources",
+      "execution_units": [
+        "system"
+      ],
+      "emitters": [
+        "plugins/platform-native/Sources.cs:184",
+        "plugins/powershell-adapter/domains/system.ps1:26"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "system",
+      "catalog_name": "内存与 CPU 采样",
+      "switch_controls": [
+        {
+          "plugin": "system",
+          "item": "pcscope.execution.resources",
+          "name": "内存与 CPU 采样"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.files.directory-security",
+      "execution_units": [
+        "scoped"
+      ],
+      "emitters": [
+        "plugins/platform-native/Sources.cs:210",
+        "plugins/powershell-adapter/domains/scoped.ps1:95"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "scoped",
+      "catalog_name": "指定目录与直接子项",
+      "switch_controls": [
+        {
+          "plugin": "scoped",
+          "item": "pcscope.files.directory-security",
+          "name": "指定目录与直接子项"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.files.metadata-security",
+      "execution_units": [
+        "scoped"
+      ],
+      "emitters": [
+        "plugins/platform-native/Sources.cs:209",
+        "plugins/powershell-adapter/domains/scoped.ps1:94"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "scoped",
+      "catalog_name": "指定文件、ACL 与 ADS",
+      "switch_controls": [
+        {
+          "plugin": "scoped",
+          "item": "pcscope.files.metadata-security",
+          "name": "指定文件、ACL 与 ADS"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.hardware.battery",
+      "execution_units": [
+        "storage"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:301",
+        "plugins/powershell-adapter/domains/storage.ps1:8"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "storage",
+      "catalog_name": "电池状态",
+      "switch_controls": [
+        {
+          "plugin": "storage",
+          "item": "pcscope.hardware.battery",
+          "name": "电池状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.hardware.devices",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:279",
+        "plugins/powershell-adapter/collect-system.ps1:60"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/<scopeSuffix>",
+      "catalogued": true,
+      "catalog_plugin": "pcscope-powershell-adapter.exe",
+      "catalog_name": "即插即用设备",
+      "switch_controls": [
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.hardware.devices",
+          "name": "即插即用设备"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.hardware.disk-health",
+      "execution_units": [
+        "storage"
+      ],
+      "emitters": [
+        "plugins/platform-native/Providers.cs:40",
+        "plugins/powershell-adapter/domains/storage.ps1:7"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "storage",
+      "catalog_name": "物理磁盘健康",
+      "switch_controls": [
+        {
+          "plugin": "storage",
+          "item": "pcscope.hardware.disk-health",
+          "name": "物理磁盘健康"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.hardware.driver-bindings",
+      "execution_units": [
+        "storage"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:299",
+        "plugins/powershell-adapter/domains/storage.ps1:3"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "storage",
+      "catalog_name": "设备驱动绑定",
+      "switch_controls": [
+        {
+          "plugin": "storage",
+          "item": "pcscope.hardware.driver-bindings",
+          "name": "设备驱动绑定"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.hardware.driver-packages",
+      "execution_units": [
+        "storage"
+      ],
+      "emitters": [
+        "plugins/platform-native/Sources.cs:187",
+        "plugins/powershell-adapter/domains/storage.ps1:4"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "storage",
+      "catalog_name": "驱动仓库包",
+      "switch_controls": [
+        {
+          "plugin": "storage",
+          "item": "pcscope.hardware.driver-packages",
+          "name": "驱动仓库包"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.hardware.driver-services",
+      "execution_units": [
+        "storage"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:298",
+        "plugins/powershell-adapter/domains/storage.ps1:5"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "storage",
+      "catalog_name": "驱动服务",
+      "switch_controls": [
+        {
+          "plugin": "storage",
+          "item": "pcscope.hardware.driver-services",
+          "name": "驱动服务"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.hardware.firmware",
+      "execution_units": [
+        "storage"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:300",
+        "plugins/powershell-adapter/domains/storage.ps1:6"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "storage",
+      "catalog_name": "BIOS 固件",
+      "switch_controls": [
+        {
+          "plugin": "storage",
+          "item": "pcscope.hardware.firmware",
+          "name": "BIOS 固件"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.identity.accounts",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "emitters": [
+        "plugins/platform-native/LocalAccounts.cs:107",
+        "plugins/powershell-adapter/collect-system.ps1:34"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/<scopeSuffix>",
+      "catalogued": true,
+      "catalog_plugin": "pcscope-powershell-adapter.exe",
+      "catalog_name": "本机用户账户",
+      "switch_controls": [
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.identity.accounts",
+          "name": "本机用户账户"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.identity.assigned-rights",
+      "execution_units": [
+        "system"
+      ],
+      "emitters": [
+        "plugins/platform-native/Sources.cs:185",
+        "plugins/powershell-adapter/domains/system.ps1:24"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "system",
+      "catalog_name": "账户权限分配",
+      "switch_controls": [
+        {
+          "plugin": "system",
+          "item": "pcscope.identity.assigned-rights",
+          "name": "账户权限分配"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.identity.groups",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "emitters": [
+        "plugins/platform-native/LocalGroups.cs:59",
+        "plugins/powershell-adapter/collect-system.ps1:37"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/<scopeSuffix>",
+      "catalogued": true,
+      "catalog_plugin": "pcscope-powershell-adapter.exe",
+      "catalog_name": "本机用户组与成员",
+      "switch_controls": [
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.identity.groups",
+          "name": "本机用户组与成员"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.identity.interactive-sessions",
+      "execution_units": [
+        "system"
+      ],
+      "emitters": [
+        "plugins/platform-native/Sources.cs:186",
+        "plugins/powershell-adapter/domains/system.ps1:23"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "system",
+      "catalog_name": "交互式终端会话",
+      "switch_controls": [
+        {
+          "plugin": "system",
+          "item": "pcscope.identity.interactive-sessions",
+          "name": "交互式终端会话"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.identity.logon-sessions",
+      "execution_units": [
+        "system"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:292",
+        "plugins/powershell-adapter/domains/system.ps1:22"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "system",
+      "catalog_name": "登录会话",
+      "switch_controls": [
+        {
+          "plugin": "system",
+          "item": "pcscope.identity.logon-sessions",
+          "name": "登录会话"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.identity.machine",
+      "execution_units": [
+        "system"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:293",
+        "plugins/powershell-adapter/domains/system.ps1:1"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "system",
+      "catalog_name": "计算机身份与域信息",
+      "switch_controls": [
+        {
+          "plugin": "system",
+          "item": "pcscope.identity.machine",
+          "name": "计算机身份与域信息"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.identity.profiles",
+      "execution_units": [
+        "system"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:291",
+        "plugins/powershell-adapter/domains/system.ps1:21"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "system",
+      "catalog_name": "用户配置文件",
+      "switch_controls": [
+        {
+          "plugin": "system",
+          "item": "pcscope.identity.profiles",
+          "name": "用户配置文件"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.access",
+      "execution_units": [
+        "network"
+      ],
+      "emitters": [
+        "plugins/platform-native/RemoteAccess.cs:42",
+        "plugins/powershell-adapter/domains/network.ps1:22"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "network",
+      "catalog_name": "代理、远程桌面与 VPN",
+      "switch_controls": [
+        {
+          "plugin": "network",
+          "item": "pcscope.network.access",
+          "name": "代理、远程桌面与 VPN"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.adapters",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:277",
+        "plugins/powershell-adapter/collect-system.ps1:49"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/<scopeSuffix>",
+      "catalogued": true,
+      "catalog_plugin": "pcscope-powershell-adapter.exe",
+      "catalog_name": "网络适配器",
+      "switch_controls": [
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.network.adapters",
+          "name": "网络适配器"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.addresses",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:278",
+        "plugins/powershell-adapter/collect-system.ps1:52"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/<scopeSuffix>",
+      "catalogued": true,
+      "catalog_plugin": "pcscope-powershell-adapter.exe",
+      "catalog_name": "IP 地址",
+      "switch_controls": [
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.network.addresses",
+          "name": "IP 地址"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.dns-cache",
+      "execution_units": [
+        "network"
+      ],
+      "emitters": [
+        "plugins/platform-native/NetworkConfiguration.cs:71",
+        "plugins/powershell-adapter/domains/network.ps1:25"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "network",
+      "catalog_name": "DNS 缓存",
+      "switch_controls": [
+        {
+          "plugin": "network",
+          "item": "pcscope.network.dns-cache",
+          "name": "DNS 缓存"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.dns-configuration",
+      "execution_units": [
+        "network"
+      ],
+      "emitters": [
+        "plugins/platform-native/NetworkConfiguration.cs:70",
+        "plugins/powershell-adapter/domains/network.ps1:2"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "network",
+      "catalog_name": "DNS 配置",
+      "switch_controls": [
+        {
+          "plugin": "network",
+          "item": "pcscope.network.dns-configuration",
+          "name": "DNS 配置"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.firewall-profiles",
+      "execution_units": [
+        "network"
+      ],
+      "emitters": [
+        "plugins/platform-native/NetworkConfiguration.cs:67",
+        "plugins/powershell-adapter/domains/network.ps1:6"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "network",
+      "catalog_name": "防火墙配置文件",
+      "switch_controls": [
+        {
+          "plugin": "network",
+          "item": "pcscope.network.firewall-profiles",
+          "name": "防火墙配置文件"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.firewall-rules",
+      "execution_units": [
+        "network"
+      ],
+      "emitters": [
+        "plugins/platform-native/NetworkConfiguration.cs:68",
+        "plugins/powershell-adapter/domains/network.ps1:7"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "network",
+      "catalog_name": "防火墙规则及过滤条件",
+      "switch_controls": [
+        {
+          "plugin": "network",
+          "item": "pcscope.network.firewall-rules",
+          "name": "防火墙规则及过滤条件"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.hosts",
+      "execution_units": [
+        "network"
+      ],
+      "emitters": [
+        "plugins/platform-native/NetworkConfiguration.cs:72",
+        "plugins/powershell-adapter/domains/network.ps1:26"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "network",
+      "catalog_name": "hosts 静态映射",
+      "switch_controls": [
+        {
+          "plugin": "network",
+          "item": "pcscope.network.hosts",
+          "name": "hosts 静态映射"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.ipsec",
+      "execution_units": [
+        "network"
+      ],
+      "emitters": [
+        "plugins/platform-native/NetworkConfiguration.cs:69",
+        "plugins/powershell-adapter/domains/network.ps1:21"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "network",
+      "catalog_name": "IPsec 规则",
+      "switch_controls": [
+        {
+          "plugin": "network",
+          "item": "pcscope.network.ipsec",
+          "name": "IPsec 规则"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.mapped-drives",
+      "execution_units": [
+        "network"
+      ],
+      "emitters": [
+        "plugins/platform-native/Providers.cs:49",
+        "plugins/powershell-adapter/domains/network.ps1:24"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "network",
+      "catalog_name": "SMB 驱动器映射",
+      "switch_controls": [
+        {
+          "plugin": "network",
+          "item": "pcscope.network.mapped-drives",
+          "name": "SMB 驱动器映射"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.profiles",
+      "execution_units": [
+        "network"
+      ],
+      "emitters": [
+        "plugins/platform-native/Providers.cs:48",
+        "plugins/powershell-adapter/domains/network.ps1:3"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "network",
+      "catalog_name": "网络连接配置文件",
+      "switch_controls": [
+        {
+          "plugin": "network",
+          "item": "pcscope.network.profiles",
+          "name": "网络连接配置文件"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.routes",
+      "execution_units": [
+        "network"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:192",
+        "plugins/powershell-adapter/domains/network.ps1:1"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "network",
+      "catalog_name": "路由表",
+      "switch_controls": [
+        {
+          "plugin": "network",
+          "item": "pcscope.network.routes",
+          "name": "路由表"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.share-sessions",
+      "execution_units": [
+        "network"
+      ],
+      "emitters": [
+        "plugins/platform-native/Providers.cs:50",
+        "plugins/powershell-adapter/domains/network.ps1:27"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "network",
+      "catalog_name": "SMB 客户端会话",
+      "switch_controls": [
+        {
+          "plugin": "network",
+          "item": "pcscope.network.share-sessions",
+          "name": "SMB 客户端会话"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.shares",
+      "execution_units": [
+        "network"
+      ],
+      "emitters": [
+        "plugins/platform-native/PrintingShares.cs:52",
+        "plugins/powershell-adapter/domains/network.ps1:23"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "network",
+      "catalog_name": "SMB 共享与访问授权",
+      "switch_controls": [
+        {
+          "plugin": "network",
+          "item": "pcscope.network.shares",
+          "name": "SMB 共享与访问授权"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.tcp",
+      "execution_units": [
+        "network"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:193",
+        "plugins/powershell-adapter/domains/network.ps1:4"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "network",
+      "catalog_name": "TCP 连接与监听",
+      "switch_controls": [
+        {
+          "plugin": "network",
+          "item": "pcscope.network.tcp",
+          "name": "TCP 连接与监听"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.udp",
+      "execution_units": [
+        "network"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:194",
+        "plugins/powershell-adapter/domains/network.ps1:5"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "network",
+      "catalog_name": "UDP 端点",
+      "switch_controls": [
+        {
+          "plugin": "network",
+          "item": "pcscope.network.udp",
+          "name": "UDP 端点"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.network.winrm-configuration",
+      "execution_units": [
+        "network"
+      ],
+      "emitters": [
+        "plugins/platform-native/RegistryState.cs:38",
+        "plugins/powershell-adapter/domains/network.ps1:28"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "network",
+      "catalog_name": "WinRM 配置",
+      "switch_controls": [
+        {
+          "plugin": "network",
+          "item": "pcscope.network.winrm-configuration",
+          "name": "WinRM 配置"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.policy.configuration",
+      "execution_units": [
+        "security"
+      ],
+      "emitters": [
+        "plugins/platform-native/RegistryState.cs:39",
+        "plugins/powershell-adapter/domains/security.ps1:27"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "security",
+      "catalog_name": "UAC、资源管理器与软件限制策略",
+      "switch_controls": [
+        {
+          "plugin": "security",
+          "item": "pcscope.policy.configuration",
+          "name": "UAC、资源管理器与软件限制策略"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.power.configuration",
+      "execution_units": [
+        "storage"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:297",
+        "plugins/powershell-adapter/domains/storage.ps1:9"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "storage",
+      "catalog_name": "电源计划与休眠配置",
+      "switch_controls": [
+        {
+          "plugin": "storage",
+          "item": "pcscope.power.configuration",
+          "name": "电源计划与休眠配置"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.security.certificates.currentuser",
+      "execution_units": [
+        "security"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:313",
+        "plugins/powershell-adapter/domains/security.ps1:20"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "security",
+      "catalog_name": "当前用户证书",
+      "switch_controls": [
+        {
+          "plugin": "security",
+          "item": "pcscope.security.certificates.currentuser",
+          "name": "当前用户证书"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.security.certificates.localmachine",
+      "execution_units": [
+        "security"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:314",
+        "plugins/powershell-adapter/domains/security.ps1:20"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "security",
+      "catalog_name": "计算机证书",
+      "switch_controls": [
+        {
+          "plugin": "security",
+          "item": "pcscope.security.certificates.localmachine",
+          "name": "计算机证书"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.security.detections",
+      "execution_units": [
+        "security"
+      ],
+      "emitters": [
+        "plugins/platform-native/Providers.cs:45",
+        "plugins/powershell-adapter/domains/security.ps1:4"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "security",
+      "catalog_name": "Defender 检测记录",
+      "switch_controls": [
+        {
+          "plugin": "security",
+          "item": "pcscope.security.detections",
+          "name": "Defender 检测记录"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.security.deviceguard",
+      "execution_units": [
+        "security"
+      ],
+      "emitters": [
+        "plugins/platform-native/Providers.cs:46",
+        "plugins/powershell-adapter/domains/security.ps1:5"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "security",
+      "catalog_name": "Device Guard / VBS",
+      "switch_controls": [
+        {
+          "plugin": "security",
+          "item": "pcscope.security.deviceguard",
+          "name": "Device Guard / VBS"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.security.encryption",
+      "execution_units": [
+        "security"
+      ],
+      "emitters": [
+        "plugins/platform-native/Encryption.cs:56",
+        "plugins/powershell-adapter/domains/security.ps1:26"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "security",
+      "catalog_name": "BitLocker 卷状态",
+      "switch_controls": [
+        {
+          "plugin": "security",
+          "item": "pcscope.security.encryption",
+          "name": "BitLocker 卷状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.security.key-metadata",
+      "execution_units": [
+        "security"
+      ],
+      "emitters": [
+        "plugins/platform-native/Sources.cs:193",
+        "plugins/powershell-adapter/domains/security.ps1:16",
+        "plugins/powershell-adapter/domains/security.ps1:8"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "security",
+      "catalog_name": "CNG 密钥元数据",
+      "switch_controls": [
+        {
+          "plugin": "security",
+          "item": "pcscope.security.key-metadata",
+          "name": "CNG 密钥元数据"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.security.products",
+      "execution_units": [
+        "security"
+      ],
+      "emitters": [
+        "plugins/platform-native/Providers.cs:44",
+        "plugins/powershell-adapter/domains/security.ps1:3"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "security",
+      "catalog_name": "安全产品登记",
+      "switch_controls": [
+        {
+          "plugin": "security",
+          "item": "pcscope.security.products",
+          "name": "安全产品登记"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.security.protection",
+      "execution_units": [
+        "security"
+      ],
+      "emitters": [
+        "plugins/platform-native/Providers.cs:42",
+        "plugins/powershell-adapter/domains/security.ps1:1"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "security",
+      "catalog_name": "Defender 防护状态",
+      "switch_controls": [
+        {
+          "plugin": "security",
+          "item": "pcscope.security.protection",
+          "name": "Defender 防护状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.security.protection-policy",
+      "execution_units": [
+        "security"
+      ],
+      "emitters": [
+        "plugins/platform-native/Providers.cs:43",
+        "plugins/powershell-adapter/domains/security.ps1:2"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "security",
+      "catalog_name": "Defender 策略与排除项",
+      "switch_controls": [
+        {
+          "plugin": "security",
+          "item": "pcscope.security.protection-policy",
+          "name": "Defender 策略与排除项"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.security.secureboot",
+      "execution_units": [
+        "security"
+      ],
+      "emitters": [
+        "plugins/platform-native/ServicingFirmware.cs:85",
+        "plugins/powershell-adapter/domains/security.ps1:7"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "security",
+      "catalog_name": "安全启动状态",
+      "switch_controls": [
+        {
+          "plugin": "security",
+          "item": "pcscope.security.secureboot",
+          "name": "安全启动状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.security.ssh-public-keys",
+      "execution_units": [
+        "security"
+      ],
+      "emitters": [
+        "plugins/platform-native/ApplicationFiles.cs:87",
+        "plugins/powershell-adapter/domains/security.ps1:28"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "security",
+      "catalog_name": "SSH 公钥指纹",
+      "switch_controls": [
+        {
+          "plugin": "security",
+          "item": "pcscope.security.ssh-public-keys",
+          "name": "SSH 公钥指纹"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.security.tpm",
+      "execution_units": [
+        "security"
+      ],
+      "emitters": [
+        "plugins/platform-native/TpmMetadata.cs:94",
+        "plugins/powershell-adapter/domains/security.ps1:6"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "security",
+      "catalog_name": "TPM 状态",
+      "switch_controls": [
+        {
+          "plugin": "security",
+          "item": "pcscope.security.tpm",
+          "name": "TPM 状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.shell.registrations",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "emitters": [
+        "plugins/platform-native/ShellRegistrations.cs:65",
+        "plugins/powershell-adapter/collect-system.ps1:151",
+        "plugins/powershell-adapter/collect-system.ps1:154"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/<scopeSuffix>",
+      "catalogued": true,
+      "catalog_plugin": "pcscope-powershell-adapter.exe",
+      "catalog_name": "第三方预览处理程序",
+      "switch_controls": [
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.shell.registrations.approval",
+          "name": "Shell 扩展允许与阻止列表"
+        },
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.shell.registrations.com",
+          "name": "COM 实现与扩展文件元数据"
+        },
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.shell.registrations.file-association",
+          "name": "右键菜单、文件关联与默认图标"
+        },
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.shell.registrations.namespace",
+          "name": "桌面与此电脑命名空间"
+        },
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.shell.registrations.overlay",
+          "name": "图标覆盖处理程序"
+        },
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.shell.registrations.preview",
+          "name": "第三方预览处理程序"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.software",
+      "execution_units": [
+        "pcscope-software.exe"
+      ],
+      "emitters": [
+        "plugins/software/src/main.rs:125",
+        "plugins/software/src/main.rs:135"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": null,
+      "catalogued": true,
+      "catalog_plugin": "pcscope-software.exe",
+      "catalog_name": "本机软件安装登记",
+      "switch_controls": [
+        {
+          "plugin": "pcscope-software.exe",
+          "item": "pcscope.software",
+          "name": "本机软件安装登记"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.software.appx-user",
+      "execution_units": [
+        "system"
+      ],
+      "emitters": [
+        "plugins/platform-native/AppPackages.cs:27",
+        "plugins/powershell-adapter/domains/system.ps1:17"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "system",
+      "catalog_name": "当前用户 AppX 包",
+      "switch_controls": [
+        {
+          "plugin": "system",
+          "item": "pcscope.software.appx-user",
+          "name": "当前用户 AppX 包"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.software.optional-features",
+      "execution_units": [
+        "system"
+      ],
+      "emitters": [
+        "plugins/platform-native/ServicingFirmware.cs:84",
+        "plugins/powershell-adapter/domains/system.ps1:19"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "system",
+      "catalog_name": "Windows 可选组件",
+      "switch_controls": [
+        {
+          "plugin": "system",
+          "item": "pcscope.software.optional-features",
+          "name": "Windows 可选组件"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.software.portable",
+      "execution_units": [
+        "scoped"
+      ],
+      "emitters": [
+        "plugins/platform-native/ApplicationFiles.cs:113",
+        "plugins/powershell-adapter/domains/scoped.ps1:96"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "scoped",
+      "catalog_name": "便携软件文件登记",
+      "switch_controls": [
+        {
+          "plugin": "scoped",
+          "item": "pcscope.software.portable",
+          "name": "便携软件文件登记"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.software.provisioned",
+      "execution_units": [
+        "system"
+      ],
+      "emitters": [
+        "plugins/platform-native/ProvisionedPackages.cs:75",
+        "plugins/powershell-adapter/domains/system.ps1:18"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "system",
+      "catalog_name": "预配 AppX 包",
+      "switch_controls": [
+        {
+          "plugin": "system",
+          "item": "pcscope.software.provisioned",
+          "name": "预配 AppX 包"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.software.user-inventory",
+      "execution_units": [
+        "system"
+      ],
+      "emitters": [
+        "plugins/platform-native/RegistryState.cs:43",
+        "plugins/powershell-adapter/domains/system.ps1:20"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "system",
+      "catalog_name": "当前用户软件登记",
+      "switch_controls": [
+        {
+          "plugin": "system",
+          "item": "pcscope.software.user-inventory",
+          "name": "当前用户软件登记"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.startup.advanced-extensions",
+      "execution_units": [
+        "startup"
+      ],
+      "emitters": [
+        "plugins/platform-native/RegistryState.cs:36",
+        "plugins/powershell-adapter/domains/startup.ps1:3"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "startup",
+      "catalog_name": "IFEO、AppInit 与 AppCert 入口",
+      "switch_controls": [
+        {
+          "plugin": "startup",
+          "item": "pcscope.startup.advanced-extensions",
+          "name": "IFEO、AppInit 与 AppCert 入口"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.startup.logon",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:271",
+        "plugins/powershell-adapter/collect-system.ps1:159"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/<scopeSuffix>",
+      "catalogued": true,
+      "catalog_plugin": "pcscope-powershell-adapter.exe",
+      "catalog_name": "登录启动登记",
+      "switch_controls": [
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.startup.logon.folders",
+          "name": "用户与公共启动文件夹"
+        },
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.startup.logon.registry",
+          "name": "登录启动登记"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.startup.service-configuration",
+      "execution_units": [
+        "startup"
+      ],
+      "emitters": [
+        "plugins/platform-native/RegistryState.cs:34",
+        "plugins/powershell-adapter/domains/startup.ps1:1"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "startup",
+      "catalog_name": "服务详细配置",
+      "switch_controls": [
+        {
+          "plugin": "startup",
+          "item": "pcscope.startup.service-configuration",
+          "name": "服务详细配置"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.startup.services",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:274",
+        "plugins/powershell-adapter/collect-system.ps1:40"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/<scopeSuffix>",
+      "catalogued": true,
+      "catalog_plugin": "pcscope-powershell-adapter.exe",
+      "catalog_name": "服务运行状态",
+      "switch_controls": [
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.startup.services",
+          "name": "服务运行状态"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.startup.session-hooks",
+      "execution_units": [
+        "startup"
+      ],
+      "emitters": [
+        "plugins/platform-native/RegistryState.cs:35",
+        "plugins/powershell-adapter/domains/startup.ps1:2"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "startup",
+      "catalog_name": "会话与登录初始化入口",
+      "switch_controls": [
+        {
+          "plugin": "startup",
+          "item": "pcscope.startup.session-hooks",
+          "name": "会话与登录初始化入口"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.startup.task-details",
+      "execution_units": [
+        "startup"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:237",
+        "plugins/powershell-adapter/domains/startup.ps1:7"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "startup",
+      "catalog_name": "计划任务执行记录与条件",
+      "switch_controls": [
+        {
+          "plugin": "startup",
+          "item": "pcscope.startup.task-details",
+          "name": "计划任务执行记录与条件"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.startup.tasks",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:275",
+        "plugins/powershell-adapter/collect-system.ps1:43"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/<scopeSuffix>",
+      "catalogued": true,
+      "catalog_plugin": "pcscope-powershell-adapter.exe",
+      "catalog_name": "计划任务基础配置",
+      "switch_controls": [
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.startup.tasks",
+          "name": "计划任务基础配置"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.startup.wmi-bindings",
+      "execution_units": [
+        "startup"
+      ],
+      "emitters": [
+        "plugins/platform-native/Providers.cs:54",
+        "plugins/powershell-adapter/domains/startup.ps1:6"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "startup",
+      "catalog_name": "WMI 过滤器与消费者绑定",
+      "switch_controls": [
+        {
+          "plugin": "startup",
+          "item": "pcscope.startup.wmi-bindings",
+          "name": "WMI 过滤器与消费者绑定"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.startup.wmi-consumers",
+      "execution_units": [
+        "startup"
+      ],
+      "emitters": [
+        "plugins/platform-native/Providers.cs:53",
+        "plugins/powershell-adapter/domains/startup.ps1:5"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "startup",
+      "catalog_name": "WMI 永久订阅消费者",
+      "switch_controls": [
+        {
+          "plugin": "startup",
+          "item": "pcscope.startup.wmi-consumers",
+          "name": "WMI 永久订阅消费者"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.startup.wmi-filters",
+      "execution_units": [
+        "startup"
+      ],
+      "emitters": [
+        "plugins/platform-native/Providers.cs:52",
+        "plugins/powershell-adapter/domains/startup.ps1:4"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "startup",
+      "catalog_name": "WMI 永久订阅过滤器",
+      "switch_controls": [
+        {
+          "plugin": "startup",
+          "item": "pcscope.startup.wmi-filters",
+          "name": "WMI 永久订阅过滤器"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.storage.disks",
+      "execution_units": [
+        "storage"
+      ],
+      "emitters": [
+        "plugins/platform-native/Providers.cs:38",
+        "plugins/powershell-adapter/domains/storage.ps1:1"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "storage",
+      "catalog_name": "磁盘清单",
+      "switch_controls": [
+        {
+          "plugin": "storage",
+          "item": "pcscope.storage.disks",
+          "name": "磁盘清单"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.storage.partitions",
+      "execution_units": [
+        "storage"
+      ],
+      "emitters": [
+        "plugins/platform-native/Providers.cs:39",
+        "plugins/powershell-adapter/domains/storage.ps1:2"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "storage",
+      "catalog_name": "分区清单",
+      "switch_controls": [
+        {
+          "plugin": "storage",
+          "item": "pcscope.storage.partitions",
+          "name": "分区清单"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.storage.volumes",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:276",
+        "plugins/powershell-adapter/collect-system.ps1:46"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/<scopeSuffix>",
+      "catalogued": true,
+      "catalog_plugin": "pcscope-powershell-adapter.exe",
+      "catalog_name": "卷与文件系统",
+      "switch_controls": [
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.storage.volumes",
+          "name": "卷与文件系统"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.system.boot-state",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:273",
+        "plugins/powershell-adapter/collect-system.ps1:30"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/<scopeSuffix>",
+      "catalogued": true,
+      "catalog_plugin": "pcscope-powershell-adapter.exe",
+      "catalog_name": "最近启动时间与时区",
+      "switch_controls": [
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.system.boot-state",
+          "name": "最近启动时间与时区"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.system.clock",
+      "execution_units": [
+        "system"
+      ],
+      "emitters": [
+        "plugins/platform-native/RegistryState.cs:41",
+        "plugins/powershell-adapter/domains/system.ps1:2"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "system",
+      "catalog_name": "时间同步配置与时区",
+      "switch_controls": [
+        {
+          "plugin": "system",
+          "item": "pcscope.system.clock",
+          "name": "时间同步配置与时区"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.system.hotfixes",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:280",
+        "plugins/powershell-adapter/collect-system.ps1:63"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/<scopeSuffix>",
+      "catalogued": true,
+      "catalog_plugin": "pcscope-powershell-adapter.exe",
+      "catalog_name": "QFE 更新登记",
+      "switch_controls": [
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.system.hotfixes",
+          "name": "QFE 更新登记"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.system.reboot-pending",
+      "execution_units": [
+        "system"
+      ],
+      "emitters": [
+        "plugins/platform-native/RegistryState.cs:42",
+        "plugins/powershell-adapter/domains/system.ps1:15"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "system",
+      "catalog_name": "待重启标志",
+      "switch_controls": [
+        {
+          "plugin": "system",
+          "item": "pcscope.system.reboot-pending",
+          "name": "待重启标志"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.system.restore-points",
+      "execution_units": [
+        "system"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:294",
+        "plugins/powershell-adapter/domains/system.ps1:16"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "system",
+      "catalog_name": "系统还原点",
+      "switch_controls": [
+        {
+          "plugin": "system",
+          "item": "pcscope.system.restore-points",
+          "name": "系统还原点"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.system.update-history",
+      "execution_units": [
+        "system"
+      ],
+      "emitters": [
+        "plugins/platform-native/Sources.cs:183",
+        "plugins/powershell-adapter/domains/system.ps1:11"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "system",
+      "catalog_name": "Windows Update 历史",
+      "switch_controls": [
+        {
+          "plugin": "system",
+          "item": "pcscope.system.update-history",
+          "name": "Windows Update 历史"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.system.version",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:272",
+        "plugins/powershell-adapter/collect-system.ps1:26"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/<scopeSuffix>",
+      "catalogued": true,
+      "catalog_plugin": "pcscope-powershell-adapter.exe",
+      "catalog_name": "操作系统版本与安装时间",
+      "switch_controls": [
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.system.version",
+          "name": "操作系统版本与安装时间"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.usn.{drive}",
+      "execution_units": [
+        "usn"
+      ],
+      "emitters": [
+        "plugins/usn/src/main.rs:161",
+        "plugins/usn/src/main.rs:165",
+        "plugins/usn/src/main.rs:277"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": null,
+      "catalogued": true,
+      "catalog_plugin": "usn",
+      "catalog_name": "USN 日志身份与断点",
+      "switch_controls": [],
+      "switchable": false,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.usn.changes",
+      "execution_units": [],
+      "emitters": [],
+      "message_forms": [],
+      "scope_form": null,
+      "catalogued": false,
+      "catalog_plugin": null,
+      "catalog_name": null,
+      "switch_controls": [],
+      "switchable": false,
+      "virtual": true,
+      "fields_enumeration": "pending: prefix row groups other sources (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.usn.volumes",
+      "execution_units": [
+        "usn"
+      ],
+      "emitters": [
+        "plugins/usn/src/main.rs:323"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": null,
+      "catalogued": true,
+      "catalog_plugin": "usn",
+      "catalog_name": "固定 NTFS 卷发现",
+      "switch_controls": [
+        {
+          "plugin": "usn",
+          "item": "pcscope.usn.volumes",
+          "name": "固定 NTFS 卷发现"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.usn.watch-list",
+      "execution_units": [
+        "usn"
+      ],
+      "emitters": [
+        "plugins/usn/src/main.rs:234",
+        "plugins/usn/src/main.rs:236"
+      ],
+      "message_forms": [
+        "event_batch",
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": null,
+      "catalogued": false,
+      "catalog_plugin": null,
+      "catalog_name": null,
+      "switch_controls": [],
+      "switchable": false,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.virtualization.docker",
+      "execution_units": [
+        "scoped"
+      ],
+      "emitters": [
+        "plugins/platform-native/Docker.cs:90",
+        "plugins/powershell-adapter/domains/scoped.ps1:79"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "scoped",
+      "catalog_name": "Docker 容器、镜像、卷与网络",
+      "switch_controls": [
+        {
+          "plugin": "scoped",
+          "item": "pcscope.virtualization.docker",
+          "name": "Docker 容器、镜像、卷与网络"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-checkpoints",
+      "execution_units": [
+        "virtualization"
+      ],
+      "emitters": [
+        "plugins/powershell-adapter/domains/virtualization.ps1:4"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "virtualization",
+      "catalog_name": "虚拟机检查点",
+      "switch_controls": [
+        {
+          "plugin": "virtualization",
+          "item": "pcscope.virtualization.hyperv-checkpoints",
+          "name": "虚拟机检查点"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "powershell_compatibility",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-disks",
+      "execution_units": [
+        "virtualization"
+      ],
+      "emitters": [
+        "plugins/powershell-adapter/domains/virtualization.ps1:3"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "virtualization",
+      "catalog_name": "虚拟机磁盘连接",
+      "switch_controls": [
+        {
+          "plugin": "virtualization",
+          "item": "pcscope.virtualization.hyperv-disks",
+          "name": "虚拟机磁盘连接"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "powershell_compatibility",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-switches",
+      "execution_units": [
+        "virtualization"
+      ],
+      "emitters": [
+        "plugins/powershell-adapter/domains/virtualization.ps1:2"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "virtualization",
+      "catalog_name": "Hyper-V 虚拟交换机",
+      "switch_controls": [
+        {
+          "plugin": "virtualization",
+          "item": "pcscope.virtualization.hyperv-switches",
+          "name": "Hyper-V 虚拟交换机"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "powershell_compatibility",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-vms",
+      "execution_units": [
+        "virtualization"
+      ],
+      "emitters": [
+        "plugins/powershell-adapter/domains/virtualization.ps1:1"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "virtualization",
+      "catalog_name": "Hyper-V 虚拟机",
+      "switch_controls": [
+        {
+          "plugin": "virtualization",
+          "item": "pcscope.virtualization.hyperv-vms",
+          "name": "Hyper-V 虚拟机"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "powershell_compatibility",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.virtualization.platform",
+      "execution_units": [
+        "pcscope-powershell-adapter.exe"
+      ],
+      "emitters": [
+        "plugins/platform-native/State.cs:281",
+        "plugins/powershell-adapter/collect-system.ps1:55"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/<scopeSuffix>",
+      "catalogued": true,
+      "catalog_plugin": "pcscope-powershell-adapter.exe",
+      "catalog_name": "虚拟化能力与平台",
+      "switch_controls": [
+        {
+          "plugin": "pcscope-powershell-adapter.exe",
+          "item": "pcscope.virtualization.platform",
+          "name": "虚拟化能力与平台"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    },
+    {
+      "source": "pcscope.virtualization.wsl-registration",
+      "execution_units": [
+        "virtualization"
+      ],
+      "emitters": [
+        "plugins/platform-native/RegistryState.cs:44",
+        "plugins/powershell-adapter/domains/virtualization.ps1:5"
+      ],
+      "message_forms": [
+        "gap",
+        "snapshot"
+      ],
+      "scope_form": "machine:<MachineGuid>/user:<SID>/schema:1/context:<scopeContext>/shard:<0-f>",
+      "catalogued": true,
+      "catalog_plugin": "virtualization",
+      "catalog_name": "WSL 发行版登记",
+      "switch_controls": [
+        {
+          "plugin": "virtualization",
+          "item": "pcscope.virtualization.wsl-registration",
+          "name": "WSL 发行版登记"
+        }
+      ],
+      "switchable": true,
+      "collection_backend": "native",
+      "virtual": false,
+      "fields_enumeration": "pending: read real output at the emitter above (plan S09-S20)"
+    }
+  ]
+}

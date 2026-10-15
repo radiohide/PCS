@@ -1,0 +1,1 @@
+{"protocol_version":2,"request_id":"fixture-snapshot-0043","type":"snapshot","source":"pcscope.software","scope":"machine:11111111-2222-3333-4444-555555555555/user:S-1-5-21-1000000000-2000000000-3000000000-1001/schema:1/context:/shard:0","run_id":"fixture-run-1","observed_at":"2026-09-10T00:00:00Z","complete":true,"items":[{"id":"x","data":{}}]}

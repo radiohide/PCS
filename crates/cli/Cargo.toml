@@ -1,0 +1,11 @@
+[package]
+name = "pcscope-cli"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+pcscope-contracts.workspace = true
+pcscope-storage.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+pcscope-supervisor = { path = "../supervisor" }

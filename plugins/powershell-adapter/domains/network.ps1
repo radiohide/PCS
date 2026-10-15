@@ -1,0 +1,28 @@
+Emit 'network.routes' {Get-NetRoute | ForEach-Object {Item "$($_.InterfaceIndex)/$($_.DestinationPrefix)/$($_.NextHop)/$($_.PolicyStore)" (Fields $_ @('InterfaceIndex','InterfaceAlias','DestinationPrefix','NextHop','RouteMetric','Protocol','AddressFamily','PolicyStore','Publish'))}}
+Emit 'network.dns-configuration' {Get-DnsClientServerAddress | ForEach-Object {Item "$($_.InterfaceIndex)/$($_.AddressFamily)" (Fields $_ @('InterfaceIndex','InterfaceAlias','AddressFamily','ServerAddresses'))};Registry LocalMachine 'SYSTEM\CurrentControlSet\Services\Tcpip\Parameters' @('Domain','SearchList','NV Domain','UseDomainNameDevolution')}
+Emit 'network.profiles' {Get-NetConnectionProfile | ForEach-Object {Item "$($_.InterfaceIndex)/$($_.Name)" (Fields $_ @('InterfaceIndex','Name','NetworkCategory','IPv4Connectivity','IPv6Connectivity'))}}
+Emit 'network.tcp' {Get-NetTCPConnection | ForEach-Object {Item "$($_.LocalAddress)/$($_.LocalPort)/$($_.RemoteAddress)/$($_.RemotePort)/$($_.OwningProcess)/$(Iso $_.CreationTime)" (Fields $_ @('LocalAddress','LocalPort','RemoteAddress','RemotePort','State','OwningProcess','CreationTime','AppliedSetting'))}}
+Emit 'network.udp' {Get-NetUDPEndpoint | ForEach-Object {Item "$($_.LocalAddress)/$($_.LocalPort)/$($_.OwningProcess)/$(Iso $_.CreationTime)" (Fields $_ @('LocalAddress','LocalPort','OwningProcess','CreationTime'))}}
+Emit 'network.firewall-profiles' {Get-NetFirewallProfile | ForEach-Object {Item $_.Name (Fields $_ @('Name','Enabled','DefaultInboundAction','DefaultOutboundAction','AllowInboundRules','AllowLocalFirewallRules','AllowLocalIPsecRules','LogAllowed','LogBlocked','LogFileName','LogMaxSizeKilobytes'))}}
+Emit 'network.firewall-rules' {
+    $filters=@{}
+    foreach($type in @('Port','Address','Application','Service','Interface','InterfaceType','Security')){
+        $command='Get-NetFirewall'+$type+'Filter';$map=@{}
+        & $command -PolicyStore ActiveStore | ForEach-Object {$map[$_.InstanceID]=$_}
+        $filters[$type]=$map
+    }
+    Get-NetFirewallRule -PolicyStore ActiveStore | ForEach-Object {
+        $rule=$_;$data=Fields $rule @('Name','DisplayName','Enabled','Direction','Action','Profile','EdgeTraversalPolicy','PolicyStoreSource','PolicyStoreSourceType','PrimaryStatus','Status')
+        $data.filters=[ordered]@{}
+        foreach($type in $filters.Keys){$filter=$filters[$type][$rule.InstanceID];if($null -eq $filter){throw "Missing $type filter for rule $($rule.Name)"};$fields=switch($type){Port {@('Protocol','LocalPort','RemotePort','IcmpType','DynamicTarget')};Address {@('LocalAddress','RemoteAddress')};Application {@('Program','Package')};Service {@('Service')};Interface {@('InterfaceAlias')};InterfaceType {@('InterfaceType')};Security {@('Authentication','Encryption','OverrideBlockRules','LocalUser','RemoteUser','RemoteMachine')}};$data.filters[$type]=Fields $filter $fields}
+        Item $rule.Name $data
+    }
+}
+Emit 'network.ipsec' {Get-NetIPsecRule -PolicyStore ActiveStore | ForEach-Object {Item $_.Name (Fields $_ @('Name','DisplayName','Enabled','Profile','Mode','InboundSecurity','OutboundSecurity','PolicyStoreSource','PolicyStoreSourceType'))}}
+Emit 'network.access' {Registry CurrentUser 'Software\Microsoft\Windows\CurrentVersion\Internet Settings' @('ProxyEnable','ProxyOverride','AutoDetect') 0;Registry LocalMachine 'SYSTEM\CurrentControlSet\Control\Terminal Server' @('fDenyTSConnections') 0;Get-VpnConnection | ForEach-Object {Item $_.Name (Fields $_ @('Name','TunnelType','ConnectionStatus','SplitTunneling','AllUserConnection','AuthenticationMethod'))}}
+Emit 'network.shares' {Get-SmbShare | ForEach-Object {$share=$_;Item $share.Name @{name=$share.Name;path=$share.Path;description=$share.Description;encrypt_data=$share.EncryptData;special=$share.Special;access=@(Get-SmbShareAccess -Name $share.Name|ForEach-Object {Fields $_ @('AccountName','AccessControlType','AccessRight')})}}}
+Emit 'network.mapped-drives' {Get-SmbMapping | ForEach-Object {Item "$($_.LocalPath)/$($_.RemotePath)" (Fields $_ @('LocalPath','RemotePath','Status'))}}
+Emit 'network.dns-cache' {Get-DnsClientCache|ForEach-Object {Item "$($_.Entry)/$($_.Name)/$($_.Type)/$($_.Data)" @{entry=$_.Entry;name=$_.Name;type=[string]$_.Type;data=$_.Data;status=[string]$_.Status;section=[string]$_.Section;basis='cache snapshot; not query time or complete DNS traffic'}}}
+Emit 'network.hosts' {$path=Join-Path $env:SystemRoot 'System32/drivers/etc/hosts';$file=Get-Item -LiteralPath $path;if($file.Length -gt 1048576 -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)){throw 'Hosts file outside safe read policy'};$lineNumber=0;foreach($line in @(Get-Content -LiteralPath $path)){$lineNumber++;$text=($line -split '#',2)[0].Trim();if(-not $text){continue};$parts=@($text -split '\s+');$address=$null;if($parts.Count -lt 2 -or -not [Net.IPAddress]::TryParse($parts[0],[ref]$address)){throw "Hosts syntax not recognized at line $lineNumber"};foreach($name in $parts[1..($parts.Count-1)]){Item "$lineNumber/$name" @{address=$address.ToString();name=$name;line=$lineNumber;basis='hosts configuration; comments excluded'}}}}
+Emit 'network.share-sessions' {Get-SmbSession | ForEach-Object {Item ([string]$_.SessionId) (Fields $_ @('SessionId','ClientComputerName','ClientUserName','NumOpens','Dialect','Encrypted','ContinuouslyAvailable'))}}
+Emit 'network.winrm-configuration' {Registry LocalMachine 'SOFTWARE\Microsoft\Windows\CurrentVersion\WSMAN' @('AllowUnencrypted','Basic','Kerberos','Negotiate','Certificate','CredSSP','IPv4Filter','IPv6Filter','EnableCompatibilityHttpListener','EnableCompatibilityHttpsListener','Port','Transport','Enabled') 3}

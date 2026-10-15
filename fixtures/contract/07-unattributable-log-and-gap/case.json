@@ -1,0 +1,41 @@
+{
+  "name": "07-unattributable-log-and-gap",
+  "description": "无法归属到对象的日志，以及一条纯粹的采集缺口记录。",
+  "machine_id": "example-machine",
+  "installation_id": "example-install",
+  "collected_scope": "install:example-install",
+  "configured": true,
+  "complete": true,
+  "assertions": [
+    {
+      "what": "无法归属的日志不产生任何对象",
+      "path": "instances.length",
+      "equals": 0,
+      "basis": "不得为了填充而编造对象实例"
+    },
+    {
+      "what": "无法归属的日志不产生任何动作",
+      "path": "actions.length",
+      "equals": 0,
+      "basis": "目标对象无法确定时不制造动作；原始记录仍保留可检索"
+    },
+    {
+      "what": "不产生候选的原因被明确记录",
+      "path": "problems",
+      "contains": { "problem": "event id 999999 is not mapped to a target type; the raw record is retained without a candidate" },
+      "basis": "处理结论必须可见，不能静默丢弃"
+    },
+    {
+      "what": "采集缺口作为采集状态记录，不是对象",
+      "path": "gaps.length",
+      "equals": 1,
+      "basis": "缺口描述的是采集能力，不是被监控对象的状态"
+    },
+    {
+      "what": "缺口记录带来源与原因",
+      "path": "gaps",
+      "contains": { "source": "pcscope.eventlog.security", "reason": "Source unavailable; previous state retained: 访问被拒绝。" },
+      "basis": "缺口必须能定位到具体来源及其读取问题"
+    }
+  ]
+}

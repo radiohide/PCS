@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict'),{rows}=require('../apps/desktop/ui/snapshot-diff.js');
+let r=rows({name:'a',version:'1',missing:null,nested:{enabled:false},values:['a','b']},{name:'a',version:'2',extra:0,nested:{enabled:true},values:['a']});
+const at=path=>r.find(x=>x.path.map(p=>p.key).join('.')===path);
+assert.equal(at('name').status,'same');assert.equal(at('version').status,'changed');assert.equal(at('missing').status,'removed');assert.equal(at('extra').status,'added');assert.equal(at('nested.enabled').status,'changed');assert.equal(at('values.1').status,'removed');
+assert.equal(rows({a:null},{a:''})[0].status,'changed');assert.equal(rows({a:[]},{a:{}})[0].status,'changed');
+assert.equal(rows(null,{name:'baseline'})[0].status,'added');assert.equal(rows({name:'gone'},null)[0].status,'removed');
+assert.equal(rows({password:'******'},{password:'******'})[0].status,'unknown');
+assert.equal(rows({value:{sensitive:true,ciphertext:'a'}},{value:{sensitive:true,ciphertext:'b'}})[0].status,'unknown');
+assert.equal(rows({a:1,b:2},{b:2,a:1}).filter(r=>r.status!=='same').length,0);
+assert.equal(rows({x:false},{x:0})[0].status,'changed');
+console.log('PASS: nested aligned fields, arrays by index, additions/removals, null versus absent, baseline/disappearance, masks and object key order.');

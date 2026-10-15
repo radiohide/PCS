@@ -1,0 +1,7271 @@
+{
+  "version": "1.2.6",
+  "generated_by": "scripts/check-model-catalog.cjs",
+  "note": "中立对象模型目录。ID 唯一来源是 model/vocabulary.cjs、model/types.cjs、model/source-map.cjs；本文件为展开结果，请勿手工编辑。",
+  "categories": [
+    {
+      "id": "account",
+      "name": "账户与身份",
+      "impact": "谁能登录、使用什么身份、获得什么权限"
+    },
+    {
+      "id": "software",
+      "name": "软件与组件",
+      "impact": "系统具备哪些功能和执行能力"
+    },
+    {
+      "id": "runtime",
+      "name": "运行实例",
+      "impact": "当前执行什么、使用什么身份、加载什么代码"
+    },
+    {
+      "id": "startup",
+      "name": "自动执行入口",
+      "impact": "什么条件下自动执行什么代码"
+    },
+    {
+      "id": "shell",
+      "name": "系统扩展与关联",
+      "impact": "用户或程序操作系统功能时调用什么组件"
+    },
+    {
+      "id": "file",
+      "name": "文件与访问控制",
+      "impact": "实际代码与数据是什么，谁能读取、修改或执行"
+    },
+    {
+      "id": "policy",
+      "name": "策略与配置",
+      "impact": "系统和应用按照什么规则运行"
+    },
+    {
+      "id": "network",
+      "name": "网络与远程访问",
+      "impact": "流量走哪里、哪些连接被允许、资源如何对外开放"
+    },
+    {
+      "id": "security",
+      "name": "安全与信任",
+      "impact": "信任谁、保护什么、哪些检查被豁免"
+    },
+    {
+      "id": "hardware",
+      "name": "硬件与驱动",
+      "impact": "设备如何工作，哪些组件参与系统底层执行"
+    },
+    {
+      "id": "virtualization",
+      "name": "虚拟环境",
+      "impact": "电脑中有哪些隔离环境及其资源配置"
+    },
+    {
+      "id": "desktop",
+      "name": "桌面与应用集成",
+      "impact": "用户操作如何被处理，应用如何接入桌面"
+    }
+  ],
+  "vocabulary": {
+    "field_kinds": [
+      {
+        "id": "identity",
+        "name": "身份字段",
+        "description": "参与实例识别，不参与普通属性变更历史"
+      },
+      {
+        "id": "configuration",
+        "name": "配置属性",
+        "description": "对象的结构与设定；变化即配置变化"
+      },
+      {
+        "id": "state",
+        "name": "运行状态",
+        "description": "某次观察时的运行情况；变化不等于被人为修改"
+      },
+      {
+        "id": "evidence",
+        "name": "证据引用",
+        "description": "指向支撑本对象的证据材料"
+      }
+    ],
+    "value_status": [
+      {
+        "id": "known",
+        "name": "已知",
+        "description": "来源提供了值"
+      },
+      {
+        "id": "not_provided",
+        "name": "来源未提供",
+        "description": "来源结构中没有该字段"
+      },
+      {
+        "id": "unreadable",
+        "name": "无法读取",
+        "description": "字段存在但读取被拒绝或失败"
+      },
+      {
+        "id": "not_applicable",
+        "name": "不适用",
+        "description": "该字段对本实例没有意义"
+      },
+      {
+        "id": "conflicting",
+        "name": "存在冲突",
+        "description": "多个来源给出无法消解的不同值"
+      },
+      {
+        "id": "masked",
+        "name": "已遮罩",
+        "description": "敏感值按显示设置遮罩"
+      },
+      {
+        "id": "evidence_pruned",
+        "name": "证据已清理",
+        "description": "值曾采集到，但支撑证据已按保留策略清理"
+      }
+    ],
+    "derivations": [
+      {
+        "id": "source_provided",
+        "name": "来源直接提供",
+        "description": "来源原样给出，未做解释"
+      },
+      {
+        "id": "decoded",
+        "name": "解码解释",
+        "description": "由稳定编码、结构或字段含义解释得到"
+      },
+      {
+        "id": "snapshot_comparison",
+        "name": "快照比较",
+        "description": "由两次完整快照的差异得到"
+      },
+      {
+        "id": "rule",
+        "name": "其他明确规则",
+        "description": "由类型规定的其他确定性规则得到"
+      }
+    ],
+    "time_precisions": [
+      {
+        "id": "exact",
+        "name": "精确发生时间",
+        "description": "来源记录了动作发生的确切时间"
+      },
+      {
+        "id": "interval",
+        "name": "变化区间",
+        "description": "只能确定变化发生在两次观察之间"
+      },
+      {
+        "id": "observation_only",
+        "name": "仅观察时间",
+        "description": "只有采集观察时间，无法定位发生时间"
+      }
+    ],
+    "result_semantics": [
+      {
+        "id": "succeeded",
+        "name": "成功",
+        "description": "来源明确报告成功"
+      },
+      {
+        "id": "failed",
+        "name": "失败",
+        "description": "来源明确报告失败"
+      },
+      {
+        "id": "started",
+        "name": "已开始",
+        "description": "来源记录了开始，未记录结果"
+      },
+      {
+        "id": "ended",
+        "name": "已结束",
+        "description": "来源记录了结束，未报告结果"
+      },
+      {
+        "id": "blocked",
+        "name": "被阻止",
+        "description": "来源明确报告被阻止或拒绝"
+      },
+      {
+        "id": "observed",
+        "name": "已观察",
+        "description": "只有观察事实，无结果判定"
+      },
+      {
+        "id": "unknown",
+        "name": "未知",
+        "description": "来源未提供结果"
+      }
+    ]
+  },
+  "identity_strategies": [
+    {
+      "id": "registry_registration",
+      "name": "注册表登记",
+      "keys": [
+        "scope",
+        "hive",
+        "view",
+        "registry_path"
+      ],
+      "description": "用户或机器作用域 + 注册表视图（32/64 位） + 注册表路径",
+      "normalization": "注册表路径保留来源原大小写；比较时仅对 Windows 已定义的注册表路径规则做规范化，不做统一小写。",
+      "reuse": "同一路径重新出现不保证是删除前的同一登记；需要生命周期证据才升级为确认删除或重建。",
+      "insufficient": "缺少注册表视图或作用域时标记身份能力受限，不与另一视图的登记合并。"
+    },
+    {
+      "id": "native_identifier",
+      "name": "来源原生标识",
+      "keys": [
+        "scope",
+        "native_id"
+      ],
+      "description": "安装/用户作用域 + 来源系统提供的原生标识符",
+      "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+      "reuse": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+      "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+    },
+    {
+      "id": "account_sid",
+      "name": "账户 SID",
+      "keys": [
+        "scope",
+        "sid"
+      ],
+      "description": "安装作用域 + 账户 SID",
+      "normalization": "SID 按 Windows 规则不区分大小写。",
+      "reuse": "同名不同 SID 不合并；账户改名不产生新实例；SID 复用需要来源的代际证据。",
+      "insufficient": "无法取得 SID 时标记暂定身份，不得以名称为键合并。"
+    },
+    {
+      "id": "named_entity",
+      "name": "命名实体",
+      "keys": [
+        "scope",
+        "name"
+      ],
+      "description": "安装/用户作用域 + 来源系统中的稳定名称",
+      "normalization": "名称保留来源原大小写；仅对 Windows 定义为不区分大小写的命名空间按该规则比较。",
+      "reuse": "名称被删除后由不同对象复用时不自动判为同一实例。",
+      "insufficient": "名称重复或来源未提供唯一名称时标记歧义，保留多个候选。"
+    },
+    {
+      "id": "native_path",
+      "name": "原生路径",
+      "keys": [
+        "scope",
+        "path"
+      ],
+      "description": "安装作用域 + 类型规定的完整路径",
+      "normalization": "路径分隔符与大小写按类型规则规范化；不对所有字符串统一处理。",
+      "reuse": "路径相同不保证删除重建前后是同一实例；需要生命周期证据。",
+      "insufficient": "缺少完整路径时标记身份能力受限。"
+    },
+    {
+      "id": "process_instance",
+      "name": "进程实例",
+      "keys": [
+        "scope",
+        "pid",
+        "created_at"
+      ],
+      "description": "启动作用域 + 进程 ID + 进程创建时间",
+      "normalization": "进程 ID 为数值，创建时间按来源时间格式保留。",
+      "reuse": "进程 ID 复用（相同 ID、不同创建时间）必须是两个实例，不得拼接生命周期。",
+      "insufficient": "缺少创建时间时标记暂定身份，不得仅凭进程 ID 归一。"
+    },
+    {
+      "id": "file_identity",
+      "name": "文件身份",
+      "keys": [
+        "volume_identity",
+        "file_id"
+      ],
+      "description": "卷身份 + 文件 ID",
+      "normalization": "文件 ID 按十六进制规范化；路径保留原大小写，仅用于展示。",
+      "reuse": "文件 ID 被复用时不自动判为同一文件；需要路径与时间证据。",
+      "insufficient": "只有路径时标记身份能力受限：路径可变，改名与移动都会改变它。"
+    },
+    {
+      "id": "composite_native",
+      "name": "类型自定义组合",
+      "keys": [
+        "@composite"
+      ],
+      "description": "由类型显式列出的多个来源字段组合",
+      "normalization": "各组成部分按各自字段规则规范化。",
+      "reuse": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+      "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+    },
+    {
+      "id": "value_key",
+      "name": "配置值键",
+      "keys": [
+        "scope",
+        "path",
+        "value_name"
+      ],
+      "description": "作用域 + 配置位置 + 值名",
+      "normalization": "值名保留来源原大小写；仅对 Windows 定义的注册表值名规则做规范化。",
+      "reuse": "值被删除后重新设置不保证是同一登记。",
+      "insufficient": "作用域缺失时不得合并不同用户或不同视图下的同名值。"
+    },
+    {
+      "id": "endpoint_tuple",
+      "name": "连接端点元组",
+      "keys": [
+        "protocol",
+        "local_address",
+        "local_port",
+        "remote_address",
+        "remote_port",
+        "owning_pid",
+        "created_at"
+      ],
+      "description": "协议 + 本地地址端口 + 远端地址端口 + 所属进程 + 创建时间",
+      "normalization": "地址按 IP 文本规范化；端口为数值；创建时间按来源时间格式保留。",
+      "reuse": "端点被来源复用时不自动判为同一条连接；时间相同使用稳定的第二排序键，不把不同连接拼接。",
+      "insufficient": "缺少创建时间或所属进程时标记暂定身份；远端地址缺失（监听端点）时按本地元组识别并标注范围受限。"
+    }
+  ],
+  "actions": [
+    {
+      "id": "software.update_history",
+      "name": "Windows 更新操作记录",
+      "nature": "source_recorded",
+      "result": "unknown",
+      "target_type": "software.system_update"
+    },
+    {
+      "id": "identity.logon",
+      "name": "登录",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "runtime.logon_session"
+    },
+    {
+      "id": "identity.logon_failed",
+      "name": "登录失败",
+      "nature": "source_recorded",
+      "result": "failed",
+      "target_type": "account.user"
+    },
+    {
+      "id": "identity.logoff",
+      "name": "注销",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "runtime.logon_session"
+    },
+    {
+      "id": "identity.logoff_requested",
+      "name": "请求注销",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "runtime.logon_session"
+    },
+    {
+      "id": "identity.session_locked",
+      "name": "会话锁定",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "runtime.terminal_session"
+    },
+    {
+      "id": "identity.session_unlocked",
+      "name": "会话解锁",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "runtime.terminal_session"
+    },
+    {
+      "id": "identity.session_reconnected",
+      "name": "会话重连",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "runtime.terminal_session"
+    },
+    {
+      "id": "identity.session_disconnected",
+      "name": "会话断开",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "runtime.terminal_session"
+    },
+    {
+      "id": "identity.account_created",
+      "name": "账户建立",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "account.user"
+    },
+    {
+      "id": "identity.account_enabled",
+      "name": "账户启用",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "account.user"
+    },
+    {
+      "id": "identity.account_disabled",
+      "name": "账户禁用",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "account.user"
+    },
+    {
+      "id": "identity.account_deleted",
+      "name": "账户删除",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "account.user"
+    },
+    {
+      "id": "identity.account_changed",
+      "name": "账户变更",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "account.user"
+    },
+    {
+      "id": "identity.account_locked",
+      "name": "账户锁定",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "account.user"
+    },
+    {
+      "id": "identity.account_unlocked",
+      "name": "账户解锁",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "account.user"
+    },
+    {
+      "id": "identity.account_renamed",
+      "name": "账户重命名",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "account.user"
+    },
+    {
+      "id": "identity.group_member_added",
+      "name": "组成员加入",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "account.group_membership"
+    },
+    {
+      "id": "identity.group_member_removed",
+      "name": "组成员移除",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "account.group_membership"
+    },
+    {
+      "id": "identity.special_privileges",
+      "name": "登录获得特殊权限",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "runtime.logon_session"
+    },
+    {
+      "id": "execution.process_started",
+      "name": "进程启动",
+      "nature": "source_recorded",
+      "result": "started",
+      "target_type": "runtime.process"
+    },
+    {
+      "id": "execution.process_stopped",
+      "name": "进程退出",
+      "nature": "source_recorded",
+      "result": "ended",
+      "target_type": "runtime.process"
+    },
+    {
+      "id": "execution.remote_thread",
+      "name": "远程线程创建",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "runtime.process"
+    },
+    {
+      "id": "execution.process_access",
+      "name": "进程访问",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "runtime.process"
+    },
+    {
+      "id": "execution.process_tampering",
+      "name": "进程映像异常",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "runtime.process"
+    },
+    {
+      "id": "execution.driver_loaded",
+      "name": "驱动加载",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "hardware.driver_service"
+    },
+    {
+      "id": "execution.module_loaded",
+      "name": "模块加载",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "runtime.module_instance"
+    },
+    {
+      "id": "execution.wmi_filter",
+      "name": "WMI 筛选器活动",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "startup.wmi_filter"
+    },
+    {
+      "id": "execution.wmi_consumer",
+      "name": "WMI 消费者活动",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "startup.wmi_consumer"
+    },
+    {
+      "id": "execution.wmi_binding",
+      "name": "WMI 绑定活动",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "startup.wmi_binding"
+    },
+    {
+      "id": "execution.pipe_created",
+      "name": "管道创建",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "runtime.process"
+    },
+    {
+      "id": "execution.pipe_connected",
+      "name": "管道连接",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "runtime.process"
+    },
+    {
+      "id": "execution.clipboard_changed",
+      "name": "剪贴板变化",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "desktop.shell_configuration"
+    },
+    {
+      "id": "files.access_audit",
+      "name": "对象访问审计",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "file.watched_file"
+    },
+    {
+      "id": "files.permissions_audit",
+      "name": "对象权限变更审计",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "file.acl_entry"
+    },
+    {
+      "id": "files.creation_time_changed",
+      "name": "文件创建时间修改",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "file.watched_file"
+    },
+    {
+      "id": "files.created",
+      "name": "文件创建或覆盖",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "file.watched_file"
+    },
+    {
+      "id": "files.stream_created",
+      "name": "文件流创建",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "file.alternate_data_stream"
+    },
+    {
+      "id": "files.deleted_archived",
+      "name": "文件删除并归档",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "file.watched_file"
+    },
+    {
+      "id": "files.deleted",
+      "name": "文件删除",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "file.watched_file"
+    },
+    {
+      "id": "files.executable_blocked",
+      "name": "可执行文件创建被阻止",
+      "nature": "source_recorded",
+      "result": "blocked",
+      "target_type": "file.watched_file"
+    },
+    {
+      "id": "files.shredding_blocked",
+      "name": "文件粉碎被阻止",
+      "nature": "source_recorded",
+      "result": "blocked",
+      "target_type": "file.watched_file"
+    },
+    {
+      "id": "files.executable_detected",
+      "name": "可执行文件创建",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "file.watched_file"
+    },
+    {
+      "id": "files.usn_changed",
+      "name": "文件变更记录",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "file.watched_file"
+    },
+    {
+      "id": "registry.value_operation",
+      "name": "注册表值操作",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "policy.os_configuration"
+    },
+    {
+      "id": "registry.object_changed",
+      "name": "注册表对象创建或删除",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "policy.os_configuration"
+    },
+    {
+      "id": "registry.value_set",
+      "name": "注册表值设置",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "policy.os_configuration"
+    },
+    {
+      "id": "registry.renamed",
+      "name": "注册表重命名",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "policy.os_configuration"
+    },
+    {
+      "id": "policy.audit_changed",
+      "name": "审计策略变更",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "policy.os_configuration"
+    },
+    {
+      "id": "startup.service_installed",
+      "name": "服务安装",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "startup.service"
+    },
+    {
+      "id": "startup.service_state_changed",
+      "name": "服务状态变化",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "startup.service"
+    },
+    {
+      "id": "startup.task_created",
+      "name": "任务创建",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "startup.scheduled_task"
+    },
+    {
+      "id": "startup.task_deleted",
+      "name": "任务删除",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "startup.scheduled_task"
+    },
+    {
+      "id": "startup.task_updated",
+      "name": "任务更新",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "startup.scheduled_task"
+    },
+    {
+      "id": "startup.task_started",
+      "name": "任务开始执行",
+      "nature": "source_recorded",
+      "result": "started",
+      "target_type": "startup.scheduled_task"
+    },
+    {
+      "id": "startup.task_ended",
+      "name": "任务执行结束",
+      "nature": "source_recorded",
+      "result": "ended",
+      "target_type": "startup.scheduled_task"
+    },
+    {
+      "id": "network.share_access",
+      "name": "共享访问",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "network.smb_share"
+    },
+    {
+      "id": "network.connection_allowed",
+      "name": "连接允许",
+      "nature": "source_recorded",
+      "result": "succeeded",
+      "target_type": "network.endpoint"
+    },
+    {
+      "id": "network.connection_blocked",
+      "name": "连接阻止",
+      "nature": "source_recorded",
+      "result": "blocked",
+      "target_type": "network.endpoint"
+    },
+    {
+      "id": "network.connection_observed",
+      "name": "网络连接",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "network.endpoint"
+    },
+    {
+      "id": "network.dns_query",
+      "name": "DNS 查询",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "network.dns_cache_entry"
+    },
+    {
+      "id": "storage.raw_read",
+      "name": "原始磁盘读取",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "hardware.disk"
+    },
+    {
+      "id": "sysmon.service_changed",
+      "name": "Sysmon 服务状态变化",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "policy.os_configuration"
+    },
+    {
+      "id": "sysmon.config_changed",
+      "name": "Sysmon 配置变化",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "policy.os_configuration"
+    },
+    {
+      "id": "sysmon.error",
+      "name": "Sysmon 内部错误",
+      "nature": "source_recorded",
+      "result": "failed",
+      "target_type": "policy.os_configuration"
+    },
+    {
+      "id": "observed.configuration_changed",
+      "name": "观察到配置变化",
+      "nature": "snapshot_change",
+      "result": "observed",
+      "target_type": null
+    },
+    {
+      "id": "observed.state_changed",
+      "name": "观察到状态变化",
+      "nature": "state_change",
+      "result": "observed",
+      "target_type": null
+    },
+    {
+      "id": "observed.first_seen",
+      "name": "首次观察到",
+      "nature": "snapshot_change",
+      "result": "observed",
+      "target_type": null
+    },
+    {
+      "id": "observed.no_longer_observed",
+      "name": "本次未发现",
+      "nature": "snapshot_change",
+      "result": "observed",
+      "target_type": null
+    },
+    {
+      "id": "coverage.gap",
+      "name": "采集缺口",
+      "nature": "internal",
+      "result": "failed",
+      "target_type": null
+    },
+    {
+      "id": "coverage.recovered",
+      "name": "采集恢复",
+      "nature": "internal",
+      "result": "succeeded",
+      "target_type": null
+    },
+    {
+      "id": "coverage.usn_gap",
+      "name": "USN 断点缺口",
+      "nature": "internal",
+      "result": "failed",
+      "target_type": null
+    },
+    {
+      "id": "coverage.security_log_cleared",
+      "name": "安全审计日志清除",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "policy.os_configuration"
+    },
+    {
+      "id": "coverage.unclean_shutdown",
+      "name": "非正常退出",
+      "nature": "internal",
+      "result": "observed",
+      "target_type": null
+    },
+    {
+      "id": "collector.item_configured",
+      "name": "采集项配置变化",
+      "nature": "internal",
+      "result": "succeeded",
+      "target_type": null
+    }
+  ],
+  "types": [
+    {
+      "id": "account.user",
+      "category": "account",
+      "name": "用户",
+      "identity": {
+        "strategy": "account_sid",
+        "keys": [
+          "scope",
+          "sid"
+        ],
+        "scope": "安装作用域 + 账户 SID",
+        "normalization": "SID 按 Windows 规则不区分大小写。",
+        "reuse_rule": "同名不同 SID 不合并；账户改名不产生新实例；SID 复用需要来源的代际证据。",
+        "insufficient": "无法取得 SID 时标记暂定身份，不得以名称为键合并。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "enabled",
+          "value": {
+            "label": "是否启用",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "last_logon",
+          "value": {
+            "label": "最近登录",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "password_required",
+          "value": {
+            "label": "是否要求密码",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": [
+        "identity.account_created",
+        "identity.account_deleted",
+        "identity.account_changed",
+        "identity.account_renamed",
+        "identity.account_enabled",
+        "identity.account_disabled",
+        "identity.account_locked",
+        "identity.account_unlocked",
+        "identity.logon_failed"
+      ]
+    },
+    {
+      "id": "account.group",
+      "category": "account",
+      "name": "用户组",
+      "identity": {
+        "strategy": "account_sid",
+        "keys": [
+          "scope",
+          "sid"
+        ],
+        "scope": "安装作用域 + 账户 SID",
+        "normalization": "SID 按 Windows 规则不区分大小写。",
+        "reuse_rule": "同名不同 SID 不合并；账户改名不产生新实例；SID 复用需要来源的代际证据。",
+        "insufficient": "无法取得 SID 时标记暂定身份，不得以名称为键合并。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "members",
+          "value": {
+            "label": "成员",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "account.group_membership",
+      "category": "account",
+      "name": "组成员登记",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "group_sid",
+          "member_sid"
+        ],
+        "scope": "安装作用域与组 SID",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "group",
+          "value": {
+            "label": "组",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "member",
+          "value": {
+            "label": "成员",
+            "kind": "identity"
+          }
+        }
+      ],
+      "actions": [
+        "identity.group_member_added",
+        "identity.group_member_removed"
+      ]
+    },
+    {
+      "id": "account.user_profile",
+      "category": "account",
+      "name": "用户配置文件",
+      "identity": {
+        "strategy": "account_sid",
+        "keys": [
+          "scope",
+          "sid"
+        ],
+        "scope": "安装作用域 + 账户 SID",
+        "normalization": "SID 按 Windows 规则不区分大小写。",
+        "reuse_rule": "同名不同 SID 不合并；账户改名不产生新实例；SID 复用需要来源的代际证据。",
+        "insufficient": "无法取得 SID 时标记暂定身份，不得以名称为键合并。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "配置文件路径",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "loaded",
+          "value": {
+            "label": "是否已加载",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "last_use",
+          "value": {
+            "label": "最近使用",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "account.right_assignment",
+      "category": "account",
+      "name": "账户权限分配",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "account_sid",
+          "privilege"
+        ],
+        "scope": "安装作用域与账户 SID",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "privilege",
+          "value": {
+            "label": "权限",
+            "kind": "identity"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "account.machine_identity",
+      "category": "account",
+      "name": "计算机身份与域信息",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装/用户作用域 + 来源系统提供的原生标识符",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "计算机名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "domain",
+          "value": {
+            "label": "域或工作组",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "role",
+          "value": {
+            "label": "角色",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "manufacturer",
+          "value": {
+            "label": "制造商",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "model",
+          "value": {
+            "label": "型号",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "uuid",
+          "value": {
+            "label": "机器 UUID",
+            "kind": "identity"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "software.installation_registration",
+      "category": "software",
+      "name": "软件安装登记",
+      "identity": {
+        "strategy": "registry_registration",
+        "keys": [
+          "scope",
+          "hive",
+          "view",
+          "registry_path"
+        ],
+        "scope": "安装作用域 + 注册表视图；同名软件不一定是同一登记",
+        "normalization": "注册表路径保留来源原大小写；比较时仅对 Windows 已定义的注册表路径规则做规范化，不做统一小写。",
+        "reuse_rule": "同一路径重新出现不保证是删除前的同一登记；需要生命周期证据才升级为确认删除或重建。",
+        "insufficient": "缺少注册表视图或作用域时标记身份能力受限，不与另一视图的登记合并。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "登记路径",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "display_name",
+          "value": {
+            "label": "显示名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "display_version",
+          "value": {
+            "label": "版本",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "publisher",
+          "value": {
+            "label": "发布者",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "install_location",
+          "value": {
+            "label": "安装位置",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "uninstall_command",
+          "value": {
+            "label": "卸载命令",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "software.appx_package",
+      "category": "software",
+      "name": "AppX 包",
+      "identity": {
+        "strategy": "named_entity",
+        "keys": [
+          "scope",
+          "name"
+        ],
+        "scope": "用户作用域 + 包全名",
+        "normalization": "名称保留来源原大小写；仅对 Windows 定义为不区分大小写的命名空间按该规则比较。",
+        "reuse_rule": "名称被删除后由不同对象复用时不自动判为同一实例。",
+        "insufficient": "名称重复或来源未提供唯一名称时标记歧义，保留多个候选。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "包名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "version",
+          "value": {
+            "label": "版本",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "publisher",
+          "value": {
+            "label": "发布者",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "install_location",
+          "value": {
+            "label": "安装位置",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "status",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "software.provisioned_package",
+      "category": "software",
+      "name": "预配包",
+      "identity": {
+        "strategy": "named_entity",
+        "keys": [
+          "scope",
+          "name"
+        ],
+        "scope": "本机映像作用域 + 包全名",
+        "normalization": "名称保留来源原大小写；仅对 Windows 定义为不区分大小写的命名空间按该规则比较。",
+        "reuse_rule": "名称被删除后由不同对象复用时不自动判为同一实例。",
+        "insufficient": "名称重复或来源未提供唯一名称时标记歧义，保留多个候选。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "包名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "version",
+          "value": {
+            "label": "版本",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "publisher",
+          "value": {
+            "label": "发布者",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "install_location",
+          "value": {
+            "label": "安装位置",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "software.optional_feature",
+      "category": "software",
+      "name": "Windows 可选组件",
+      "identity": {
+        "strategy": "named_entity",
+        "keys": [
+          "scope",
+          "name"
+        ],
+        "scope": "本机作用域 + 组件名称",
+        "normalization": "名称保留来源原大小写；仅对 Windows 定义为不区分大小写的命名空间按该规则比较。",
+        "reuse_rule": "名称被删除后由不同对象复用时不自动判为同一实例。",
+        "insufficient": "名称重复或来源未提供唯一名称时标记歧义，保留多个候选。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "组件名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "state",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "software.runtime",
+      "category": "software",
+      "name": "运行时",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "runtime_family",
+          "runtime_version"
+        ],
+        "scope": "安装作用域（含 32/64 位视图）",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "family",
+          "value": {
+            "label": "运行时家族",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "version",
+          "value": {
+            "label": "版本",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "install_path",
+          "value": {
+            "label": "安装路径",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "software.portable_registration",
+      "category": "software",
+      "name": "便携程序登记",
+      "identity": {
+        "strategy": "file_identity",
+        "keys": [
+          "volume_identity",
+          "file_id"
+        ],
+        "scope": "配置的便携程序根目录；路径文件登记不证明程序已安装",
+        "normalization": "文件 ID 按十六进制规范化；路径保留原大小写，仅用于展示。",
+        "reuse_rule": "文件 ID 被复用时不自动判为同一文件；需要路径与时间证据。",
+        "insufficient": "只有路径时标记身份能力受限：路径可变，改名与移动都会改变它。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "文件路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "version",
+          "value": {
+            "label": "版本",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "company",
+          "value": {
+            "label": "公司",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "size",
+          "value": {
+            "label": "大小",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "sha256",
+          "value": {
+            "label": "内容摘要",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "software.system_update",
+      "category": "software",
+      "name": "系统更新组件",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装作用域；仅 QFE 范围，不等于完整更新历史",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "hotfix_id",
+          "value": {
+            "label": "更新编号",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "installed_on",
+          "value": {
+            "label": "安装日期",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "description",
+          "value": {
+            "label": "说明",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": [
+        "software.update_history"
+      ]
+    },
+    {
+      "id": "software.language_package",
+      "category": "software",
+      "name": "语言包登记",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "package_manager",
+          "package_name",
+          "package_version"
+        ],
+        "scope": "安装作用域 + 包管理器；自定义前缀目录不覆盖",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "manager",
+          "value": {
+            "label": "包管理器",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "包名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "version",
+          "value": {
+            "label": "版本",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "path",
+          "value": {
+            "label": "安装路径",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "runtime.process",
+      "category": "runtime",
+      "name": "进程",
+      "identity": {
+        "strategy": "process_instance",
+        "keys": [
+          "scope",
+          "pid",
+          "created_at"
+        ],
+        "scope": "启动作用域 + 进程 ID + 进程创建时间",
+        "normalization": "进程 ID 为数值，创建时间按来源时间格式保留。",
+        "reuse_rule": "进程 ID 复用（相同 ID、不同创建时间）必须是两个实例，不得拼接生命周期。",
+        "insufficient": "缺少创建时间时标记暂定身份，不得仅凭进程 ID 归一。"
+      },
+      "fields": [
+        {
+          "id": "pid",
+          "value": {
+            "label": "进程 ID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "程序名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "image",
+          "value": {
+            "label": "程序路径",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "parent_pid",
+          "value": {
+            "label": "父进程 ID",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "session",
+          "value": {
+            "label": "会话",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "created_at",
+          "value": {
+            "label": "创建时间",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "command_line",
+          "value": {
+            "label": "命令行",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": [
+        "execution.process_started",
+        "execution.process_stopped",
+        "execution.remote_thread",
+        "execution.process_access",
+        "execution.process_tampering",
+        "execution.pipe_created",
+        "execution.pipe_connected"
+      ]
+    },
+    {
+      "id": "runtime.module_instance",
+      "category": "runtime",
+      "name": "模块加载实例",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "process_identity",
+          "module_path"
+        ],
+        "scope": "安装作用域；模块身份含进程 PID 与建立时间，磁盘签名不证明内存字节",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "process",
+          "value": {
+            "label": "所属进程",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "process_start",
+          "value": {
+            "label": "进程创建时间",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "process_name",
+          "value": {
+            "label": "进程名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "session",
+          "value": {
+            "label": "会话",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "user_sid",
+          "value": {
+            "label": "账户 SID",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "module_path",
+          "value": {
+            "label": "模块路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "module_base",
+          "value": {
+            "label": "观察基址",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "size",
+          "value": {
+            "label": "映像大小",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "version",
+          "value": {
+            "label": "磁盘版本",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "signature_status",
+          "value": {
+            "label": "磁盘签名检查状态",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "module_origin",
+          "value": {
+            "label": "发布者类别",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": [
+        "execution.module_loaded"
+      ]
+    },
+    {
+      "id": "runtime.logon_session",
+      "category": "runtime",
+      "name": "登录会话",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装作用域 + 登录 ID；已确认启动周期时隔离会话；特殊权限事件缺启动周期时不关联会话",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "logon_id",
+          "value": {
+            "label": "登录 ID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "logon_type",
+          "value": {
+            "label": "登录类型",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "start_time",
+          "value": {
+            "label": "开始时间",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "authentication_package",
+          "value": {
+            "label": "认证包",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": [
+        "identity.logon",
+        "identity.logoff",
+        "identity.special_privileges"
+      ]
+    },
+    {
+      "id": "runtime.terminal_session",
+      "category": "runtime",
+      "name": "终端会话",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装/用户作用域 + 来源系统提供的原生标识符",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "session_id",
+          "value": {
+            "label": "会话 ID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "station",
+          "value": {
+            "label": "站点",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "user",
+          "value": {
+            "label": "用户",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "domain",
+          "value": {
+            "label": "域",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "state",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": [
+        "identity.session_locked",
+        "identity.session_unlocked",
+        "identity.session_reconnected",
+        "identity.session_disconnected"
+      ]
+    },
+    {
+      "id": "startup.service",
+      "category": "startup",
+      "name": "服务",
+      "identity": {
+        "strategy": "named_entity",
+        "keys": [
+          "scope",
+          "name"
+        ],
+        "scope": "安装作用域 + 服务名称；显示名称可能变化或重复，不作为键",
+        "normalization": "名称保留来源原大小写；仅对 Windows 定义为不区分大小写的命名空间按该规则比较。",
+        "reuse_rule": "名称被删除后由不同对象复用时不自动判为同一实例。",
+        "insufficient": "名称重复或来源未提供唯一名称时标记歧义，保留多个候选。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "服务名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "display_name",
+          "value": {
+            "label": "显示名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "state",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "start_mode",
+          "value": {
+            "label": "启动模式",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "account",
+          "value": {
+            "label": "运行账户",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "binary_path",
+          "value": {
+            "label": "程序路径",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": [
+        "startup.service_installed",
+        "startup.service_state_changed"
+      ]
+    },
+    {
+      "id": "startup.scheduled_task",
+      "category": "startup",
+      "name": "计划任务",
+      "identity": {
+        "strategy": "native_path",
+        "keys": [
+          "scope",
+          "path"
+        ],
+        "scope": "安装作用域 + 完整任务路径；不同文件夹的同名任务不合并",
+        "normalization": "路径分隔符与大小写按类型规则规范化；不对所有字符串统一处理。",
+        "reuse_rule": "路径相同不保证删除重建前后是同一实例；需要生命周期证据。",
+        "insufficient": "缺少完整路径时标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "任务路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "enabled",
+          "value": {
+            "label": "是否启用",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "principal",
+          "value": {
+            "label": "运行账户",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "actions",
+          "value": {
+            "label": "执行动作",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "triggers",
+          "value": {
+            "label": "触发条件",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "next_run",
+          "value": {
+            "label": "下次运行时间",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "last_run",
+          "value": {
+            "label": "最近运行",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "last_result",
+          "value": {
+            "label": "最近结果",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": [
+        "startup.task_created",
+        "startup.task_deleted",
+        "startup.task_updated",
+        "startup.task_started",
+        "startup.task_ended"
+      ]
+    },
+    {
+      "id": "startup.logon_startup_entry",
+      "category": "startup",
+      "name": "登录启动项",
+      "identity": {
+        "strategy": "value_key",
+        "keys": [
+          "scope",
+          "path",
+          "value_name"
+        ],
+        "scope": "安装或用户作用域 + 注册表视图 + 登记位置",
+        "normalization": "值名保留来源原大小写；仅对 Windows 定义的注册表值名规则做规范化。",
+        "reuse_rule": "值被删除后重新设置不保证是同一登记。",
+        "insufficient": "作用域缺失时不得合并不同用户或不同视图下的同名值。"
+      },
+      "fields": [
+        {
+          "id": "location",
+          "value": {
+            "label": "登记位置",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "value_name",
+          "value": {
+            "label": "值名",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "command",
+          "value": {
+            "label": "命令",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "startup.logon_initialization",
+      "category": "startup",
+      "name": "登录初始化配置",
+      "identity": {
+        "strategy": "registry_registration",
+        "keys": [
+          "scope",
+          "hive",
+          "view",
+          "registry_path"
+        ],
+        "scope": "安装作用域 + 注册表视图",
+        "normalization": "注册表路径保留来源原大小写；比较时仅对 Windows 已定义的注册表路径规则做规范化，不做统一小写。",
+        "reuse_rule": "同一路径重新出现不保证是删除前的同一登记；需要生命周期证据才升级为确认删除或重建。",
+        "insufficient": "缺少注册表视图或作用域时标记身份能力受限，不与另一视图的登记合并。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "注册表路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "values",
+          "value": {
+            "label": "配置值",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "startup.wmi_filter",
+      "category": "startup",
+      "name": "WMI 订阅筛选器",
+      "identity": {
+        "strategy": "native_path",
+        "keys": [
+          "scope",
+          "path"
+        ],
+        "scope": "WMI 命名空间作用域；这是订阅配置，不是主动订阅事件",
+        "normalization": "路径分隔符与大小写按类型规则规范化；不对所有字符串统一处理。",
+        "reuse_rule": "路径相同不保证删除重建前后是同一实例；需要生命周期证据。",
+        "insufficient": "缺少完整路径时标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "namespace",
+          "value": {
+            "label": "命名空间",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "query_language",
+          "value": {
+            "label": "查询语言",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "query",
+          "value": {
+            "label": "查询",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": [
+        "execution.wmi_filter"
+      ]
+    },
+    {
+      "id": "startup.wmi_consumer",
+      "category": "startup",
+      "name": "WMI 订阅消费者",
+      "identity": {
+        "strategy": "native_path",
+        "keys": [
+          "scope",
+          "path"
+        ],
+        "scope": "WMI 命名空间作用域",
+        "normalization": "路径分隔符与大小写按类型规则规范化；不对所有字符串统一处理。",
+        "reuse_rule": "路径相同不保证删除重建前后是同一实例；需要生命周期证据。",
+        "insufficient": "缺少完整路径时标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "namespace",
+          "value": {
+            "label": "命名空间",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "consumer_type",
+          "value": {
+            "label": "消费者类型",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "script_engine",
+          "value": {
+            "label": "脚本引擎",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "program",
+          "value": {
+            "label": "程序路径",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": [
+        "execution.wmi_consumer"
+      ]
+    },
+    {
+      "id": "startup.wmi_binding",
+      "category": "startup",
+      "name": "WMI 订阅绑定",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "namespace",
+          "filter_name",
+          "consumer_name"
+        ],
+        "scope": "WMI 命名空间作用域；过滤器、消费者与绑定各自保留真实身份",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "namespace",
+          "value": {
+            "label": "命名空间",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "filter",
+          "value": {
+            "label": "筛选器",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "consumer",
+          "value": {
+            "label": "消费者",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "security_context",
+          "value": {
+            "label": "安全上下文",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": [
+        "execution.wmi_binding"
+      ]
+    },
+    {
+      "id": "startup.ifeo_configuration",
+      "category": "startup",
+      "name": "IFEO 与注入入口",
+      "identity": {
+        "strategy": "registry_registration",
+        "keys": [
+          "scope",
+          "hive",
+          "view",
+          "registry_path"
+        ],
+        "scope": "安装作用域 + 注册表视图",
+        "normalization": "注册表路径保留来源原大小写；比较时仅对 Windows 已定义的注册表路径规则做规范化，不做统一小写。",
+        "reuse_rule": "同一路径重新出现不保证是删除前的同一登记；需要生命周期证据才升级为确认删除或重建。",
+        "insufficient": "缺少注册表视图或作用域时标记身份能力受限，不与另一视图的登记合并。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "注册表路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "values",
+          "value": {
+            "label": "配置值",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "shell.preview_handler",
+      "category": "shell",
+      "name": "预览处理程序",
+      "identity": {
+        "strategy": "registry_registration",
+        "keys": [
+          "scope",
+          "hive",
+          "view",
+          "registry_path"
+        ],
+        "scope": "用户或机器作用域 + 注册表视图",
+        "normalization": "注册表路径保留来源原大小写；比较时仅对 Windows 已定义的注册表路径规则做规范化，不做统一小写。",
+        "reuse_rule": "同一路径重新出现不保证是删除前的同一登记；需要生命周期证据才升级为确认删除或重建。",
+        "insufficient": "缺少注册表视图或作用域时标记身份能力受限，不与另一视图的登记合并。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "登记路径",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "hive",
+          "value": {
+            "label": "注册表配置单元",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "view",
+          "value": {
+            "label": "注册表视图",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "clsid",
+          "value": {
+            "label": "CLSID",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "shell.icon_overlay_handler",
+      "category": "shell",
+      "name": "图标覆盖处理程序",
+      "identity": {
+        "strategy": "registry_registration",
+        "keys": [
+          "scope",
+          "hive",
+          "view",
+          "registry_path"
+        ],
+        "scope": "用户或机器作用域 + 注册表视图；登记不证明已加载",
+        "normalization": "注册表路径保留来源原大小写；比较时仅对 Windows 已定义的注册表路径规则做规范化，不做统一小写。",
+        "reuse_rule": "同一路径重新出现不保证是删除前的同一登记；需要生命周期证据才升级为确认删除或重建。",
+        "insufficient": "缺少注册表视图或作用域时标记身份能力受限，不与另一视图的登记合并。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "登记路径",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "hive",
+          "value": {
+            "label": "注册表配置单元",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "view",
+          "value": {
+            "label": "注册表视图",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "clsid",
+          "value": {
+            "label": "CLSID",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "shell.shell_extension",
+      "category": "shell",
+      "name": "Shell 扩展登记",
+      "identity": {
+        "strategy": "registry_registration",
+        "keys": [
+          "scope",
+          "hive",
+          "view",
+          "registry_path"
+        ],
+        "scope": "用户或机器作用域 + 注册表视图 + 允许或阻止列表",
+        "normalization": "注册表路径保留来源原大小写；比较时仅对 Windows 已定义的注册表路径规则做规范化，不做统一小写。",
+        "reuse_rule": "同一路径重新出现不保证是删除前的同一登记；需要生命周期证据才升级为确认删除或重建。",
+        "insufficient": "缺少注册表视图或作用域时标记身份能力受限，不与另一视图的登记合并。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "hive",
+          "value": {
+            "label": "注册表配置单元",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "view",
+          "value": {
+            "label": "注册表视图",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "approved",
+          "value": {
+            "label": "允许状态",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "shell.namespace_extension",
+      "category": "shell",
+      "name": "命名空间扩展",
+      "identity": {
+        "strategy": "registry_registration",
+        "keys": [
+          "scope",
+          "hive",
+          "view",
+          "registry_path"
+        ],
+        "scope": "用户或机器作用域 + 注册表视图",
+        "normalization": "注册表路径保留来源原大小写；比较时仅对 Windows 已定义的注册表路径规则做规范化，不做统一小写。",
+        "reuse_rule": "同一路径重新出现不保证是删除前的同一登记；需要生命周期证据才升级为确认删除或重建。",
+        "insufficient": "缺少注册表视图或作用域时标记身份能力受限，不与另一视图的登记合并。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "登记路径",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "hive",
+          "value": {
+            "label": "注册表配置单元",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "view",
+          "value": {
+            "label": "注册表视图",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "clsid",
+          "value": {
+            "label": "CLSID",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "shell.context_menu_registration",
+      "category": "shell",
+      "name": "右键菜单登记",
+      "identity": {
+        "strategy": "registry_registration",
+        "keys": [
+          "scope",
+          "hive",
+          "view",
+          "registry_path"
+        ],
+        "scope": "用户或机器作用域 + 注册表视图 + 关联类型",
+        "normalization": "注册表路径保留来源原大小写；比较时仅对 Windows 已定义的注册表路径规则做规范化，不做统一小写。",
+        "reuse_rule": "同一路径重新出现不保证是删除前的同一登记；需要生命周期证据才升级为确认删除或重建。",
+        "insufficient": "缺少注册表视图或作用域时标记身份能力受限，不与另一视图的登记合并。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "注册表路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "command",
+          "value": {
+            "label": "命令",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "default_icon",
+          "value": {
+            "label": "默认图标",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "shell.file_association",
+      "category": "shell",
+      "name": "文件关联",
+      "identity": {
+        "strategy": "registry_registration",
+        "keys": [
+          "scope",
+          "hive",
+          "view",
+          "registry_path"
+        ],
+        "scope": "用户或机器作用域 + 注册表视图；主归系统扩展与关联",
+        "normalization": "注册表路径保留来源原大小写；比较时仅对 Windows 已定义的注册表路径规则做规范化，不做统一小写。",
+        "reuse_rule": "同一路径重新出现不保证是删除前的同一登记；需要生命周期证据才升级为确认删除或重建。",
+        "insufficient": "缺少注册表视图或作用域时标记身份能力受限，不与另一视图的登记合并。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "登记路径",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "extension",
+          "value": {
+            "label": "扩展名",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "prog_id",
+          "value": {
+            "label": "程序标识",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "command",
+          "value": {
+            "label": "命令",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "shell.com_registration",
+      "category": "shell",
+      "name": "COM 注册",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "hive",
+          "view",
+          "clsid"
+        ],
+        "scope": "用户或机器作用域 + 32/64 位视图；同一 CLSID 的不同注册位置不无条件合并",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "clsid",
+          "value": {
+            "label": "CLSID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "hive",
+          "value": {
+            "label": "注册表配置单元",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "view",
+          "value": {
+            "label": "注册表视图",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "登记名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "server_path",
+          "value": {
+            "label": "进程内实现文件",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "local_server_command",
+          "value": {
+            "label": "独立程序启动命令",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "file_version",
+          "value": {
+            "label": "文件版本",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "sha256",
+          "value": {
+            "label": "内容摘要",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "shell.browser_extension",
+      "category": "shell",
+      "name": "浏览器扩展",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "browser",
+          "profile",
+          "extension_id",
+          "version"
+        ],
+        "scope": "浏览器 + 用户配置文件 + 扩展 ID；不判定是否实时激活",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "browser",
+          "value": {
+            "label": "浏览器",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "profile",
+          "value": {
+            "label": "配置文件",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "extension_id",
+          "value": {
+            "label": "扩展 ID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "version",
+          "value": {
+            "label": "版本",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "permissions",
+          "value": {
+            "label": "权限",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "state",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "file.watched_file",
+      "category": "file",
+      "name": "监控文件",
+      "identity": {
+        "strategy": "file_identity",
+        "keys": [
+          "volume_identity",
+          "file_id"
+        ],
+        "scope": "用户配置的文件名单；空名单不枚举；名单移除不产生删除动作",
+        "normalization": "文件 ID 按十六进制规范化；路径保留原大小写，仅用于展示。",
+        "reuse_rule": "文件 ID 被复用时不自动判为同一文件；需要路径与时间证据。",
+        "insufficient": "只有路径时标记身份能力受限：路径可变，改名与移动都会改变它。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "exists",
+          "value": {
+            "label": "是否存在",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "size",
+          "value": {
+            "label": "大小",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "creation_time",
+          "value": {
+            "label": "创建时间",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "last_write",
+          "value": {
+            "label": "最后写入",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "attributes",
+          "value": {
+            "label": "属性",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "owner",
+          "value": {
+            "label": "所有者",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "dacl",
+          "value": {
+            "label": "访问控制",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "sha256",
+          "value": {
+            "label": "内容摘要",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": [
+        "files.created",
+        "files.deleted",
+        "files.deleted_archived",
+        "files.creation_time_changed",
+        "files.executable_detected",
+        "files.executable_blocked",
+        "files.shredding_blocked",
+        "files.usn_changed",
+        "files.access_audit"
+      ]
+    },
+    {
+      "id": "file.acl_entry",
+      "category": "file",
+      "name": "文件系统权限登记",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "file_identity",
+          "trustee",
+          "access_mask"
+        ],
+        "scope": "文件身份作用域；只读 DACL，不含 SACL",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "trustee",
+          "value": {
+            "label": "被授权者",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "access",
+          "value": {
+            "label": "访问权限",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "inherited",
+          "value": {
+            "label": "是否继承",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": [
+        "files.permissions_audit"
+      ]
+    },
+    {
+      "id": "file.alternate_data_stream",
+      "category": "file",
+      "name": "备用数据流",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "file_identity",
+          "stream_name"
+        ],
+        "scope": "文件身份作用域；只记录流名称与大小，不保存内容",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "stream_name",
+          "value": {
+            "label": "流名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "size",
+          "value": {
+            "label": "大小",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": [
+        "files.stream_created"
+      ]
+    },
+    {
+      "id": "file.watched_directory",
+      "category": "file",
+      "name": "监控目录",
+      "identity": {
+        "strategy": "file_identity",
+        "keys": [
+          "volume_identity",
+          "file_id"
+        ],
+        "scope": "用户显式配置的目录名单；只读直接子项，不递归",
+        "normalization": "文件 ID 按十六进制规范化；路径保留原大小写，仅用于展示。",
+        "reuse_rule": "文件 ID 被复用时不自动判为同一文件；需要路径与时间证据。",
+        "insufficient": "只有路径时标记身份能力受限：路径可变，改名与移动都会改变它。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "exists",
+          "value": {
+            "label": "是否存在",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "attributes",
+          "value": {
+            "label": "属性",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "owner",
+          "value": {
+            "label": "所有者",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "dacl",
+          "value": {
+            "label": "访问控制",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "entries",
+          "value": {
+            "label": "直接子项",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "last_write",
+          "value": {
+            "label": "最近写入",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "policy.environment_variable",
+      "category": "policy",
+      "name": "环境变量",
+      "identity": {
+        "strategy": "value_key",
+        "keys": [
+          "scope",
+          "path",
+          "value_name"
+        ],
+        "scope": "用户或机器作用域分别建实例；未设置不等于关闭",
+        "normalization": "值名保留来源原大小写；仅对 Windows 定义的注册表值名规则做规范化。",
+        "reuse_rule": "值被删除后重新设置不保证是同一登记。",
+        "insufficient": "作用域缺失时不得合并不同用户或不同视图下的同名值。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "变量名",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "scope",
+          "value": {
+            "label": "作用域",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "value",
+          "value": {
+            "label": "变量值",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "policy.uac_policy",
+      "category": "policy",
+      "name": "UAC 策略",
+      "identity": {
+        "strategy": "value_key",
+        "keys": [
+          "scope",
+          "path",
+          "value_name"
+        ],
+        "scope": "安装作用域 + 注册表视图",
+        "normalization": "值名保留来源原大小写；仅对 Windows 定义的注册表值名规则做规范化。",
+        "reuse_rule": "值被删除后重新设置不保证是同一登记。",
+        "insufficient": "作用域缺失时不得合并不同用户或不同视图下的同名值。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "注册表路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "值名",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "value",
+          "value": {
+            "label": "值",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "policy.software_restriction_policy",
+      "category": "policy",
+      "name": "软件限制策略",
+      "identity": {
+        "strategy": "value_key",
+        "keys": [
+          "scope",
+          "path",
+          "value_name"
+        ],
+        "scope": "安装作用域 + 注册表视图",
+        "normalization": "值名保留来源原大小写；仅对 Windows 定义的注册表值名规则做规范化。",
+        "reuse_rule": "值被删除后重新设置不保证是同一登记。",
+        "insufficient": "作用域缺失时不得合并不同用户或不同视图下的同名值。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "注册表路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "值名",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "value",
+          "value": {
+            "label": "值",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "policy.browser_policy",
+      "category": "policy",
+      "name": "浏览器策略",
+      "identity": {
+        "strategy": "value_key",
+        "keys": [
+          "scope",
+          "path",
+          "value_name"
+        ],
+        "scope": "浏览器 + 用户或机器作用域；浏览器策略主归策略与配置",
+        "normalization": "值名保留来源原大小写；仅对 Windows 定义的注册表值名规则做规范化。",
+        "reuse_rule": "值被删除后重新设置不保证是同一登记。",
+        "insufficient": "作用域缺失时不得合并不同用户或不同视图下的同名值。"
+      },
+      "fields": [
+        {
+          "id": "browser",
+          "value": {
+            "label": "浏览器",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "path",
+          "value": {
+            "label": "策略路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "策略名",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "value",
+          "value": {
+            "label": "值",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "policy.time_sync_configuration",
+      "category": "policy",
+      "name": "时间同步配置",
+      "identity": {
+        "strategy": "native_path",
+        "keys": [
+          "scope",
+          "path"
+        ],
+        "scope": "安装作用域 + 注册表视图",
+        "normalization": "路径分隔符与大小写按类型规则规范化；不对所有字符串统一处理。",
+        "reuse_rule": "路径相同不保证删除重建前后是同一实例；需要生命周期证据。",
+        "insufficient": "缺少完整路径时标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "注册表路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "time_zone",
+          "value": {
+            "label": "时区",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "values",
+          "value": {
+            "label": "配置值",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "policy.power_plan",
+      "category": "policy",
+      "name": "电源计划",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装作用域",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "guid",
+          "value": {
+            "label": "计划 GUID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "计划名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "active",
+          "value": {
+            "label": "是否激活",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "power_source",
+          "value": {
+            "label": "电源来源",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "policy.os_configuration",
+      "category": "policy",
+      "name": "操作系统配置与状态",
+      "identity": {
+        "strategy": "native_path",
+        "keys": [
+          "scope",
+          "path"
+        ],
+        "scope": "安装作用域；安装时间与首次观察时间不同",
+        "normalization": "路径分隔符与大小写按类型规则规范化；不对所有字符串统一处理。",
+        "reuse_rule": "路径相同不保证删除重建前后是同一实例；需要生命周期证据。",
+        "insufficient": "缺少完整路径时标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "配置路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "caption",
+          "value": {
+            "label": "系统名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "version",
+          "value": {
+            "label": "版本",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "build",
+          "value": {
+            "label": "生成号",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "install_time",
+          "value": {
+            "label": "安装时间",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "boot_time",
+          "value": {
+            "label": "最近启动时间",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "reboot_pending",
+          "value": {
+            "label": "待重启标志",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "policy.system_restore_point",
+      "category": "policy",
+      "name": "系统还原点",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装作用域",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "sequence",
+          "value": {
+            "label": "序号",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "description",
+          "value": {
+            "label": "说明",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "creation_time",
+          "value": {
+            "label": "建立时间",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "type",
+          "value": {
+            "label": "类型",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "network.adapter",
+      "category": "network",
+      "name": "网络适配器",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装作用域 + 适配器 GUID；改名不生成新身份",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "guid",
+          "value": {
+            "label": "适配器 GUID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "status",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "mac",
+          "value": {
+            "label": "物理地址",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "speed",
+          "value": {
+            "label": "速率",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "driver_version",
+          "value": {
+            "label": "驱动版本",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "hidden",
+          "value": {
+            "label": "是否隐藏",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "network.address_configuration",
+      "category": "network",
+      "name": "IP 地址配置",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "interface_guid",
+          "address",
+          "prefix_length"
+        ],
+        "scope": "接口 GUID 作用域",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "interface",
+          "value": {
+            "label": "接口",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "address",
+          "value": {
+            "label": "地址",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "prefix_length",
+          "value": {
+            "label": "前缀长度",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "family",
+          "value": {
+            "label": "地址族",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "state",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "network.route",
+      "category": "network",
+      "name": "路由",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "interface_guid",
+          "destination_prefix",
+          "next_hop"
+        ],
+        "scope": "接口 GUID 作用域",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "interface",
+          "value": {
+            "label": "接口",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "destination",
+          "value": {
+            "label": "目的前缀",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "next_hop",
+          "value": {
+            "label": "下一跳",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "metric",
+          "value": {
+            "label": "度量",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "policy_source",
+          "value": {
+            "label": "策略来源",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "network.dns_configuration",
+      "category": "network",
+      "name": "DNS 配置",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "interface_guid",
+          "address_family"
+        ],
+        "scope": "接口 GUID 作用域",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "登记路径",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "interface",
+          "value": {
+            "label": "接口",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "servers",
+          "value": {
+            "label": "DNS 服务器",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "search_list",
+          "value": {
+            "label": "搜索列表",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "network.dns_cache_entry",
+      "category": "network",
+      "name": "DNS 缓存项",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "name",
+          "record_type"
+        ],
+        "scope": "安装作用域；缓存过期不解释为用户删除",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "record_type",
+          "value": {
+            "label": "记录类型",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "data",
+          "value": {
+            "label": "解析值",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": [
+        "network.dns_query"
+      ]
+    },
+    {
+      "id": "network.hosts_entry",
+      "category": "network",
+      "name": "hosts 静态映射",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "address",
+          "names"
+        ],
+        "scope": "安装作用域；解析有效条目，排除注释",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "address",
+          "value": {
+            "label": "地址",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "names",
+          "value": {
+            "label": "名称",
+            "kind": "identity"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "network.proxy_configuration",
+      "category": "network",
+      "name": "代理配置",
+      "identity": {
+        "strategy": "value_key",
+        "keys": [
+          "scope",
+          "path",
+          "value_name"
+        ],
+        "scope": "当前用户或机器作用域",
+        "normalization": "值名保留来源原大小写；仅对 Windows 定义的注册表值名规则做规范化。",
+        "reuse_rule": "值被删除后重新设置不保证是同一登记。",
+        "insufficient": "作用域缺失时不得合并不同用户或不同视图下的同名值。"
+      },
+      "fields": [
+        {
+          "id": "scope",
+          "value": {
+            "label": "作用域",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "path",
+          "value": {
+            "label": "配置路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "enabled",
+          "value": {
+            "label": "是否启用",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "server",
+          "value": {
+            "label": "代理服务器",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "bypass",
+          "value": {
+            "label": "绕过列表",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "network.vpn_configuration",
+      "category": "network",
+      "name": "VPN 配置",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "当前用户作用域；启用不证明发生过连接",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "连接名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "server",
+          "value": {
+            "label": "服务器",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "tunnel_type",
+          "value": {
+            "label": "隧道类型",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "status",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "network.remote_access_configuration",
+      "category": "network",
+      "name": "远程访问配置",
+      "identity": {
+        "strategy": "native_path",
+        "keys": [
+          "scope",
+          "path"
+        ],
+        "scope": "安装作用域 + 服务名",
+        "normalization": "路径分隔符与大小写按类型规则规范化；不对所有字符串统一处理。",
+        "reuse_rule": "路径相同不保证删除重建前后是同一实例；需要生命周期证据。",
+        "insufficient": "缺少完整路径时标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "service",
+          "value": {
+            "label": "服务",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "path",
+          "value": {
+            "label": "配置路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "values",
+          "value": {
+            "label": "配置值",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "network.firewall_profile",
+      "category": "network",
+      "name": "防火墙配置集",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装作用域",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "配置集名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "inbound",
+          "value": {
+            "label": "入站动作",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "outbound",
+          "value": {
+            "label": "出站动作",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "enabled",
+          "value": {
+            "label": "是否启用",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "log_path",
+          "value": {
+            "label": "日志路径",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "network.firewall_rule",
+      "category": "network",
+      "name": "防火墙规则",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "policy_store",
+          "name"
+        ],
+        "scope": "策略存储作用域（ActiveStore 等）；完整过滤条件可追溯",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "display_name",
+          "value": {
+            "label": "显示名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "direction",
+          "value": {
+            "label": "方向",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "action",
+          "value": {
+            "label": "动作",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "enabled",
+          "value": {
+            "label": "是否启用",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "profile",
+          "value": {
+            "label": "适用配置集",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "instance_id",
+          "value": {
+            "label": "实例 ID",
+            "kind": "identity"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "network.ipsec_rule",
+      "category": "network",
+      "name": "IPsec 规则",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "策略存储作用域",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "security_mode",
+          "value": {
+            "label": "安全模式",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "policy_source",
+          "value": {
+            "label": "策略来源",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "network.endpoint",
+      "category": "network",
+      "name": "网络连接与监听端点",
+      "identity": {
+        "strategy": "endpoint_tuple",
+        "keys": [
+          "protocol",
+          "local_address",
+          "local_port",
+          "remote_address",
+          "remote_port",
+          "owning_pid",
+          "created_at"
+        ],
+        "scope": "安装作用域；端点复用不拼接不同连接；未采到进程时不猜测归属",
+        "normalization": "地址按 IP 文本规范化；端口为数值；创建时间按来源时间格式保留。",
+        "reuse_rule": "端点被来源复用时不自动判为同一条连接；时间相同使用稳定的第二排序键，不把不同连接拼接。",
+        "insufficient": "缺少创建时间或所属进程时标记暂定身份；远端地址缺失（监听端点）时按本地元组识别并标注范围受限。"
+      },
+      "fields": [
+        {
+          "id": "protocol",
+          "value": {
+            "label": "协议",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "local_address",
+          "value": {
+            "label": "本地地址",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "local_port",
+          "value": {
+            "label": "本地端口",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "remote_address",
+          "value": {
+            "label": "远端地址",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "remote_port",
+          "value": {
+            "label": "远端端口",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "state",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "owning_pid",
+          "value": {
+            "label": "所属进程",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "creation_time",
+          "value": {
+            "label": "创建时间",
+            "kind": "identity"
+          }
+        }
+      ],
+      "actions": [
+        "network.connection_observed",
+        "network.connection_allowed",
+        "network.connection_blocked"
+      ]
+    },
+    {
+      "id": "network.smb_share",
+      "category": "network",
+      "name": "SMB 共享",
+      "identity": {
+        "strategy": "named_entity",
+        "keys": [
+          "scope",
+          "name"
+        ],
+        "scope": "安装作用域 + 共享名称",
+        "normalization": "名称保留来源原大小写；仅对 Windows 定义为不区分大小写的命名空间按该规则比较。",
+        "reuse_rule": "名称被删除后由不同对象复用时不自动判为同一实例。",
+        "insufficient": "名称重复或来源未提供唯一名称时标记歧义，保留多个候选。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "共享名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "path",
+          "value": {
+            "label": "路径",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "share_acl",
+          "value": {
+            "label": "共享权限",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "special",
+          "value": {
+            "label": "是否特殊共享",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": [
+        "network.share_access"
+      ]
+    },
+    {
+      "id": "network.smb_mapping",
+      "category": "network",
+      "name": "SMB 驱动器映射",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "local_name",
+          "remote_path"
+        ],
+        "scope": "用户作用域",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "local_name",
+          "value": {
+            "label": "本地盘符",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "remote_path",
+          "value": {
+            "label": "远端路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "status",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "network.smb_session",
+      "category": "network",
+      "name": "SMB 客户端会话",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "client",
+          "user",
+          "server"
+        ],
+        "scope": "安装作用域",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "client",
+          "value": {
+            "label": "客户端",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "user",
+          "value": {
+            "label": "用户",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "server",
+          "value": {
+            "label": "服务器",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "open_count",
+          "value": {
+            "label": "打开数",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "protocol",
+          "value": {
+            "label": "协议",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "encrypted",
+          "value": {
+            "label": "是否加密",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "network.connection_profile",
+      "category": "network",
+      "name": "网络连接配置文件",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装作用域",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "网络名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "category",
+          "value": {
+            "label": "类别",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "ipv4_connectivity",
+          "value": {
+            "label": "IPv4 连通性",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "ipv6_connectivity",
+          "value": {
+            "label": "IPv6 连通性",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "security.certificate_registration",
+      "category": "security",
+      "name": "证书登记",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "store_scope",
+          "store_name",
+          "thumbprint"
+        ],
+        "scope": "存储区作用域 + 证书指纹；同一证书在不同存储区的登记分别存在",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "store",
+          "value": {
+            "label": "存储区",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "location",
+          "value": {
+            "label": "存储位置",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "thumbprint",
+          "value": {
+            "label": "指纹",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "subject",
+          "value": {
+            "label": "主题",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "issuer",
+          "value": {
+            "label": "颁发者",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "not_before",
+          "value": {
+            "label": "生效时间",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "not_after",
+          "value": {
+            "label": "失效时间",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "has_private_key",
+          "value": {
+            "label": "是否有私钥",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "security.key_metadata",
+      "category": "security",
+      "name": "密钥元数据对象",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "提供程序及用户或机器作用域；仅 CNG 身份与元数据，不读取私钥内容",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "provider",
+          "value": {
+            "label": "提供程序",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "密钥名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "algorithm",
+          "value": {
+            "label": "算法",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "legacy_key_spec",
+          "value": {
+            "label": "旧式密钥类别",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "security.protection",
+      "category": "security",
+      "name": "防护配置与状态",
+      "identity": {
+        "strategy": "named_entity",
+        "keys": [
+          "scope",
+          "name"
+        ],
+        "scope": "安装作用域 + 产品；不修改防护配置",
+        "normalization": "名称保留来源原大小写；仅对 Windows 定义为不区分大小写的命名空间按该规则比较。",
+        "reuse_rule": "名称被删除后由不同对象复用时不自动判为同一实例。",
+        "insufficient": "名称重复或来源未提供唯一名称时标记歧义，保留多个候选。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "产品名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "engine_version",
+          "value": {
+            "label": "引擎版本",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "signature_version",
+          "value": {
+            "label": "特征库版本",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "real_time",
+          "value": {
+            "label": "实时防护",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "real_time_configured",
+          "value": {
+            "label": "实时防护设置",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "tamper_protected",
+          "value": {
+            "label": "防篡改",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "scan_time",
+          "value": {
+            "label": "最近扫描时间",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "security.exclusion",
+      "category": "security",
+      "name": "防护排除项",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "product",
+          "exclusion_type",
+          "value"
+        ],
+        "scope": "产品作用域；排除项变化保留前后证据",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "product",
+          "value": {
+            "label": "产品",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "exclusion_type",
+          "value": {
+            "label": "排除类型",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "value",
+          "value": {
+            "label": "排除值",
+            "kind": "identity"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "security.security_product",
+      "category": "security",
+      "name": "安全产品登记",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装作用域；依赖系统提供安全中心命名空间",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "产品名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "instance_id",
+          "value": {
+            "label": "实例 ID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "product_state",
+          "value": {
+            "label": "产品状态码",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "security.bitlocker_configuration",
+      "category": "security",
+      "name": "BitLocker 配置",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "卷作用域；不采集恢复材料",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "mount_point",
+          "value": {
+            "label": "装载点",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "volume_status",
+          "value": {
+            "label": "卷状态",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "protection_status",
+          "value": {
+            "label": "保护状态",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "encryption_method",
+          "value": {
+            "label": "加密方法",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "protector_types",
+          "value": {
+            "label": "保护器类型",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "security.ssh_public_key",
+      "category": "security",
+      "name": "SSH 公钥登记",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "file_path",
+          "algorithm"
+        ],
+        "scope": "用户作用域；不保存密钥材料与注释",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "文件路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "algorithm",
+          "value": {
+            "label": "算法",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "fingerprint",
+          "value": {
+            "label": "指纹",
+            "kind": "identity"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "security.device_guard_configuration",
+      "category": "security",
+      "name": "Device Guard 配置",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装作用域",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "vbs_status",
+          "value": {
+            "label": "VBS 状态",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "services_configured",
+          "value": {
+            "label": "已配置服务",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "services_running",
+          "value": {
+            "label": "运行中服务",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "available_properties",
+          "value": {
+            "label": "可用属性",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "security.secure_boot_configuration",
+      "category": "security",
+      "name": "安全启动配置",
+      "identity": {
+        "strategy": "named_entity",
+        "keys": [
+          "scope",
+          "name"
+        ],
+        "scope": "安装作用域；组件不支持或权限不足报告缺口",
+        "normalization": "名称保留来源原大小写；仅对 Windows 定义为不区分大小写的命名空间按该规则比较。",
+        "reuse_rule": "名称被删除后由不同对象复用时不自动判为同一实例。",
+        "insufficient": "名称重复或来源未提供唯一名称时标记歧义，保留多个候选。"
+      },
+      "fields": [
+        {
+          "id": "enabled",
+          "value": {
+            "label": "是否启用",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "hardware.device",
+      "category": "hardware",
+      "name": "设备",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装作用域 + 设备 ID；名称是可变展示属性",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "device_id",
+          "value": {
+            "label": "设备 ID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "设备名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "class",
+          "value": {
+            "label": "类别",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "manufacturer",
+          "value": {
+            "label": "制造商",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "service",
+          "value": {
+            "label": "关联服务",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "status",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "config_error",
+          "value": {
+            "label": "配置错误码",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "hardware.driver_binding",
+      "category": "hardware",
+      "name": "设备驱动绑定",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "device_id",
+          "driver_version"
+        ],
+        "scope": "设备作用域",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "device",
+          "value": {
+            "label": "设备",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "driver_version",
+          "value": {
+            "label": "驱动版本",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "driver_date",
+          "value": {
+            "label": "驱动日期",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "provider",
+          "value": {
+            "label": "提供方",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "inf",
+          "value": {
+            "label": "驱动 INF",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "signed",
+          "value": {
+            "label": "签名状态",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "hardware.driver_service",
+      "category": "hardware",
+      "name": "驱动服务",
+      "identity": {
+        "strategy": "named_entity",
+        "keys": [
+          "scope",
+          "name"
+        ],
+        "scope": "安装作用域 + 驱动服务名称；驱动服务主归硬件与驱动",
+        "normalization": "名称保留来源原大小写；仅对 Windows 定义为不区分大小写的命名空间按该规则比较。",
+        "reuse_rule": "名称被删除后由不同对象复用时不自动判为同一实例。",
+        "insufficient": "名称重复或来源未提供唯一名称时标记歧义，保留多个候选。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "服务名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "driver_path",
+          "value": {
+            "label": "驱动路径",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "service_type",
+          "value": {
+            "label": "服务类型",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "start_mode",
+          "value": {
+            "label": "启动模式",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "state",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": [
+        "execution.driver_loaded"
+      ]
+    },
+    {
+      "id": "hardware.disk",
+      "category": "hardware",
+      "name": "磁盘",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装作用域 + 磁盘号与总线；盘符变化不影响身份",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "number",
+          "value": {
+            "label": "磁盘号",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "bus_type",
+          "value": {
+            "label": "总线类型",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "partition_style",
+          "value": {
+            "label": "分区样式",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "size",
+          "value": {
+            "label": "容量",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "is_boot",
+          "value": {
+            "label": "是否启动盘",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "is_system",
+          "value": {
+            "label": "是否系统盘",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "health",
+          "value": {
+            "label": "健康状态",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "operational_status",
+          "value": {
+            "label": "运行状态",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": [
+        "storage.raw_read"
+      ]
+    },
+    {
+      "id": "hardware.partition",
+      "category": "hardware",
+      "name": "分区",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "磁盘作用域 + 分区号",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "disk_number",
+          "value": {
+            "label": "磁盘号",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "partition_number",
+          "value": {
+            "label": "分区号",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "guid",
+          "value": {
+            "label": "分区 GUID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "offset",
+          "value": {
+            "label": "偏移",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "size",
+          "value": {
+            "label": "大小",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "access_paths",
+          "value": {
+            "label": "访问路径",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "hardware.volume",
+      "category": "hardware",
+      "name": "卷",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装作用域 + 卷标识；盘符是可变的展示属性",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "volume_id",
+          "value": {
+            "label": "卷标识",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "drive_letter",
+          "value": {
+            "label": "盘符",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "filesystem",
+          "value": {
+            "label": "文件系统",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "size",
+          "value": {
+            "label": "容量",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "volume_type",
+          "value": {
+            "label": "卷类型",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "hardware.driver_package",
+      "category": "hardware",
+      "name": "驱动包",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "本机驱动仓库作用域；由 DISM 发布 INF 标识",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "包名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "provider",
+          "value": {
+            "label": "提供方",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "version",
+          "value": {
+            "label": "版本",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "inf",
+          "value": {
+            "label": "驱动 INF",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "signed",
+          "value": {
+            "label": "签名状态",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "hardware.firmware",
+      "category": "hardware",
+      "name": "固件",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装作用域",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "manufacturer",
+          "value": {
+            "label": "制造商",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "bios_version",
+          "value": {
+            "label": "BIOS 版本",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "smbios_version",
+          "value": {
+            "label": "SMBIOS 版本",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "release_date",
+          "value": {
+            "label": "发布日期",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "hardware.tpm",
+      "category": "hardware",
+      "name": "TPM",
+      "identity": {
+        "strategy": "named_entity",
+        "keys": [
+          "scope",
+          "name"
+        ],
+        "scope": "安装作用域",
+        "normalization": "名称保留来源原大小写；仅对 Windows 定义为不区分大小写的命名空间按该规则比较。",
+        "reuse_rule": "名称被删除后由不同对象复用时不自动判为同一实例。",
+        "insufficient": "名称重复或来源未提供唯一名称时标记歧义，保留多个候选。"
+      },
+      "fields": [
+        {
+          "id": "present",
+          "value": {
+            "label": "是否存在",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "ready",
+          "value": {
+            "label": "是否就绪",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "enabled",
+          "value": {
+            "label": "是否启用",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "activated",
+          "value": {
+            "label": "是否已激活",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "manufacturer",
+          "value": {
+            "label": "制造商",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "version",
+          "value": {
+            "label": "版本",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "locked_out",
+          "value": {
+            "label": "是否锁定",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "hardware.battery",
+      "category": "hardware",
+      "name": "电池",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "安装作用域 + 电池标识",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "chemistry",
+          "value": {
+            "label": "化学类型",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "charge",
+          "value": {
+            "label": "余量",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "estimated_time",
+          "value": {
+            "label": "估算时间",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "virtualization.virtual_machine",
+      "category": "virtualization",
+      "name": "虚拟机",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "虚拟化引擎作用域；引擎未运行不表示虚拟机已删除",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "vm_id",
+          "value": {
+            "label": "虚拟机 ID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "state",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "generation",
+          "value": {
+            "label": "代数",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "cpu",
+          "value": {
+            "label": "处理器配置",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "memory",
+          "value": {
+            "label": "内存配置",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "virtualization.virtual_switch",
+      "category": "virtualization",
+      "name": "虚拟交换机",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "虚拟化引擎作用域",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "switch_id",
+          "value": {
+            "label": "交换机 ID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "type",
+          "value": {
+            "label": "类型",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "adapter",
+          "value": {
+            "label": "关联网卡",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "virtualization.disk_attachment",
+      "category": "virtualization",
+      "name": "虚拟磁盘连接",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "vm_id",
+          "controller_type",
+          "controller_number",
+          "controller_location"
+        ],
+        "scope": "虚拟机作用域；不读取磁盘内容",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "vm",
+          "value": {
+            "label": "虚拟机",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "path",
+          "value": {
+            "label": "磁盘路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "controller_type",
+          "value": {
+            "label": "控制器类型",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "controller_number",
+          "value": {
+            "label": "控制器号",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "controller_location",
+          "value": {
+            "label": "控制器位置",
+            "kind": "identity"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "virtualization.checkpoint",
+      "category": "virtualization",
+      "name": "虚拟机检查点",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "虚拟机作用域",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "checkpoint_id",
+          "value": {
+            "label": "检查点 ID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "creation_time",
+          "value": {
+            "label": "建立时间",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "type",
+          "value": {
+            "label": "类型",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "parent",
+          "value": {
+            "label": "父检查点",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "virtualization.wsl_distribution",
+      "category": "virtualization",
+      "name": "WSL 发行版",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "用户作用域 + 发行版标识；不启动 WSL",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "发行版名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "version",
+          "value": {
+            "label": "版本",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "location",
+          "value": {
+            "label": "位置",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "default_uid",
+          "value": {
+            "label": "默认用户",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "virtualization.container",
+      "category": "virtualization",
+      "name": "容器",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "容器引擎作用域；不读取日志、环境变量与容器内容",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "container_id",
+          "value": {
+            "label": "容器 ID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "names",
+          "value": {
+            "label": "名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "image",
+          "value": {
+            "label": "镜像",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "state",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        },
+        {
+          "id": "status",
+          "value": {
+            "label": "运行状态",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "virtualization.image",
+      "category": "virtualization",
+      "name": "容器镜像",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "image_id",
+          "repository",
+          "tag"
+        ],
+        "scope": "容器引擎作用域",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "repository",
+          "value": {
+            "label": "仓库",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "tag",
+          "value": {
+            "label": "标签",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "image_id",
+          "value": {
+            "label": "镜像 ID",
+            "kind": "identity"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "virtualization.container_volume",
+      "category": "virtualization",
+      "name": "容器卷",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "容器引擎作用域",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "卷名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "driver",
+          "value": {
+            "label": "驱动",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "virtualization.container_network",
+      "category": "virtualization",
+      "name": "容器网络",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "容器引擎作用域",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "network_id",
+          "value": {
+            "label": "网络 ID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "driver",
+          "value": {
+            "label": "驱动",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "scope",
+          "value": {
+            "label": "作用域",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "virtualization.platform_capability",
+      "category": "virtualization",
+      "name": "虚拟化能力与平台",
+      "identity": {
+        "strategy": "named_entity",
+        "keys": [
+          "scope",
+          "name"
+        ],
+        "scope": "安装作用域；能力标志不是虚拟机实例",
+        "normalization": "名称保留来源原大小写；仅对 Windows 定义为不区分大小写的命名空间按该规则比较。",
+        "reuse_rule": "名称被删除后由不同对象复用时不自动判为同一实例。",
+        "insufficient": "名称重复或来源未提供唯一名称时标记歧义，保留多个候选。"
+      },
+      "fields": [
+        {
+          "id": "hypervisor_present",
+          "value": {
+            "label": "虚拟化监控程序存在",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "firmware_virtualization",
+          "value": {
+            "label": "固件虚拟化",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "monitor_extensions",
+          "value": {
+            "label": "监控扩展",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "slat",
+          "value": {
+            "label": "二级地址转换",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "desktop.printer",
+      "category": "desktop",
+      "name": "打印机",
+      "identity": {
+        "strategy": "named_entity",
+        "keys": [
+          "scope",
+          "name"
+        ],
+        "scope": "安装作用域 + 打印机名称",
+        "normalization": "名称保留来源原大小写；仅对 Windows 定义为不区分大小写的命名空间按该规则比较。",
+        "reuse_rule": "名称被删除后由不同对象复用时不自动判为同一实例。",
+        "insufficient": "名称重复或来源未提供唯一名称时标记歧义，保留多个候选。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "driver",
+          "value": {
+            "label": "驱动",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "port",
+          "value": {
+            "label": "端口",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "shared",
+          "value": {
+            "label": "是否共享",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "status",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "desktop.printer_port",
+      "category": "desktop",
+      "name": "打印端口",
+      "identity": {
+        "strategy": "named_entity",
+        "keys": [
+          "scope",
+          "name"
+        ],
+        "scope": "安装作用域 + 端口名称",
+        "normalization": "名称保留来源原大小写；仅对 Windows 定义为不区分大小写的命名空间按该规则比较。",
+        "reuse_rule": "名称被删除后由不同对象复用时不自动判为同一实例。",
+        "insufficient": "名称重复或来源未提供唯一名称时标记歧义，保留多个候选。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "端口名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "port_type",
+          "value": {
+            "label": "端口类型",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "host",
+          "value": {
+            "label": "主机地址",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "protocol",
+          "value": {
+            "label": "协议",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "port_number",
+          "value": {
+            "label": "端口号",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "desktop.printer_driver",
+      "category": "desktop",
+      "name": "打印驱动",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "name",
+          "environment"
+        ],
+        "scope": "打印驱动环境作用域",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "environment",
+          "value": {
+            "label": "环境",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "manufacturer",
+          "value": {
+            "label": "制造商",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "driver_path",
+          "value": {
+            "label": "驱动路径",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "inf",
+          "value": {
+            "label": "驱动 INF",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "desktop.print_job",
+      "category": "desktop",
+      "name": "打印作业",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "printer",
+          "job_id"
+        ],
+        "scope": "打印机作用域；作业与打印机分开；不保存文档名与正文",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "printer",
+          "value": {
+            "label": "打印机",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "job_id",
+          "value": {
+            "label": "作业 ID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "submitted_at",
+          "value": {
+            "label": "提交时间",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "size",
+          "value": {
+            "label": "大小",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "pages",
+          "value": {
+            "label": "页数",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "status",
+          "value": {
+            "label": "状态",
+            "kind": "state"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "desktop.input_configuration",
+      "category": "desktop",
+      "name": "输入法配置",
+      "identity": {
+        "strategy": "native_path",
+        "keys": [
+          "scope",
+          "path"
+        ],
+        "scope": "用户或机器作用域；不枚举全部钩子",
+        "normalization": "路径分隔符与大小写按类型规则规范化；不对所有字符串统一处理。",
+        "reuse_rule": "路径相同不保证删除重建前后是同一实例；需要生命周期证据。",
+        "insufficient": "缺少完整路径时标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "注册表路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "layout_file",
+          "value": {
+            "label": "布局文件",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "ime_file",
+          "value": {
+            "label": "输入法文件",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "upper_filters",
+          "value": {
+            "label": "上层过滤驱动",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "lower_filters",
+          "value": {
+            "label": "下层过滤驱动",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "desktop.shell_configuration",
+      "category": "desktop",
+      "name": "桌面与资源管理器配置",
+      "identity": {
+        "strategy": "native_path",
+        "keys": [
+          "scope",
+          "path"
+        ],
+        "scope": "用户作用域；不读取剪贴板正文",
+        "normalization": "路径分隔符与大小写按类型规则规范化；不对所有字符串统一处理。",
+        "reuse_rule": "路径相同不保证删除重建前后是同一实例；需要生命周期证据。",
+        "insufficient": "缺少完整路径时标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "配置路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "项名",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "value",
+          "value": {
+            "label": "值",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": [
+        "execution.clipboard_changed"
+      ]
+    },
+    {
+      "id": "desktop.shortcut",
+      "category": "desktop",
+      "name": "快捷方式",
+      "identity": {
+        "strategy": "file_identity",
+        "keys": [
+          "volume_identity",
+          "file_id"
+        ],
+        "scope": "用户作用域；只读解析，不执行目标；快捷方式存在不代表目标执行过",
+        "normalization": "文件 ID 按十六进制规范化；路径保留原大小写，仅用于展示。",
+        "reuse_rule": "文件 ID 被复用时不自动判为同一文件；需要路径与时间证据。",
+        "insufficient": "只有路径时标记身份能力受限：路径可变，改名与移动都会改变它。"
+      },
+      "fields": [
+        {
+          "id": "path",
+          "value": {
+            "label": "路径",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "target",
+          "value": {
+            "label": "目标",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "working_directory",
+          "value": {
+            "label": "工作目录",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "arguments",
+          "value": {
+            "label": "参数",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "icon",
+          "value": {
+            "label": "图标",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "hotkey",
+          "value": {
+            "label": "热键",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "desktop.editor_extension",
+      "category": "desktop",
+      "name": "编辑器扩展",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "editor",
+          "extension_id",
+          "version"
+        ],
+        "scope": "编辑器 + 用户配置文件",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "editor",
+          "value": {
+            "label": "编辑器",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "extension_id",
+          "value": {
+            "label": "扩展 ID",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "version",
+          "value": {
+            "label": "版本",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "name",
+          "value": {
+            "label": "名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "publisher",
+          "value": {
+            "label": "发布者",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "engines",
+          "value": {
+            "label": "引擎约束",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "desktop.sync_account",
+      "category": "desktop",
+      "name": "同步账户登记",
+      "identity": {
+        "strategy": "native_identifier",
+        "keys": [
+          "scope",
+          "native_id"
+        ],
+        "scope": "用户作用域；登记不表示已发生文件同步",
+        "normalization": "原生标识按来源格式保留；只有 Windows 明确定义为不区分大小写的标识才按该规则比较。",
+        "reuse_rule": "同一标识在来源中消失后重新出现时，只有在来源提供实例代际证据时才判为同一实例。",
+        "insufficient": "来源未提供原生标识时不得用显示名称代替，标记身份能力受限。"
+      },
+      "fields": [
+        {
+          "id": "provider",
+          "value": {
+            "label": "同步提供程序",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "account",
+          "value": {
+            "label": "账户",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "mount_point",
+          "value": {
+            "label": "挂载点",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "policy",
+          "value": {
+            "label": "策略",
+            "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    }
+  ],
+  "sources": [
+    {
+      "source": "pcscope.apps.browser-policies",
+      "destination": "observation",
+      "types": [
+        "policy.browser_policy"
+      ],
+      "note": "注册表策略快照；仅指定策略保留原值，其他内容摘要；浏览器策略主归策略与配置"
+    },
+    {
+      "source": "pcscope.apps.chromium-extensions",
+      "destination": "observation",
+      "types": [
+        "shell.browser_extension"
+      ],
+      "note": "解析磁盘清单；不判定是否启用；拒绝跟随重解析目录"
+    },
+    {
+      "source": "pcscope.apps.dotnet-runtimes",
+      "destination": "observation",
+      "types": [
+        "software.runtime"
+      ],
+      "note": "分 32/64 位视图；运行时家族与版本组合身份"
+    },
+    {
+      "source": "pcscope.apps.firefox-extensions",
+      "destination": "observation",
+      "types": [
+        "shell.browser_extension"
+      ],
+      "note": "配置文件范围；签名与启用状态是字段，不是身份"
+    },
+    {
+      "source": "pcscope.apps.ide-extensions",
+      "destination": "observation",
+      "types": [
+        "desktop.editor_extension"
+      ],
+      "note": "解析扩展目录包清单；编辑器与扩展 ID 组合身份"
+    },
+    {
+      "source": "pcscope.apps.npm-global-packages",
+      "destination": "observation",
+      "types": [
+        "software.language_package"
+      ],
+      "note": "标准全局目录；自定义 prefix 不覆盖；不运行包管理器"
+    },
+    {
+      "source": "pcscope.apps.onedrive-registration",
+      "destination": "observation",
+      "types": [
+        "desktop.sync_account"
+      ],
+      "note": "登记快照；不代表实时同步或冲突状态"
+    },
+    {
+      "source": "pcscope.apps.mihomo",
+      "destination": "observation",
+      "types": [
+        "network.proxy_configuration"
+      ],
+      "note": "显式启用的本地运行配置；不读取订阅、节点凭据或流量内容"
+    },
+    {
+      "source": "pcscope.collector.scoped-configuration",
+      "destination": "coverage",
+      "types": [],
+      "note": "指定范围采集的配置状态；名单为空表示未配置文件监控，不是对象消失"
+    },
+    {
+      "source": "pcscope.execution.modules",
+      "destination": "observation",
+      "types": [
+        "runtime.module_instance"
+      ],
+      "note": "仅按配置的进程名查询；模块身份含加载上下文，不能只按模块名归一"
+    },
+    {
+      "source": "pcscope.execution.module-scan-status",
+      "destination": "coverage",
+      "types": [],
+      "note": "按当前账户会话记录目标发现与各进程实例的模块读取结果；未观察不推断退出"
+    },
+    {
+      "source": "pcscope.execution.module-file-state",
+      "destination": "coverage",
+      "types": [],
+      "note": "已观察模块的磁盘文件复核与变化，保留模块关系及原始前后依据；不推断内存版本或根因"
+    },
+    {
+      "source": "pcscope.execution.module-file-state",
+      "destination": "observation",
+      "types": [
+        "file.watched_file"
+      ],
+      "note": "稳定且存在的磁盘文件复用卷与文件 ID 身份，保留 Owner/DACL 字段；路径缺失不推断原文件删除，校验材料仍可查"
+    },
+    {
+      "source": "pcscope.files.metadata-security",
+      "destination": "observation",
+      "types": [
+        "file.watched_file",
+        "file.acl_entry",
+        "file.alternate_data_stream"
+      ],
+      "note": "仅逐项读取配置名单；读取所有者与 DACL，不含 SACL；内容不保存"
+    },
+    {
+      "source": "pcscope.software.portable",
+      "destination": "observation",
+      "types": [
+        "software.portable_registration"
+      ],
+      "note": "路径文件登记不自动证明程序已经安装；签名状态记录为未校验"
+    },
+    {
+      "source": "pcscope.virtualization.docker",
+      "destination": "observation",
+      "types": [
+        "virtualization.container",
+        "virtualization.image",
+        "virtualization.container_volume",
+        "virtualization.container_network"
+      ],
+      "note": "经本地命名管道读取只读清单；不读取日志、环境变量与容器内容"
+    },
+    {
+      "source": "pcscope.files.directory-security",
+      "destination": "observation",
+      "types": [
+        "file.watched_directory"
+      ],
+      "note": "显式目录名单，目录身份、ACL 与直接子项快照；不递归、不读取正文"
+    },
+    {
+      "source": "pcscope.hardware.driver-packages",
+      "destination": "observation",
+      "types": [
+        "hardware.driver_package"
+      ],
+      "note": "DISM 本机驱动仓库包，包括未绑定设备的包；读取失败保留缺口"
+    },
+    {
+      "source": "pcscope.security.key-metadata",
+      "destination": "observation",
+      "types": [
+        "security.key_metadata"
+      ],
+      "note": "CNG 提供程序中用户与机器密钥名称和算法；SILENT 模式，不打开或导出密钥"
+    },
+    {
+      "source": "pcscope.collector.event-channel-coverage",
+      "destination": "coverage",
+      "types": [],
+      "note": "逐通道可读性与保留策略；只查元数据，不代表审计完整"
+    },
+    {
+      "source": "pcscope.policy.configuration",
+      "destination": "observation",
+      "types": [
+        "policy.uac_policy",
+        "policy.software_restriction_policy"
+      ],
+      "note": "注册表策略快照；未设置与显式关闭必须区分"
+    },
+    {
+      "source": "pcscope.security.certificates.currentuser",
+      "destination": "observation",
+      "types": [
+        "security.certificate_registration"
+      ],
+      "note": "存储区作用域与指纹；不导出私钥，不做信任评估"
+    },
+    {
+      "source": "pcscope.security.certificates.localmachine",
+      "destination": "observation",
+      "types": [
+        "security.certificate_registration"
+      ],
+      "note": "存储区作用域与指纹；同一证书在不同存储区的登记分别存在"
+    },
+    {
+      "source": "pcscope.security.detections",
+      "destination": "action_evidence",
+      "types": [
+        "security.protection"
+      ],
+      "note": "来源保留的检测记录；检测动作与其结果语义保留，非主动扫描"
+    },
+    {
+      "source": "pcscope.security.deviceguard",
+      "destination": "observation",
+      "types": [
+        "security.device_guard_configuration"
+      ],
+      "note": "能力与配置编号快照"
+    },
+    {
+      "source": "pcscope.security.encryption",
+      "destination": "observation",
+      "types": [
+        "security.bitlocker_configuration"
+      ],
+      "note": "卷加密配置与状态；不采集恢复材料"
+    },
+    {
+      "source": "pcscope.security.products",
+      "destination": "observation",
+      "types": [
+        "security.security_product"
+      ],
+      "note": "依赖系统提供安全中心命名空间；缺失报告缺口"
+    },
+    {
+      "source": "pcscope.security.protection",
+      "destination": "observation",
+      "types": [
+        "security.protection"
+      ],
+      "note": "引擎、特征库与防护开关是运行状态字段"
+    },
+    {
+      "source": "pcscope.security.protection-policy",
+      "destination": "observation",
+      "types": [
+        "security.protection",
+        "security.exclusion"
+      ],
+      "note": "排除项为聚合字段；逐项展开为独立排除项对象属于 S17 适配工作"
+    },
+    {
+      "source": "pcscope.security.secureboot",
+      "destination": "observation",
+      "types": [
+        "security.secure_boot_configuration"
+      ],
+      "note": "组件不支持或权限不足报告缺口，不冒充已关闭"
+    },
+    {
+      "source": "pcscope.security.ssh-public-keys",
+      "destination": "observation",
+      "types": [
+        "security.ssh_public_key"
+      ],
+      "note": "只保存算法与指纹；不保存密钥材料与注释"
+    },
+    {
+      "source": "pcscope.security.tpm",
+      "destination": "observation",
+      "types": [
+        "hardware.tpm"
+      ],
+      "note": "存在、就绪与锁定状态是运行状态字段"
+    },
+    {
+      "source": "pcscope.desktop.clipboard",
+      "destination": "observation",
+      "types": [
+        "desktop.shell_configuration"
+      ],
+      "note": "配置开关；不读取剪贴板正文"
+    },
+    {
+      "source": "pcscope.desktop.input",
+      "destination": "observation",
+      "types": [
+        "desktop.input_configuration"
+      ],
+      "note": "注册表快照；部分注册表可能拒绝访问，报告读取问题"
+    },
+    {
+      "source": "pcscope.desktop.print-jobs",
+      "destination": "observation",
+      "types": [
+        "desktop.print_job"
+      ],
+      "note": "逐打印机读取队列；不保存文档名与正文"
+    },
+    {
+      "source": "pcscope.desktop.printer-drivers",
+      "destination": "observation",
+      "types": [
+        "desktop.printer_driver"
+      ],
+      "note": "名称与打印驱动环境组合身份"
+    },
+    {
+      "source": "pcscope.desktop.printer-ports",
+      "destination": "observation",
+      "types": [
+        "desktop.printer_port"
+      ],
+      "note": "端口名称作用域内身份"
+    },
+    {
+      "source": "pcscope.desktop.printing",
+      "destination": "observation",
+      "types": [
+        "desktop.printer"
+      ],
+      "note": "依赖打印服务；服务不可用报告缺口"
+    },
+    {
+      "source": "pcscope.desktop.shell-settings",
+      "destination": "observation",
+      "types": [
+        "desktop.shell_configuration"
+      ],
+      "note": "指定显示、壁纸与系统文件夹配置"
+    },
+    {
+      "source": "pcscope.desktop.shortcuts",
+      "destination": "observation",
+      "types": [
+        "desktop.shortcut"
+      ],
+      "note": "只读解析现有快捷方式；不执行目标；参数仅摘要"
+    },
+    {
+      "source": "pcscope.environment.configuration",
+      "destination": "observation",
+      "types": [
+        "policy.environment_variable",
+        "shell.file_association"
+      ],
+      "note": "环境值保留脱敏原值；文件关联主归系统扩展与关联，即使由本采集项提供"
+    },
+    {
+      "source": "pcscope.startup.advanced-extensions",
+      "destination": "observation",
+      "types": [
+        "startup.ifeo_configuration"
+      ],
+      "note": "读取指定开关与其他值摘要；不加载扩展"
+    },
+    {
+      "source": "pcscope.startup.service-configuration",
+      "destination": "observation",
+      "types": [
+        "startup.service"
+      ],
+      "note": "注册表配置与 startup.services 的运行状态字段汇入同一服务类型"
+    },
+    {
+      "source": "pcscope.startup.session-hooks",
+      "destination": "observation",
+      "types": [
+        "startup.logon_initialization"
+      ],
+      "note": "注册表快照；非白名单内容仅摘要"
+    },
+    {
+      "source": "pcscope.startup.task-details",
+      "destination": "observation",
+      "types": [
+        "startup.scheduled_task"
+      ],
+      "note": "触发器、条件与运行结果汇入同一任务实例的状态字段"
+    },
+    {
+      "source": "pcscope.startup.wmi-bindings",
+      "destination": "observation",
+      "types": [
+        "startup.wmi_binding"
+      ],
+      "note": "过滤器与消费者关联登记；不提前构建通用关系图谱"
+    },
+    {
+      "source": "pcscope.startup.wmi-consumers",
+      "destination": "observation",
+      "types": [
+        "startup.wmi_consumer"
+      ],
+      "note": "命令与脚本仅保存摘要"
+    },
+    {
+      "source": "pcscope.startup.wmi-filters",
+      "destination": "observation",
+      "types": [
+        "startup.wmi_filter"
+      ],
+      "note": "订阅配置清单，不是主动订阅事件"
+    },
+    {
+      "source": "pcscope.eventlog.security",
+      "destination": "action_evidence",
+      "types": [
+        "account.user",
+        "account.group_membership",
+        "runtime.logon_session",
+        "runtime.terminal_session",
+        "runtime.process",
+        "file.watched_file",
+        "file.acl_entry",
+        "policy.os_configuration",
+        "startup.service",
+        "startup.scheduled_task",
+        "network.endpoint"
+      ],
+      "note": "Windows 安全审计：登录会话、账户管理、组成员、登录特权（不等于长期权限分配）、进程生命周期、对象与权限审计、注册表、服务安装、任务变更、审计策略、网络连接"
+    },
+    {
+      "source": "pcscope.eventlog.system",
+      "destination": "action_evidence",
+      "types": [
+        "startup.service",
+        "policy.os_configuration"
+      ],
+      "note": "服务运行事件、系统启动与关闭、电源与异常重启"
+    },
+    {
+      "source": "pcscope.eventlog.application",
+      "destination": "action_evidence",
+      "types": [],
+      "note": "软件安装事件、应用程序错误与无响应；无法确定目标对象时保留为未归属证据"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+      "destination": "action_evidence",
+      "types": [
+        "startup.scheduled_task"
+      ],
+      "note": "任务触发与执行过程；开始与结束保留阶段语义，不以开始冒充成功"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-windowsupdateclient/operational",
+      "destination": "action_evidence",
+      "types": [
+        "software.system_update"
+      ],
+      "note": "更新检查与安装过程；更新历史不等于当前仍安装的组件"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-windows defender/operational",
+      "destination": "action_evidence",
+      "types": [
+        "security.protection",
+        "file.watched_file"
+      ],
+      "note": "Defender 健康、情报与处置事件；保留检测语义"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-powershell/operational",
+      "destination": "action_evidence",
+      "types": [],
+      "note": "PowerShell 运行事件元数据；正文不保存"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-wmi-activity/operational",
+      "destination": "action_evidence",
+      "types": [
+        "startup.wmi_filter",
+        "startup.wmi_consumer",
+        "startup.wmi_binding"
+      ],
+      "note": "WMI 提供程序与调用；查询与命令保存脱敏原值"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-grouppolicy/operational",
+      "destination": "action_evidence",
+      "types": [
+        "policy.os_configuration"
+      ],
+      "note": "组策略处理；最终生效策略需结合配置来源判定"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational",
+      "destination": "action_evidence",
+      "types": [
+        "software.appx_package"
+      ],
+      "note": "应用包部署；部署开始不意味着安装成功"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-terminalservices-localsessionmanager/operational",
+      "destination": "action_evidence",
+      "types": [
+        "runtime.terminal_session"
+      ],
+      "note": "终端会话登录、断开与注销"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-terminalservices-remoteconnectionmanager/operational",
+      "destination": "action_evidence",
+      "types": [
+        "runtime.terminal_session"
+      ],
+      "note": "远程连接管理事件"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-wlan-autoconfig/operational",
+      "destination": "action_evidence",
+      "types": [
+        "network.connection_profile"
+      ],
+      "note": "无线网络连接事件"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-networkprofile/operational",
+      "destination": "action_evidence",
+      "types": [
+        "network.connection_profile"
+      ],
+      "note": "网络配置文件切换事件"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-driverframeworks-usermode/operational",
+      "destination": "action_evidence",
+      "types": [
+        "hardware.device"
+      ],
+      "note": "用户模式驱动事件"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-printservice/operational",
+      "destination": "action_evidence",
+      "types": [
+        "desktop.print_job"
+      ],
+      "note": "打印服务事件；文档正文不采集"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-bitlocker/bitlocker management",
+      "destination": "action_evidence",
+      "types": [
+        "security.bitlocker_configuration"
+      ],
+      "note": "BitLocker 管理事件；不采集恢复材料"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-codeintegrity/operational",
+      "destination": "action_evidence",
+      "types": [
+        "file.watched_file"
+      ],
+      "note": "代码完整性事件"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-applocker/exe and dll",
+      "destination": "action_evidence",
+      "types": [],
+      "note": "AppLocker 程序与 DLL 事件；正文不保存"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-applocker/msi and script",
+      "destination": "action_evidence",
+      "types": [],
+      "note": "AppLocker 安装包与脚本事件；正文不保存"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+      "destination": "action_evidence",
+      "types": [
+        "runtime.process",
+        "runtime.module_instance",
+        "hardware.driver_service",
+        "network.endpoint",
+        "file.watched_file",
+        "file.alternate_data_stream",
+        "policy.os_configuration",
+        "startup.wmi_filter",
+        "startup.wmi_consumer",
+        "startup.wmi_binding",
+        "hardware.disk",
+        "desktop.shell_configuration"
+      ],
+      "note": "Sysmon 系统活动；需已安装并启用该通道"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-hyper-v-vmms/admin",
+      "destination": "action_evidence",
+      "types": [
+        "virtualization.virtual_machine"
+      ],
+      "note": "Hyper-V 管理事件"
+    },
+    {
+      "source": "pcscope.eventlog.microsoft-windows-backup",
+      "destination": "action_evidence",
+      "types": [],
+      "note": "Windows 备份事件；备份动作不等于数据可恢复"
+    },
+    {
+      "source": "pcscope.execution.processes",
+      "destination": "observation",
+      "types": [
+        "runtime.process"
+      ],
+      "note": "按进程 ID 与创建时间记录；只有进程 ID 不足以唯一识别"
+    },
+    {
+      "source": "pcscope.execution.resources",
+      "destination": "sampling",
+      "types": [],
+      "note": "时点内存与处理器采样，是进程或机器的采样状态，不是对象"
+    },
+    {
+      "source": "pcscope.identity.assigned-rights",
+      "destination": "observation",
+      "types": [
+        "account.right_assignment"
+      ],
+      "note": "需策略读取权限；分配列表不等于有效访问判定"
+    },
+    {
+      "source": "pcscope.identity.interactive-sessions",
+      "destination": "observation",
+      "types": [
+        "runtime.terminal_session"
+      ],
+      "note": "会话状态码；会话标识复用不串联历史"
+    },
+    {
+      "source": "pcscope.identity.logon-sessions",
+      "destination": "observation",
+      "types": [
+        "runtime.logon_session"
+      ],
+      "note": "不是完整登录登出历史"
+    },
+    {
+      "source": "pcscope.identity.machine",
+      "destination": "observation",
+      "types": [
+        "account.machine_identity"
+      ],
+      "note": "计算机名称、域、角色与 UUID；重装或迁移需要安装作用域区分"
+    },
+    {
+      "source": "pcscope.identity.profiles",
+      "destination": "observation",
+      "types": [
+        "account.user_profile"
+      ],
+      "note": "按 SID 归一；加载状态是运行状态字段"
+    },
+    {
+      "source": "pcscope.software.appx-user",
+      "destination": "observation",
+      "types": [
+        "software.appx_package"
+      ],
+      "note": "当前用户范围；其他用户需单独代理"
+    },
+    {
+      "source": "pcscope.software.optional-features",
+      "destination": "observation",
+      "types": [
+        "software.optional_feature"
+      ],
+      "note": "需要相应权限；不启用或禁用组件"
+    },
+    {
+      "source": "pcscope.software.provisioned",
+      "destination": "observation",
+      "types": [
+        "software.provisioned_package"
+      ],
+      "note": "本机映像预配清单；不执行安装"
+    },
+    {
+      "source": "pcscope.software.user-inventory",
+      "destination": "observation",
+      "types": [
+        "software.installation_registration"
+      ],
+      "note": "用户范围登记，与机器范围登记分开建实例"
+    },
+    {
+      "source": "pcscope.system.clock",
+      "destination": "observation",
+      "types": [
+        "policy.time_sync_configuration"
+      ],
+      "note": "时间同步配置与时区；不修改系统时间"
+    },
+    {
+      "source": "pcscope.system.reboot-pending",
+      "destination": "observation",
+      "types": [
+        "policy.os_configuration"
+      ],
+      "note": "待重启标志是运行状态字段"
+    },
+    {
+      "source": "pcscope.system.restore-points",
+      "destination": "observation",
+      "types": [
+        "policy.system_restore_point"
+      ],
+      "note": "不创建还原点"
+    },
+    {
+      "source": "pcscope.system.update-history",
+      "destination": "action_evidence",
+      "types": [
+        "software.system_update"
+      ],
+      "note": "更新动作的证据，不直接等同于当前仍安装的组件"
+    },
+    {
+      "source": "pcscope.hardware.battery",
+      "destination": "observation",
+      "types": [
+        "hardware.battery"
+      ],
+      "note": "来源提供的容量与估算时间；不是完整电池健康历史"
+    },
+    {
+      "source": "pcscope.hardware.disk-health",
+      "destination": "observation",
+      "types": [
+        "hardware.disk"
+      ],
+      "note": "健康与操作状态是运行状态字段；不是完整 SMART 原始属性"
+    },
+    {
+      "source": "pcscope.hardware.driver-bindings",
+      "destination": "observation",
+      "types": [
+        "hardware.driver_binding"
+      ],
+      "note": "设备与驱动版本组合身份；包含 INF 与签名声明"
+    },
+    {
+      "source": "pcscope.hardware.driver-services",
+      "destination": "observation",
+      "types": [
+        "hardware.driver_service"
+      ],
+      "note": "驱动服务主归硬件与驱动，不与普通服务重复计数"
+    },
+    {
+      "source": "pcscope.hardware.firmware",
+      "destination": "observation",
+      "types": [
+        "hardware.firmware"
+      ],
+      "note": "BIOS 与 SMBIOS 版本"
+    },
+    {
+      "source": "pcscope.power.configuration",
+      "destination": "observation",
+      "types": [
+        "policy.power_plan"
+      ],
+      "note": "激活计划与休眠配置；不切换计划"
+    },
+    {
+      "source": "pcscope.storage.disks",
+      "destination": "observation",
+      "types": [
+        "hardware.disk"
+      ],
+      "note": "磁盘号与总线；盘符变化不影响身份"
+    },
+    {
+      "source": "pcscope.storage.partitions",
+      "destination": "observation",
+      "types": [
+        "hardware.partition"
+      ],
+      "note": "磁盘号与分区号组合身份"
+    },
+    {
+      "source": "pcscope.hardware.devices",
+      "destination": "observation",
+      "types": [
+        "hardware.device"
+      ],
+      "note": "设备 ID 与类别；配置错误码是运行状态字段"
+    },
+    {
+      "source": "pcscope.identity.accounts",
+      "destination": "observation",
+      "types": [
+        "account.user"
+      ],
+      "note": "按 SID 归一；来源不提供建立时间则为空"
+    },
+    {
+      "source": "pcscope.identity.groups",
+      "destination": "observation",
+      "types": [
+        "account.group",
+        "account.group_membership"
+      ],
+      "note": "按组 SID 枚举成员；不计算全部有效权限"
+    },
+    {
+      "source": "pcscope.network.adapters",
+      "destination": "observation",
+      "types": [
+        "network.adapter"
+      ],
+      "note": "含隐藏网卡；改名不生成新身份"
+    },
+    {
+      "source": "pcscope.network.addresses",
+      "destination": "observation",
+      "types": [
+        "network.address_configuration"
+      ],
+      "note": "接口 GUID 与地址组合身份；地址状态是运行状态字段"
+    },
+    {
+      "source": "pcscope.shell.registrations",
+      "destination": "observation",
+      "types": [
+        "shell.preview_handler",
+        "shell.icon_overlay_handler",
+        "shell.shell_extension",
+        "shell.namespace_extension",
+        "shell.context_menu_registration",
+        "shell.file_association",
+        "shell.com_registration"
+      ],
+      "note": "注册表登记按视图与作用域归一；注册存在不解释为已加载或已调用"
+    },
+    {
+      "source": "pcscope.startup.logon",
+      "destination": "observation",
+      "types": [
+        "startup.logon_startup_entry"
+      ],
+      "note": "用户或机器作用域与注册表视图分开建实例"
+    },
+    {
+      "source": "pcscope.startup.services",
+      "destination": "observation",
+      "types": [
+        "startup.service"
+      ],
+      "note": "运行状态字段与注册表配置汇入同一服务实例"
+    },
+    {
+      "source": "pcscope.startup.tasks",
+      "destination": "observation",
+      "types": [
+        "startup.scheduled_task"
+      ],
+      "note": "基础配置字段；与 task-details 汇入同一任务实例"
+    },
+    {
+      "source": "pcscope.storage.volumes",
+      "destination": "observation",
+      "types": [
+        "hardware.volume"
+      ],
+      "note": "卷标识作用域；盘符是可变展示属性"
+    },
+    {
+      "source": "pcscope.system.boot-state",
+      "destination": "observation",
+      "types": [
+        "policy.os_configuration"
+      ],
+      "note": "最近启动时间是运行状态字段；不代表安装时间"
+    },
+    {
+      "source": "pcscope.system.hotfixes",
+      "destination": "observation",
+      "types": [
+        "software.system_update"
+      ],
+      "note": "仅 QFE 范围，不等于完整更新历史"
+    },
+    {
+      "source": "pcscope.system.version",
+      "destination": "observation",
+      "types": [
+        "policy.os_configuration"
+      ],
+      "note": "操作系统版本、生成号与安装时间"
+    },
+    {
+      "source": "pcscope.virtualization.platform",
+      "destination": "observation",
+      "types": [
+        "virtualization.platform_capability"
+      ],
+      "note": "能力标志不是虚拟机实例"
+    },
+    {
+      "source": "pcscope.network.access",
+      "destination": "observation",
+      "types": [
+        "network.proxy_configuration",
+        "network.vpn_configuration",
+        "network.remote_access_configuration"
+      ],
+      "note": "当前用户 VPN 与代理、远程桌面配置；注册表非白名单值保存摘要"
+    },
+    {
+      "source": "pcscope.network.dns-cache",
+      "destination": "observation",
+      "types": [
+        "network.dns_cache_entry"
+      ],
+      "note": "时点缓存条目；非完整查询历史，缓存过期不解释为用户删除"
+    },
+    {
+      "source": "pcscope.network.dns-configuration",
+      "destination": "observation",
+      "types": [
+        "network.dns_configuration"
+      ],
+      "note": "接口 DNS 服务器与搜索列表配置"
+    },
+    {
+      "source": "pcscope.network.firewall-profiles",
+      "destination": "observation",
+      "types": [
+        "network.firewall_profile"
+      ],
+      "note": "默认动作与日志配置；不读取流量日志正文"
+    },
+    {
+      "source": "pcscope.network.firewall-rules",
+      "destination": "observation",
+      "types": [
+        "network.firewall_rule"
+      ],
+      "note": "按 InstanceID 关联 7 类过滤器；缺失关联报告缺口"
+    },
+    {
+      "source": "pcscope.network.hosts",
+      "destination": "observation",
+      "types": [
+        "network.hosts_entry"
+      ],
+      "note": "解析有效地址与名称、排除注释；拒绝超大文件与重解析点"
+    },
+    {
+      "source": "pcscope.network.ipsec",
+      "destination": "observation",
+      "types": [
+        "network.ipsec_rule"
+      ],
+      "note": "策略存储作用域内身份"
+    },
+    {
+      "source": "pcscope.network.mapped-drives",
+      "destination": "observation",
+      "types": [
+        "network.smb_mapping"
+      ],
+      "note": "本地盘符与远端路径组合身份"
+    },
+    {
+      "source": "pcscope.network.profiles",
+      "destination": "observation",
+      "types": [
+        "network.connection_profile"
+      ],
+      "note": "网络名称与类别；连通性字段是运行状态"
+    },
+    {
+      "source": "pcscope.network.routes",
+      "destination": "observation",
+      "types": [
+        "network.route"
+      ],
+      "note": "接口与目的前缀组合身份"
+    },
+    {
+      "source": "pcscope.network.share-sessions",
+      "destination": "observation",
+      "types": [
+        "network.smb_session"
+      ],
+      "note": "会话、客户端与用户组合身份"
+    },
+    {
+      "source": "pcscope.network.shares",
+      "destination": "observation",
+      "types": [
+        "network.smb_share"
+      ],
+      "note": "共享层 ACL；非文件系统全部有效权限"
+    },
+    {
+      "source": "pcscope.network.tcp",
+      "destination": "observation",
+      "types": [
+        "network.endpoint"
+      ],
+      "note": "时点枚举；不能完整捕获短连接，端点复用不拼接不同连接"
+    },
+    {
+      "source": "pcscope.network.udp",
+      "destination": "observation",
+      "types": [
+        "network.endpoint"
+      ],
+      "note": "时点枚举；不读取报文"
+    },
+    {
+      "source": "pcscope.network.winrm-configuration",
+      "destination": "observation",
+      "types": [
+        "network.remote_access_configuration"
+      ],
+      "note": "注册表配置快照；不连接远端机器"
+    },
+    {
+      "source": "pcscope.software",
+      "destination": "observation",
+      "types": [
+        "software.installation_registration"
+      ],
+      "note": "分别枚举 32/64 位视图；同名软件不一定是同一安装登记"
+    },
+    {
+      "source": "pcscope.usn.{drive}",
+      "destination": "action_evidence",
+      "types": [
+        "file.watched_file"
+      ],
+      "note": "按父目录 ID 与精确文件名匹配名单的增量变更；不保证逐次写入明细，不保存内容"
+    },
+    {
+      "source": "pcscope.usn.{drive}",
+      "destination": "coverage",
+      "types": [],
+      "note": "日志身份与断点校验失败时报告缺口；权限不足不尝试创建日志"
+    },
+    {
+      "source": "pcscope.usn.volumes",
+      "destination": "observation",
+      "types": [
+        "hardware.volume"
+      ],
+      "note": "固定盘符 NTFS 卷发现；不扫描无盘符卷"
+    },
+    {
+      "source": "pcscope.usn.watch-list",
+      "destination": "coverage",
+      "types": [],
+      "note": "监控名单状态；名单为空表示未配置文件变更采集，不是对象消失"
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-checkpoints",
+      "destination": "observation",
+      "types": [
+        "virtualization.checkpoint"
+      ],
+      "note": "检查点标识作用域；不创建检查点"
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-disks",
+      "destination": "observation",
+      "types": [
+        "virtualization.disk_attachment"
+      ],
+      "note": "虚拟机与控制器位置组合身份；不读取磁盘内容"
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-switches",
+      "destination": "observation",
+      "types": [
+        "virtualization.virtual_switch"
+      ],
+      "note": "交换机标识作用域；引擎未运行报告缺口"
+    },
+    {
+      "source": "pcscope.virtualization.hyperv-vms",
+      "destination": "observation",
+      "types": [
+        "virtualization.virtual_machine"
+      ],
+      "note": "虚拟机标识作用域；需 Hyper-V 模块与访问权限"
+    },
+    {
+      "source": "pcscope.virtualization.wsl-registration",
+      "destination": "observation",
+      "types": [
+        "virtualization.wsl_distribution"
+      ],
+      "note": "用户注册项；运行状态与其他用户范围待补"
+    },
+    {
+      "source": "pcscope.eventlog.import",
+      "destination": "action_evidence",
+      "types": [],
+      "note": "手动导入的历史事件证据；来源为固定导入通道，不作为真实对象实例"
+    },
+    {
+      "source": "pcscope.usn.changes",
+      "destination": "action_evidence",
+      "types": [
+        "file.watched_file"
+      ],
+      "note": "文件变更采集的汇总前缀组，覆盖各盘符来源"
+    }
+  ]
+}

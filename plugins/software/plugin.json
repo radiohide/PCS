@@ -1,0 +1,14 @@
+{
+  "id": "pcscope.software",
+  "version": "0.1.0",
+  "protocol_version": 1,
+  "runtime": "process",
+  "entrypoint": "bin/pcscope-software.exe",
+  "platforms": ["windows"],
+  "collection_modes": ["snapshot"],
+  "execution_scope": "system",
+  "capabilities": ["registry.read"],
+  "schemas": ["software.registry.v1"],
+  "supports_resume": false,
+  "max_concurrency": 1
+}

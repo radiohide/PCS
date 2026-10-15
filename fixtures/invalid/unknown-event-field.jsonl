@@ -1,0 +1,1 @@
+{"protocol_version":1,"request_id":"fixture-batch-0045","type":"event_batch","source":"pcscope.eventlog.system","epoch":"fixture-epoch-1","batch_seq":1,"checkpoint":"fixture-cp-1","events":[{"id":"1","occurred_at":"2026-09-10T00:00:00Z","kind":"windows.event","object_id":"1","data":{},"unexpected_field":true}]}

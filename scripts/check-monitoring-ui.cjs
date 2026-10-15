@@ -1,0 +1,13 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path');
+const context={window:{},setTimeout};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../apps/desktop/ui/monitoring.js'),'utf8'),context);
+const render=context.window.PCScopeMonitoring.reportHtml;
+const html=render({elevated:false,settings:{mode:'enhanced',configured:true},report:{audits:[{name:'audit',success_enabled:null,error:'denied'}],logs:[{name:'<script>',enabled:false,readable:false,mode:'Circular',maximum_bytes:1048576,error:'denied'}]},history:{channels:{'<script>':{ok:false}}}});
+assert(html.includes('当前后台：普通权限'));assert(html.includes('保存模式：增强采集'));
+assert(html.includes('未知'));assert(html.includes('采集受阻'));assert(html.includes('&lt;script&gt;'));assert(!html.includes('<script>'));
+assert(html.includes('满后覆盖最旧日志'));assert(html.includes('无法恢复'));
+const caught=render({settings:{},report:{logs:[{name:'Security',readable:true,enabled:true}]},history:{channels:{Security:{ok:true,history_state:'caught_up'}}}});
+assert(caught.includes('已追到日志末尾'));assert(caught.includes('不表示历史完整'));
+assert.match(caught,/登录与安全记录<details><summary>日志名称<\/summary>Security<\/details>/,'readable log names precede folded technical channel names');
+const dated=render({settings:{},report:{checked_at:'2026-10-12T05:06:07Z',logs:[]}});
+assert.doesNotMatch(dated,/2026-10-12T05:06:07Z/,'check time is formatted for people instead of showing an ISO timestamp');
+console.log('PASS: actual privilege differs from saved preference; unknown audits stay unknown; gaps and historical limits remain visible; source values escaped.');

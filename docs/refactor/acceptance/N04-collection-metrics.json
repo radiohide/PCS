@@ -1,0 +1,4018 @@
+{
+  "date": "2026-10-12",
+  "baseline": "root pcscope, N04 source-gaps, schema 9",
+  "provenance": {
+    "collector_digest": "627a42861db11fa0a5d2b96b42ce81d23f48e685deb149502a9cebd0dd3f1cd0",
+    "source_hashes": {
+      "model/sources.json": "c4069d29959275af74eacc9f6b7b2ee06ea77f9dc7eb4687ac4d30b3a0417736",
+      "Cargo.lock": "0310b2dd460c1716f144619f42037e12948f15fadb076df25c3e4a592e74b138",
+      "crates/storage/examples/collection-assessment.rs": "527be02b29ac329e9f77b31c01a11951855dd96a105ff9010ca07af02e62cc26",
+      "scripts/test-collection-assessment.ps1": "79c3cc7086ffcd175e4370e72011718d11140befc3cbab6d5eba8946337771d2",
+      "scripts/test-eventlog-performance.ps1": "ff7349cf35559da9fd92017d080bd286d96c595f5fb48597fdb2388983ce6cc6",
+      "docs/refactor/acceptance/N04-artifacts.sha256": "fa3132f4e8cf6d3a8d6abdfb7d1e52109de6ef6762d7dc064497dae75b9833aa"
+    },
+    "raw_input_hashes": {
+      "base-1.jsonl": "69873f075141e3bc89590ef3716e9017cfceace22e118a68fab3bf28a921ba9c",
+      "system-1.jsonl": "545138f0ec7ec707c3b6aea526b0260951027228f5e0aa1bae19a363a6a40112",
+      "security-1.jsonl": "f83090d5561ed467c9d83b17748f6d116f288e2f52708febde4396ce46e27da3",
+      "network-1.jsonl": "37b5a8745bfcbe87cd1a9eaba29ff3e83d4af3ca26acbbae5eaf8c33ee299355",
+      "storage-1.jsonl": "5ee44632b83c8f90eeed14a6ab031be7fdde99e93d6a639ac8e567b0d9c57f12",
+      "startup-1.jsonl": "6c0508aaac72e51ed352225e9a7c195b2d8a8e59f6a2efc6dbb877301d5a459d",
+      "desktop-1.jsonl": "1b24b6faf3afdec6152bf7290ba33b618f198c3522439b8fc1cf62492769f8d3",
+      "virtualization-1.jsonl": "5a00c7aafd79bb2cd4aaf7cb4159981800d7c826a8405e398c78677c1bc006eb",
+      "applications-1.jsonl": "cd9545bc697c330dc8270d914e4ae8cf09ca29d74b41b4037fabaecc1f358297",
+      "scoped-1.jsonl": "69b73e34093fcb98f1e7a965e2d608ea8b7d78637350d181f8d1a2c4a26ab91f",
+      "software-1.jsonl": "4530dbf49b2404b040805864cc6b2b1c465cb76c9814862d529dc3446d6f6564",
+      "usn-1.jsonl": "0a29f0aee8c93ea836dc8e7996b6341f71c69cf1fd1823204c2ce07e70d21a0a",
+      "event-12-1.jsonl": "49a75399708200757e855732e26d76fded54f8233c9ec738773940f50f8ea95f",
+      "event-13-1.jsonl": "29f8a866696b45d34978b3a091d03f252ab7c8b3d41a202647937a829a67cc4b",
+      "application-resume-1.jsonl": "e0e0ff65cec487dcfe3e37610b6b7070b494ff96a285f193e4846b5bb1cc6c39",
+      "event-14-1.jsonl": "b3dc42fb831c69046883a126bc51418351ca3854a6ce6bf9032f073b20c44cfb",
+      "event-15-1.jsonl": "dd31a0709f5c9607842209aae912a24870b7052d5b64184d3d094f17022173a3",
+      "event-16-1.jsonl": "420af400e10e3cf64a40988b37c3dbb03396187cfc7a780816ad62302f4d4097",
+      "event-17-1.jsonl": "e69737967ce13bb764263384b4a378891d3ffc447958e584008163a26bfb6ccd",
+      "event-18-1.jsonl": "a31fea698d8c033b5ee54e0c118bbce5a9e5af36058682db2b0148b48e396c67",
+      "event-19-1.jsonl": "1350b3c1e3f5a5c2c2caaa70fd41fc277a76dca3f18399256505b505445207a8",
+      "event-20-1.jsonl": "e16301022a634ba72ec5bdbaff46c4e3ab8a158398cf7a0cb2c4a1be112c9f95",
+      "event-21-1.jsonl": "aff82590fe6ef6b9e3f75964304a69916028f3637ac09b889d30fb6707bd0f30",
+      "event-22-1.jsonl": "a71b2371bf5cfa002f8e52b86612df5e5fb173eb160004356fdfd4a093e23a9c",
+      "event-23-1.jsonl": "ddf72087fb147661a8f1056bd69c46bb530b393a9a8cef92e9a1c6509b3a8c60",
+      "event-24-1.jsonl": "de58a394e8ccc752dd5e1d88555f80a36fd22f90cd1f4e2703e9bf01d7a6e0a1",
+      "event-25-1.jsonl": "ce91c1b7bec1af02c03cfe774931a6426cb06781873a1136f5c04abef8183785",
+      "event-26-1.jsonl": "ea98b9aea6a3289398b3961bd93128712bf5cf5462f496bf57c6e8f1f80125f8",
+      "event-27-1.jsonl": "72d053490a67396d3e8dc99727e36cde1ddd08baf8d581cd9b783d37b09e7c9f",
+      "event-28-1.jsonl": "6122b78136031ca6bb1c1e88be6734c2b665f4cf58c6d59af2bc89bbce877d9f",
+      "event-29-1.jsonl": "2b96641a64cc73673ecbddfb62970f92eb11416820051e86e3385e81241ea3e7",
+      "event-30-1.jsonl": "97ecf862dd059532888b1cbc95526d6182018f9a659f8a98c05bee3863aed94e",
+      "event-31-1.jsonl": "cd3b26b98160c1113510139bab5b2438095fc4304e0d18953458586c4fbbb119",
+      "event-32-1.jsonl": "eeb2ca07a1d3cd212fd8079a9c5cc475dd0011007b81d8cc94a1644a12f259d0",
+      "event-33-1.jsonl": "168d34e15c906c5858c68052b6fb4981df3258b5c8ae248ec5e169e81206cbed",
+      "event-34-1.jsonl": "31f479f57b790ef54927ed0d1203dd39973f741d926afe77275b604284d05778"
+    }
+  },
+  "environment": {
+    "logical_processors": 20,
+    "version": "10.0.19044",
+    "cpu": [
+      "13th Gen Intel(R) Core(TM) i9-13900H"
+    ],
+    "runner_powershell": "7.6.6",
+    "ram_bytes": 34016559104,
+    "build": "19044",
+    "volume": [
+      {
+        "FileSystem": "NTFS",
+        "Size": 1022987563008,
+        "FreeSpace": 506664181760
+      }
+    ],
+    "collector_powershell": "Windows PowerShell 5.1",
+    "architecture": "64 位",
+    "administrator": false,
+    "collector_process_policy": "Bypass",
+    "os": "Microsoft Windows 10 企业版 LTSC",
+    "date": "2026-10-12T02:18:46.7081522Z"
+  },
+  "method": {
+    "powershell_process_policy": "Bypass diagnostic only; RemoteSigned package wrapper fails signature check",
+    "ps5_module_path": "inherited PS7 paths removed for direct PS5 tests",
+    "temp": "writable workspace target/n04-temp for SQLite",
+    "collector_memory_poll_ms": 50,
+    "query_profile": "release",
+    "query_repetitions": 30,
+    "cold_os_cache": false,
+    "ipc_ui_included": false
+  },
+  "source_status_counts": {
+    "empty": 17,
+    "data": 83,
+    "unavailable": 24,
+    "partial": 1
+  },
+  "jobs": [
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 232251392,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 3434778,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 77,
+      "job": "base",
+      "max_line_bytes": 138469,
+      "seconds": 9.0642,
+      "cpu_seconds": 7.7031,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 158818304,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 439547,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 180,
+      "job": "system",
+      "max_line_bytes": 15573,
+      "seconds": 7.7837,
+      "cpu_seconds": 2.5469,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 159776768,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 202228,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 262,
+      "job": "security",
+      "max_line_bytes": 6653,
+      "seconds": 7.1803,
+      "cpu_seconds": 1.9375,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 177741824,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 518159,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 180,
+      "job": "network",
+      "max_line_bytes": 30092,
+      "seconds": 3.2561,
+      "cpu_seconds": 3.0938,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 210100224,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 668766,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 114,
+      "job": "storage",
+      "max_line_bytes": 31693,
+      "seconds": 6.1393,
+      "cpu_seconds": 4.5312,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 152944640,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 1110265,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 98,
+      "job": "startup",
+      "max_line_bytes": 54016,
+      "seconds": 5.9415,
+      "cpu_seconds": 6.6875,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 159289344,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 129109,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 113,
+      "job": "desktop",
+      "max_line_bytes": 5563,
+      "seconds": 1.5762,
+      "cpu_seconds": 1.9219,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 84586496,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 9080,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 20,
+      "job": "virtualization",
+      "max_line_bytes": 512,
+      "seconds": 0.3438,
+      "cpu_seconds": 0.4844,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 152203264,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 70457,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 112,
+      "job": "applications",
+      "max_line_bytes": 2703,
+      "seconds": 0.6595,
+      "cpu_seconds": 0.9062,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 97513472,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 27976,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 48,
+      "job": "scoped",
+      "max_line_bytes": 1824,
+      "seconds": 0.6162,
+      "cpu_seconds": 0.5469,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": null,
+      "measurement": "packaged debug native collector",
+      "bytes": 45147,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 2,
+      "job": "software",
+      "max_line_bytes": 27206,
+      "seconds": 0.0365,
+      "cpu_seconds": 0,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": null,
+      "measurement": "packaged debug native collector",
+      "bytes": 1295,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 3,
+      "job": "usn",
+      "max_line_bytes": 564,
+      "seconds": 0.0248,
+      "cpu_seconds": 0.0156,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 176513024,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 626588,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-12",
+      "max_line_bytes": 626587,
+      "seconds": 1.2809,
+      "cpu_seconds": 1.8438,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 174886912,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 728829,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-13",
+      "max_line_bytes": 728828,
+      "seconds": 1.0172,
+      "cpu_seconds": 1.4062,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 186699776,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 589644,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "application-resume",
+      "max_line_bytes": 589643,
+      "seconds": 0.9712,
+      "cpu_seconds": 1.3125,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 77418496,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 343,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-14",
+      "max_line_bytes": 342,
+      "seconds": 0.3898,
+      "cpu_seconds": 0.4531,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 82141184,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 384,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-15",
+      "max_line_bytes": 383,
+      "seconds": 0.3471,
+      "cpu_seconds": 0.5469,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 196476928,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 587189,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-16",
+      "max_line_bytes": 587188,
+      "seconds": 0.968,
+      "cpu_seconds": 1.3906,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 184258560,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 682673,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-17",
+      "max_line_bytes": 682672,
+      "seconds": 1.0184,
+      "cpu_seconds": 1.4844,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 133808128,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 905869,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-18",
+      "max_line_bytes": 905868,
+      "seconds": 0.6775,
+      "cpu_seconds": 0.7969,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 173768704,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 721015,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-19",
+      "max_line_bytes": 721014,
+      "seconds": 1.0328,
+      "cpu_seconds": 1.5781,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 79802368,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 376,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-20",
+      "max_line_bytes": 375,
+      "seconds": 0.3001,
+      "cpu_seconds": 0.375,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 183570432,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 736576,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-21",
+      "max_line_bytes": 736575,
+      "seconds": 1.0188,
+      "cpu_seconds": 1.4688,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 173604864,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 599371,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-22",
+      "max_line_bytes": 599370,
+      "seconds": 0.9101,
+      "cpu_seconds": 1.3594,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 80158720,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 436,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-23",
+      "max_line_bytes": 435,
+      "seconds": 0.3124,
+      "cpu_seconds": 0.3438,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 172875776,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 754082,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-24",
+      "max_line_bytes": 754081,
+      "seconds": 1.4188,
+      "cpu_seconds": 1.5938,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 185585664,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 685364,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-25",
+      "max_line_bytes": 685363,
+      "seconds": 1.1277,
+      "cpu_seconds": 1.4219,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 78479360,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 396,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-26",
+      "max_line_bytes": 395,
+      "seconds": 0.3148,
+      "cpu_seconds": 0.3906,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 78872576,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 383,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-27",
+      "max_line_bytes": 382,
+      "seconds": 0.2981,
+      "cpu_seconds": 0.3438,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 95350784,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 27798,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-28",
+      "max_line_bytes": 27797,
+      "seconds": 0.4522,
+      "cpu_seconds": 0.5625,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 156590080,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 950180,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-29",
+      "max_line_bytes": 950179,
+      "seconds": 1.4765,
+      "cpu_seconds": 1.8594,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 80273408,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 405,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-30",
+      "max_line_bytes": 404,
+      "seconds": 0.3013,
+      "cpu_seconds": 0.3438,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 79384576,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 408,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-31",
+      "max_line_bytes": 407,
+      "seconds": 0.3143,
+      "cpu_seconds": 0.4062,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 79220736,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 364,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-32",
+      "max_line_bytes": 363,
+      "seconds": 0.2956,
+      "cpu_seconds": 0.375,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 81211392,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 364,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-33",
+      "max_line_bytes": 363,
+      "seconds": 0.2784,
+      "cpu_seconds": 0.4062,
+      "parse_errors": 0
+    },
+    {
+      "round": 1,
+      "exit_code": 0,
+      "peak_working_set_bytes": 81633280,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "bytes": 390,
+      "oversized_lines": 0,
+      "timeout": false,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-34",
+      "max_line_bytes": 389,
+      "seconds": 0.2976,
+      "cpu_seconds": 0.3438,
+      "parse_errors": 0
+    }
+  ],
+  "sources": [
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.apps.browser-policies",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 420,
+      "jobs": [
+        "applications"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 12,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.apps.chromium-extensions",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 2657,
+      "jobs": [
+        "applications"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 24,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.apps.dotnet-runtimes",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 2703,
+      "jobs": [
+        "applications"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.apps.firefox-extensions",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 424,
+      "jobs": [
+        "applications"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.apps.ide-extensions",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 416,
+      "jobs": [
+        "applications"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 2,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.apps.npm-global-packages",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 658,
+      "jobs": [
+        "applications"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.apps.onedrive-registration",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 430,
+      "jobs": [
+        "applications"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 23,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.collector.event-channel-coverage",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 2316,
+      "jobs": [
+        "security"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.collector.scoped-configuration",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 1142,
+      "jobs": [
+        "scoped"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 4,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.desktop.clipboard",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 1103,
+      "jobs": [
+        "desktop"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: Exception calling \"OpenSubKey\" with \"2\" argument(s): \"Requested registry access is not allowed.\""
+      ],
+      "source": "pcscope.desktop.input",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 354,
+      "jobs": [
+        "desktop"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.desktop.print-jobs",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 414,
+      "jobs": [
+        "desktop"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 5,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.desktop.printer-drivers",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 3218,
+      "jobs": [
+        "desktop"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 10,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.desktop.printer-ports",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 1497,
+      "jobs": [
+        "desktop"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 3,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.desktop.printing",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 1507,
+      "jobs": [
+        "desktop"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 6,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.desktop.shell-settings",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 4307,
+      "jobs": [
+        "desktop"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 94,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.desktop.shortcuts",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 5563,
+      "jobs": [
+        "desktop"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1106,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.environment.configuration",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 42690,
+      "jobs": [
+        "startup"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 20,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {
+        "available": 250,
+        "not_provided": 6
+      },
+      "reasons": [],
+      "source": "pcscope.eventlog.application",
+      "events": 256,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 2,
+      "max_line_bytes": 727794,
+      "jobs": [
+        "event-13",
+        "application-resume"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-applocker/exe and dll",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 404,
+      "jobs": [
+        "event-30"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-applocker/msi and script",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 407,
+      "jobs": [
+        "event-31"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {
+        "available": 128
+      },
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational",
+      "events": 128,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 736547,
+      "jobs": [
+        "event-21"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-backup",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 389,
+      "jobs": [
+        "event-34"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {
+        "available": 5
+      },
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-bitlocker/bitlocker management",
+      "events": 5,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 27597,
+      "jobs": [
+        "event-28"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {
+        "available": 122
+      },
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-codeintegrity/operational",
+      "events": 122,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 949177,
+      "jobs": [
+        "event-29"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-driverframeworks-usermode/operational",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 395,
+      "jobs": [
+        "event-26"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Event log read failed; checkpoint unchanged: Exception calling \"GetLogInformation\" with \"2\" argument(s): \"Attempted to perform an unauthorized operation.\""
+      ],
+      "source": "pcscope.eventlog.microsoft-windows-grouppolicy/operational",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 375,
+      "jobs": [
+        "event-20"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Event log read failed; checkpoint unchanged: Exception calling \"GetLogInformation\" with \"2\" argument(s): \"The specified channel could not be found\""
+      ],
+      "source": "pcscope.eventlog.microsoft-windows-hyper-v-vmms/admin",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 363,
+      "jobs": [
+        "event-33"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {
+        "available": 128
+      },
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-networkprofile/operational",
+      "events": 128,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 685343,
+      "jobs": [
+        "event-25"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 12,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {
+        "available": 12
+      },
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-powershell/operational",
+      "events": 12,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 893584,
+      "jobs": [
+        "event-18"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-printservice/operational",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 382,
+      "jobs": [
+        "event-27"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Event log read failed; checkpoint unchanged: Exception calling \"GetLogInformation\" with \"2\" argument(s): \"The specified channel could not be found\""
+      ],
+      "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 363,
+      "jobs": [
+        "event-32"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 383,
+      "jobs": [
+        "event-15"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {
+        "available": 128
+      },
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-terminalservices-localsessionmanager/operational",
+      "events": 128,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 599344,
+      "jobs": [
+        "event-22"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-terminalservices-remoteconnectionmanager/operational",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 435,
+      "jobs": [
+        "event-23"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {
+        "available": 128
+      },
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-windows defender/operational",
+      "events": 128,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 682652,
+      "jobs": [
+        "event-17"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {
+        "available": 128
+      },
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-windowsupdateclient/operational",
+      "events": 128,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 587162,
+      "jobs": [
+        "event-16"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {
+        "available": 128
+      },
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-wlan-autoconfig/operational",
+      "events": 128,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 754059,
+      "jobs": [
+        "event-24"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {
+        "available": 128
+      },
+      "reasons": [],
+      "source": "pcscope.eventlog.microsoft-windows-wmi-activity/operational",
+      "events": 128,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 720678,
+      "jobs": [
+        "event-19"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Event log read failed; checkpoint unchanged: Exception calling \"GetLogInformation\" with \"2\" argument(s): \"Attempted to perform an unauthorized operation.\""
+      ],
+      "source": "pcscope.eventlog.security",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 342,
+      "jobs": [
+        "event-14"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 9,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {
+        "available": 125,
+        "protected": 3
+      },
+      "reasons": [],
+      "source": "pcscope.eventlog.system",
+      "events": 128,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 1,
+      "max_line_bytes": 626309,
+      "jobs": [
+        "event-12"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 247,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.execution.processes",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 15548,
+      "jobs": [
+        "system"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 22,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.execution.resources",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 702,
+      "jobs": [
+        "system"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.files.directory-security",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 1822,
+      "jobs": [
+        "scoped"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.files.metadata-security",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 1800,
+      "jobs": [
+        "scoped"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.hardware.battery",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 1503,
+      "jobs": [
+        "storage"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 212,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.hardware.devices",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 1,
+      "batches": 0,
+      "max_line_bytes": 54492,
+      "jobs": [
+        "base"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.hardware.disk-health",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 2221,
+      "jobs": [
+        "storage"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 215,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.hardware.driver-bindings",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 22603,
+      "jobs": [
+        "storage"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: The requested operation requires elevation.\r\n"
+      ],
+      "source": "pcscope.hardware.driver-packages",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 321,
+      "jobs": [
+        "storage"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 395,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.hardware.driver-services",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 31673,
+      "jobs": [
+        "storage"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.hardware.firmware",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 1557,
+      "jobs": [
+        "storage"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 7,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.identity.accounts",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 1,
+      "batches": 0,
+      "max_line_bytes": 3153,
+      "jobs": [
+        "base"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: Exception calling \"Rights\" with \"0\" argument(s): \"Access is denied\""
+      ],
+      "source": "pcscope.identity.assigned-rights",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 347,
+      "jobs": [
+        "system"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 20,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.identity.groups",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 1,
+      "batches": 0,
+      "max_line_bytes": 4391,
+      "jobs": [
+        "base"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 2,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.identity.interactive-sessions",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 650,
+      "jobs": [
+        "system"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 4,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.identity.logon-sessions",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 779,
+      "jobs": [
+        "system"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 2,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.identity.machine",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 2297,
+      "jobs": [
+        "system"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 4,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.identity.profiles",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 3983,
+      "jobs": [
+        "system"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 4,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.network.access",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 1809,
+      "jobs": [
+        "network"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 17,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.network.adapters",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 1,
+      "batches": 0,
+      "max_line_bytes": 4167,
+      "jobs": [
+        "base"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 12,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.network.addresses",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 1,
+      "batches": 0,
+      "max_line_bytes": 3506,
+      "jobs": [
+        "base"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 8,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.network.dns-cache",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 1147,
+      "jobs": [
+        "network"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 14,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.network.dns-configuration",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 3215,
+      "jobs": [
+        "network"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 3,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.network.firewall-profiles",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 1327,
+      "jobs": [
+        "network"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: Access is denied. "
+      ],
+      "source": "pcscope.network.firewall-rules",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 287,
+      "jobs": [
+        "network"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.network.hosts",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 404,
+      "jobs": [
+        "network"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: Access is denied. "
+      ],
+      "source": "pcscope.network.ipsec",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 270,
+      "jobs": [
+        "network"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.network.mapped-drives",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 420,
+      "jobs": [
+        "network"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 2,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.network.profiles",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 835,
+      "jobs": [
+        "network"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 37,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.network.routes",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 6594,
+      "jobs": [
+        "network"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: Access is denied. "
+      ],
+      "source": "pcscope.network.share-sessions",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 288,
+      "jobs": [
+        "network"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 3,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.network.shares",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 1187,
+      "jobs": [
+        "network"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 322,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.network.tcp",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 29628,
+      "jobs": [
+        "network"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 50,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.network.udp",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 6034,
+      "jobs": [
+        "network"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: Exception calling \"OpenSubKey\" with \"2\" argument(s): \"Requested registry access is not allowed.\""
+      ],
+      "source": "pcscope.network.winrm-configuration",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 382,
+      "jobs": [
+        "network"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 34,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.policy.configuration",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 3795,
+      "jobs": [
+        "security"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: 在终端服务远程会话期间，只有管理员有添加、删除或配置服务器软件的权限。如果你想在服务器上安装或配置软件，请与网络管理员联系。 "
+      ],
+      "source": "pcscope.power.configuration",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 451,
+      "jobs": [
+        "storage"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 42,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.security.certificates.currentuser",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 3355,
+      "jobs": [
+        "security"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 40,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.security.certificates.localmachine",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 2929,
+      "jobs": [
+        "security"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.security.detections",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 416,
+      "jobs": [
+        "security"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.security.deviceguard",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 1193,
+      "jobs": [
+        "security"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: 拒绝访问 "
+      ],
+      "source": "pcscope.security.encryption",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 277,
+      "jobs": [
+        "security"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 2,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: CNG provider 'Microsoft Passport Key Storage Provider' (machine): Exception calling \"Keys\" with \"2\" argument(s): \"CNG enumeration failed: 0x80090009\"",
+        "Source unavailable; previous state retained: CNG provider 'Microsoft Platform Crypto Provider' (machine): Exception calling \"Keys\" with \"2\" argument(s): \"CNG enumeration failed: 0x80090010\"",
+        "Source unavailable; previous state retained: CNG provider 'Microsoft Smart Card Key Storage Provider' (user): Exception calling \"Keys\" with \"2\" argument(s): \"CNG enumeration failed: 0x8010001D\"",
+        "Source unavailable; previous state retained: CNG provider 'Microsoft Smart Card Key Storage Provider' (machine): Exception calling \"Keys\" with \"2\" argument(s): \"CNG enumeration failed: 0x80090009\""
+      ],
+      "source": "pcscope.security.key-metadata",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 80,
+      "batches": 0,
+      "max_line_bytes": 925,
+      "jobs": [
+        "security"
+      ],
+      "gaps": 4,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "partial"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.security.products",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 921,
+      "jobs": [
+        "security"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.security.protection",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 2844,
+      "jobs": [
+        "security"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.security.protection-policy",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 6650,
+      "jobs": [
+        "security"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: Unable to set proper privileges. Access was denied."
+      ],
+      "source": "pcscope.security.secureboot",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 313,
+      "jobs": [
+        "security"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.security.ssh-public-keys",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 425,
+      "jobs": [
+        "security"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.security.tpm",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 601,
+      "jobs": [
+        "security"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 8217,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.shell.registrations",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 64,
+      "batches": 0,
+      "max_line_bytes": 86396,
+      "jobs": [
+        "base"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 52,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.software",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 2,
+      "batches": 0,
+      "max_line_bytes": 27206,
+      "jobs": [
+        "software"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 62,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.software.appx-user",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 5224,
+      "jobs": [
+        "system"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: The requested operation requires elevation.\r\n"
+      ],
+      "source": "pcscope.software.optional-features",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 325,
+      "jobs": [
+        "system"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: The requested operation requires elevation.\r\n"
+      ],
+      "source": "pcscope.software.provisioned",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 311,
+      "jobs": [
+        "system"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 10,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.software.user-inventory",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 5214,
+      "jobs": [
+        "system"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: Exception calling \"OpenSubKey\" with \"2\" argument(s): \"Requested registry access is not allowed.\""
+      ],
+      "source": "pcscope.startup.advanced-extensions",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 382,
+      "jobs": [
+        "startup"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 26,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.startup.logon",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 1,
+      "batches": 0,
+      "max_line_bytes": 11069,
+      "jobs": [
+        "base"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: Exception calling \"OpenSubKey\" with \"2\" argument(s): \"Requested registry access is not allowed.\""
+      ],
+      "source": "pcscope.startup.service-configuration",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 386,
+      "jobs": [
+        "startup"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 284,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.startup.services",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 1,
+      "batches": 0,
+      "max_line_bytes": 138464,
+      "jobs": [
+        "base"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 65,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.startup.session-hooks",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 6470,
+      "jobs": [
+        "startup"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 155,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.startup.task-details",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 53836,
+      "jobs": [
+        "startup"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 155,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.startup.tasks",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 1,
+      "batches": 0,
+      "max_line_bytes": 52754,
+      "jobs": [
+        "base"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.startup.wmi-bindings",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 1388,
+      "jobs": [
+        "startup"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.startup.wmi-consumers",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 986,
+      "jobs": [
+        "startup"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.startup.wmi-filters",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 803,
+      "jobs": [
+        "startup"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.storage.disks",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 2531,
+      "jobs": [
+        "storage"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 4,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.storage.partitions",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 2579,
+      "jobs": [
+        "storage"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 3,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.storage.volumes",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 1,
+      "batches": 0,
+      "max_line_bytes": 1085,
+      "jobs": [
+        "base"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.system.boot-state",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 1,
+      "batches": 0,
+      "max_line_bytes": 525,
+      "jobs": [
+        "base"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 29,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.system.clock",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 4535,
+      "jobs": [
+        "system"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 8,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.system.hotfixes",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 1,
+      "batches": 0,
+      "max_line_bytes": 1849,
+      "jobs": [
+        "base"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 2,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.system.reboot-pending",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 2789,
+      "jobs": [
+        "system"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: 拒绝访问 "
+      ],
+      "source": "pcscope.system.restore-points",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 281,
+      "jobs": [
+        "system"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 128,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.system.update-history",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 13195,
+      "jobs": [
+        "system"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.system.version",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 1,
+      "batches": 0,
+      "max_line_bytes": 662,
+      "jobs": [
+        "base"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "USN unavailable; journal not changed by PCScope: 拒绝访问。 (os error 5)"
+      ],
+      "source": "pcscope.usn.c",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 273,
+      "jobs": [
+        "usn"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.usn.volumes",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 1,
+      "batches": 0,
+      "max_line_bytes": 458,
+      "jobs": [
+        "usn"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 1,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.usn.watch-list",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 1,
+      "batches": 0,
+      "max_line_bytes": 564,
+      "jobs": [
+        "usn"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: The term 'Get-VM' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again."
+      ],
+      "source": "pcscope.virtualization.hyperv-checkpoints",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 502,
+      "jobs": [
+        "virtualization"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: The term 'Get-VM' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again."
+      ],
+      "source": "pcscope.virtualization.hyperv-disks",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 490,
+      "jobs": [
+        "virtualization"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: The term 'Get-VMSwitch' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again."
+      ],
+      "source": "pcscope.virtualization.hyperv-switches",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 502,
+      "jobs": [
+        "virtualization"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [
+        "Source unavailable; previous state retained: The term 'Get-VM' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again."
+      ],
+      "source": "pcscope.virtualization.hyperv-vms",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 0,
+      "batches": 0,
+      "max_line_bytes": 486,
+      "jobs": [
+        "virtualization"
+      ],
+      "gaps": 1,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "unavailable"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 2,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.virtualization.platform",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 1,
+      "batches": 0,
+      "max_line_bytes": 647,
+      "jobs": [
+        "base"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "data"
+    },
+    {
+      "field_issues": 0,
+      "raw_xml_missing": 0,
+      "items": 0,
+      "message_status": {},
+      "reasons": [],
+      "source": "pcscope.virtualization.wsl-registration",
+      "events": 0,
+      "incomplete": 0,
+      "snapshots": 16,
+      "batches": 0,
+      "max_line_bytes": 440,
+      "jobs": [
+        "virtualization"
+      ],
+      "gaps": 0,
+      "incomplete_shard_groups": 0,
+      "duplicate_ids": 0,
+      "status": "empty"
+    }
+  ],
+  "conditional_declarations": [
+    "pcscope.apps.mihomo",
+    "pcscope.eventlog.import",
+    "pcscope.execution.modules",
+    "pcscope.software.portable",
+    "pcscope.usn.{drive}",
+    "pcscope.usn.changes",
+    "pcscope.virtualization.docker"
+  ],
+  "repeat_jobs": [
+    {
+      "cpu_seconds": 7.0469,
+      "oversized_lines": 0,
+      "diagnostic_bytes": 0,
+      "messages": 77,
+      "job": "base",
+      "timeout": false,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "max_line_bytes": 138454,
+      "exit_code": 0,
+      "seconds": 8.4664,
+      "parse_errors": 0,
+      "bytes": 3434763,
+      "peak_working_set_bytes": 245108736,
+      "round": 1
+    },
+    {
+      "cpu_seconds": 0.6094,
+      "oversized_lines": 0,
+      "diagnostic_bytes": 0,
+      "messages": 48,
+      "job": "scoped",
+      "timeout": false,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "max_line_bytes": 1824,
+      "exit_code": 0,
+      "seconds": 0.6437,
+      "parse_errors": 0,
+      "bytes": 27976,
+      "peak_working_set_bytes": 96985088,
+      "round": 1
+    },
+    {
+      "cpu_seconds": 1.6406,
+      "oversized_lines": 0,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-13",
+      "timeout": false,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "max_line_bytes": 728828,
+      "exit_code": 0,
+      "seconds": 1.2547,
+      "parse_errors": 0,
+      "bytes": 728829,
+      "peak_working_set_bytes": 173117440,
+      "round": 1
+    },
+    {
+      "cpu_seconds": 1.6406,
+      "oversized_lines": 0,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "application-resume",
+      "timeout": false,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "max_line_bytes": 589643,
+      "exit_code": 0,
+      "seconds": 1.098,
+      "parse_errors": 0,
+      "bytes": 589644,
+      "peak_working_set_bytes": 182255616,
+      "round": 1
+    },
+    {
+      "cpu_seconds": 9.0156,
+      "oversized_lines": 0,
+      "diagnostic_bytes": 0,
+      "messages": 77,
+      "job": "base",
+      "timeout": false,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "max_line_bytes": 138460,
+      "exit_code": 0,
+      "seconds": 10.1431,
+      "parse_errors": 0,
+      "bytes": 3434769,
+      "peak_working_set_bytes": 244121600,
+      "round": 2
+    },
+    {
+      "cpu_seconds": 0.5312,
+      "oversized_lines": 0,
+      "diagnostic_bytes": 0,
+      "messages": 48,
+      "job": "scoped",
+      "timeout": false,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "max_line_bytes": 1824,
+      "exit_code": 0,
+      "seconds": 0.5589,
+      "parse_errors": 0,
+      "bytes": 27976,
+      "peak_working_set_bytes": 94728192,
+      "round": 2
+    },
+    {
+      "cpu_seconds": 1.4375,
+      "oversized_lines": 0,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-13",
+      "timeout": false,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "max_line_bytes": 728828,
+      "exit_code": 0,
+      "seconds": 1.013,
+      "parse_errors": 0,
+      "bytes": 728829,
+      "peak_working_set_bytes": 176402432,
+      "round": 2
+    },
+    {
+      "cpu_seconds": 8.9219,
+      "oversized_lines": 0,
+      "diagnostic_bytes": 0,
+      "messages": 77,
+      "job": "base",
+      "timeout": false,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "max_line_bytes": 138460,
+      "exit_code": 0,
+      "seconds": 10.066,
+      "parse_errors": 0,
+      "bytes": 3434769,
+      "peak_working_set_bytes": 244699136,
+      "round": 3
+    },
+    {
+      "cpu_seconds": 0.5938,
+      "oversized_lines": 0,
+      "diagnostic_bytes": 0,
+      "messages": 48,
+      "job": "scoped",
+      "timeout": false,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "max_line_bytes": 1824,
+      "exit_code": 0,
+      "seconds": 0.6148,
+      "parse_errors": 0,
+      "bytes": 27976,
+      "peak_working_set_bytes": 95842304,
+      "round": 3
+    },
+    {
+      "cpu_seconds": 1.625,
+      "oversized_lines": 0,
+      "diagnostic_bytes": 0,
+      "messages": 1,
+      "job": "event-13",
+      "timeout": false,
+      "measurement": "direct collector process; excludes Rust wrapper",
+      "max_line_bytes": 728828,
+      "exit_code": 0,
+      "seconds": 1.2341,
+      "parse_errors": 0,
+      "bytes": 728829,
+      "peak_working_set_bytes": 181428224,
+      "round": 3
+    }
+  ],
+  "storage": {
+    "integrity": "ok",
+    "query_scope": "in-process Store query; fresh connection is not cold OS cache; excludes IPC/UI",
+    "real": {
+      "accepted_messages": 1233,
+      "counts": {
+        "actions": 537,
+        "evidence": 13649,
+        "facts": 29131,
+        "instances": 7341,
+        "records": 13677,
+        "snapshots": 1185
+      },
+      "footprint": {
+        "allocated_database_bytes": 129290240,
+        "db_bytes": 128798720,
+        "physical_bytes": 138373440,
+        "shm_bytes": 32768,
+        "wal_bytes": 9541952
+      },
+      "ingest_rejections": [],
+      "ingest_seconds": 30.873196700000022,
+      "input_bytes": 15256234,
+      "parse_failures": [],
+      "payload_verification": {
+        "expected": 13649,
+        "mismatches": 0,
+        "seconds": 0.204662,
+        "stored": 13649,
+        "unexpected": 0
+      },
+      "profile": "release",
+      "projection": {
+        "examined": 13649,
+        "projected": 11995,
+        "rejected": 0,
+        "seconds": 3.0278949,
+        "skipped": 1496,
+        "unadapted": 0
+      },
+      "projection_failures": [],
+      "queries": {
+        "action_first_page": {
+          "fresh_connection_ms": 1.4179,
+          "repetitions": 30,
+          "status": "loaded",
+          "warm_max_ms": 1.3783999999999998,
+          "warm_p50_ms": 0.875,
+          "warm_p95_ms": 0.9148000000000001
+        },
+        "instance_first_page": {
+          "fresh_connection_ms": 40.2012,
+          "repetitions": 30,
+          "status": "loaded",
+          "warm_max_ms": 47.5796,
+          "warm_p50_ms": 40.8471,
+          "warm_p95_ms": 47.1946
+        },
+        "instance_no_match": {
+          "fresh_connection_ms": 19.570500000000003,
+          "repetitions": 30,
+          "status": "empty",
+          "warm_max_ms": 28.851100000000002,
+          "warm_p50_ms": 25.2498,
+          "warm_p95_ms": 27.2053
+        },
+        "resource_readings": {
+          "fresh_connection_ms": 0.8965000000000001,
+          "repetitions": 30,
+          "status": "loaded",
+          "warm_max_ms": 0.86,
+          "warm_p50_ms": 0.5615,
+          "warm_p95_ms": 0.6111
+        },
+        "source_coverage": {
+          "fresh_connection_ms": 20.0062,
+          "repetitions": 30,
+          "status": "loaded",
+          "warm_max_ms": 20.462899999999998,
+          "warm_p50_ms": 19.2425,
+          "warm_p95_ms": 20.2336
+        }
+      },
+      "replay_projection": {
+        "examined": 0,
+        "projected": 0,
+        "rejected": 0,
+        "seconds": 0.000351,
+        "skipped": 0,
+        "unadapted": 0
+      },
+      "replay_rejections": 1,
+      "replay_seconds": 0.41734950000000054,
+      "xml_verification": {
+        "checked": 1419,
+        "decrypt_failed": 0,
+        "hash_mismatches": 0
+      }
+    },
+    "synthetic": [
+      {
+        "added_items": 2000,
+        "evidence": 2000,
+        "footprint": {
+          "allocated_database_bytes": 11165696,
+          "db_bytes": 11165696,
+          "physical_bytes": 17176616,
+          "shm_bytes": 32768,
+          "wal_bytes": 5978152
+        },
+        "ingest_ms": 1329.9113,
+        "instances": 2000,
+        "projection": {
+          "examined": 2000,
+          "projected": 2000,
+          "rejected": 0,
+          "seconds": 0.5112953,
+          "skipped": 0,
+          "unadapted": 0
+        },
+        "queries": {
+          "action_first_page": {
+            "fresh_connection_ms": 0.11309999999999999,
+            "repetitions": 30,
+            "status": "empty",
+            "warm_max_ms": 0.0881,
+            "warm_p50_ms": 0.0282,
+            "warm_p95_ms": 0.034100000000000005
+          },
+          "instance_first_page": {
+            "fresh_connection_ms": 6.3606,
+            "repetitions": 30,
+            "status": "loaded",
+            "warm_max_ms": 6.3643,
+            "warm_p50_ms": 5.1801,
+            "warm_p95_ms": 5.361000000000001
+          },
+          "instance_no_match": {
+            "fresh_connection_ms": 3.2479,
+            "repetitions": 30,
+            "status": "empty",
+            "warm_max_ms": 2.9730999999999996,
+            "warm_p50_ms": 2.5269,
+            "warm_p95_ms": 2.9549
+          },
+          "resource_readings": {
+            "fresh_connection_ms": 0.1451,
+            "repetitions": 30,
+            "status": "empty",
+            "warm_max_ms": 0.10239999999999999,
+            "warm_p50_ms": 0.0366,
+            "warm_p95_ms": 0.0501
+          },
+          "source_coverage": {
+            "fresh_connection_ms": 1.5032999999999999,
+            "repetitions": 30,
+            "status": "loaded",
+            "warm_max_ms": 1.4202,
+            "warm_p50_ms": 0.9953,
+            "warm_p95_ms": 1.0182
+          }
+        }
+      },
+      {
+        "added_items": 8000,
+        "evidence": 10000,
+        "footprint": {
+          "allocated_database_bytes": 53374976,
+          "db_bytes": 53374976,
+          "physical_bytes": 59892656,
+          "shm_bytes": 32768,
+          "wal_bytes": 6484912
+        },
+        "ingest_ms": 5692.9691,
+        "instances": 10000,
+        "projection": {
+          "examined": 8000,
+          "projected": 8000,
+          "rejected": 0,
+          "seconds": 3.0033458,
+          "skipped": 0,
+          "unadapted": 0
+        },
+        "queries": {
+          "action_first_page": {
+            "fresh_connection_ms": 0.2501,
+            "repetitions": 30,
+            "status": "empty",
+            "warm_max_ms": 0.1639,
+            "warm_p50_ms": 0.0327,
+            "warm_p95_ms": 0.0425
+          },
+          "instance_first_page": {
+            "fresh_connection_ms": 24.646,
+            "repetitions": 30,
+            "status": "loaded",
+            "warm_max_ms": 36.3338,
+            "warm_p50_ms": 25.047900000000002,
+            "warm_p95_ms": 29.4604
+          },
+          "instance_no_match": {
+            "fresh_connection_ms": 13.980599999999999,
+            "repetitions": 30,
+            "status": "empty",
+            "warm_max_ms": 29.128700000000002,
+            "warm_p50_ms": 20.9832,
+            "warm_p95_ms": 22.9112
+          },
+          "resource_readings": {
+            "fresh_connection_ms": 0.185,
+            "repetitions": 30,
+            "status": "empty",
+            "warm_max_ms": 0.1514,
+            "warm_p50_ms": 0.0427,
+            "warm_p95_ms": 0.057800000000000004
+          },
+          "source_coverage": {
+            "fresh_connection_ms": 8.3728,
+            "repetitions": 30,
+            "status": "loaded",
+            "warm_max_ms": 8.7911,
+            "warm_p50_ms": 8.296700000000001,
+            "warm_p95_ms": 8.761700000000001
+          }
+        }
+      }
+    ],
+    "unchanged": {
+      "actions_after": 0,
+      "actions_before": 0,
+      "facts_after": 60000,
+      "facts_before": 60000,
+      "footprint_after": {
+        "allocated_database_bytes": 60882944,
+        "db_bytes": 60821504,
+        "physical_bytes": 62283944,
+        "shm_bytes": 32768,
+        "wal_bytes": 1429672
+      },
+      "footprint_before": {
+        "allocated_database_bytes": 53374976,
+        "db_bytes": 53374976,
+        "physical_bytes": 59892656,
+        "shm_bytes": 32768,
+        "wal_bytes": 6484912
+      },
+      "items_per_round": 200,
+      "rounds": 20,
+      "seconds": 2.1841429
+    }
+  },
+  "eventlog": {
+    "archive_bytes": 2166784,
+    "mode": "fixed EVTX complete drain; direct backend processes; excludes IPC/UI",
+    "comparison": {
+      "duplicate_ids": [
+        0,
+        0
+      ],
+      "events": [
+        3638,
+        3638
+      ],
+      "field_differences": [],
+      "field_representation_differences": 25,
+      "field_value_differences_after_decryption": 0,
+      "id_differences": 0,
+      "kind_differences": 0,
+      "policy": "compare decrypted full values; ciphertext, display previews and additional encryption are representation differences",
+      "system_differences": 0,
+      "xml_checked": 7276,
+      "xml_decrypt_failed": 0,
+      "xml_hash_differences": 0,
+      "xml_hash_mismatches": 0
+    },
+    "backends": [
+      {
+        "seconds": 30.567726599999997,
+        "backend": "powershell",
+        "has_more": false,
+        "events": 3638,
+        "batches_count": 29,
+        "batches": [
+          {
+            "seconds": 0.7438034,
+            "bytes": 728889,
+            "events": 128
+          },
+          {
+            "seconds": 0.7901684,
+            "bytes": 589704,
+            "events": 128
+          },
+          {
+            "seconds": 0.7236785,
+            "bytes": 583634,
+            "events": 128
+          },
+          {
+            "seconds": 0.6923467,
+            "bytes": 575545,
+            "events": 128
+          },
+          {
+            "seconds": 0.7698596,
+            "bytes": 603817,
+            "events": 128
+          },
+          {
+            "seconds": 1.0554111,
+            "bytes": 584709,
+            "events": 128
+          },
+          {
+            "seconds": 1.2019612,
+            "bytes": 622152,
+            "events": 128
+          },
+          {
+            "seconds": 1.0445783,
+            "bytes": 767526,
+            "events": 128
+          },
+          {
+            "seconds": 1.1674046,
+            "bytes": 546074,
+            "events": 128
+          },
+          {
+            "seconds": 1.3299205,
+            "bytes": 577641,
+            "events": 128
+          },
+          {
+            "seconds": 1.0291222,
+            "bytes": 578039,
+            "events": 128
+          },
+          {
+            "seconds": 0.9734036,
+            "bytes": 553669,
+            "events": 128
+          },
+          {
+            "seconds": 1.2569513,
+            "bytes": 560002,
+            "events": 128
+          },
+          {
+            "seconds": 1.8374978,
+            "bytes": 540988,
+            "events": 128
+          },
+          {
+            "seconds": 1.4968374,
+            "bytes": 544371,
+            "events": 128
+          },
+          {
+            "seconds": 1.1480304,
+            "bytes": 531991,
+            "events": 128
+          },
+          {
+            "seconds": 1.1203431,
+            "bytes": 531922,
+            "events": 128
+          },
+          {
+            "seconds": 0.9081348,
+            "bytes": 532621,
+            "events": 128
+          },
+          {
+            "seconds": 0.9139264,
+            "bytes": 529911,
+            "events": 128
+          },
+          {
+            "seconds": 0.9054078,
+            "bytes": 536029,
+            "events": 128
+          },
+          {
+            "seconds": 1.1960058,
+            "bytes": 531290,
+            "events": 128
+          },
+          {
+            "seconds": 1.1162282,
+            "bytes": 530463,
+            "events": 128
+          },
+          {
+            "seconds": 1.0449019,
+            "bytes": 530083,
+            "events": 128
+          },
+          {
+            "seconds": 1.119488,
+            "bytes": 529859,
+            "events": 128
+          },
+          {
+            "seconds": 1.2092478,
+            "bytes": 543264,
+            "events": 128
+          },
+          {
+            "seconds": 1.1173012,
+            "bytes": 574254,
+            "events": 128
+          },
+          {
+            "seconds": 0.9873809,
+            "bytes": 530310,
+            "events": 128
+          },
+          {
+            "seconds": 0.9043907,
+            "bytes": 529279,
+            "events": 128
+          },
+          {
+            "seconds": 0.763995,
+            "bytes": 241753,
+            "events": 54
+          }
+        ]
+      },
+      {
+        "seconds": 8.5506421,
+        "backend": "native",
+        "has_more": false,
+        "events": 3638,
+        "batches_count": 29,
+        "batches": [
+          {
+            "seconds": 0.5551035,
+            "bytes": 710736,
+            "events": 128
+          },
+          {
+            "seconds": 0.3703598,
+            "bytes": 587869,
+            "events": 128
+          },
+          {
+            "seconds": 0.2924354,
+            "bytes": 581254,
+            "events": 128
+          },
+          {
+            "seconds": 0.2727927,
+            "bytes": 573113,
+            "events": 128
+          },
+          {
+            "seconds": 0.2790343,
+            "bytes": 601835,
+            "events": 128
+          },
+          {
+            "seconds": 0.2835608,
+            "bytes": 583537,
+            "events": 128
+          },
+          {
+            "seconds": 0.3191903,
+            "bytes": 627584,
+            "events": 128
+          },
+          {
+            "seconds": 0.3085261,
+            "bytes": 734065,
+            "events": 128
+          },
+          {
+            "seconds": 0.2849573,
+            "bytes": 556437,
+            "events": 128
+          },
+          {
+            "seconds": 0.3064269,
+            "bytes": 576883,
+            "events": 128
+          },
+          {
+            "seconds": 0.4364884,
+            "bytes": 576812,
+            "events": 128
+          },
+          {
+            "seconds": 0.3304373,
+            "bytes": 552466,
+            "events": 128
+          },
+          {
+            "seconds": 0.3281964,
+            "bytes": 569506,
+            "events": 128
+          },
+          {
+            "seconds": 0.2794676,
+            "bytes": 539619,
+            "events": 128
+          },
+          {
+            "seconds": 0.2718598,
+            "bytes": 543069,
+            "events": 128
+          },
+          {
+            "seconds": 0.2748607,
+            "bytes": 530647,
+            "events": 128
+          },
+          {
+            "seconds": 0.3675125,
+            "bytes": 530649,
+            "events": 128
+          },
+          {
+            "seconds": 0.2706967,
+            "bytes": 531308,
+            "events": 128
+          },
+          {
+            "seconds": 0.2321043,
+            "bytes": 528496,
+            "events": 128
+          },
+          {
+            "seconds": 0.2309602,
+            "bytes": 534662,
+            "events": 128
+          },
+          {
+            "seconds": 0.2491774,
+            "bytes": 529765,
+            "events": 128
+          },
+          {
+            "seconds": 0.2246838,
+            "bytes": 529029,
+            "events": 128
+          },
+          {
+            "seconds": 0.2209096,
+            "bytes": 528657,
+            "events": 128
+          },
+          {
+            "seconds": 0.2268312,
+            "bytes": 528407,
+            "events": 128
+          },
+          {
+            "seconds": 0.2234342,
+            "bytes": 541891,
+            "events": 128
+          },
+          {
+            "seconds": 0.2595766,
+            "bytes": 583729,
+            "events": 128
+          },
+          {
+            "seconds": 0.2852188,
+            "bytes": 528870,
+            "events": 128
+          },
+          {
+            "seconds": 0.3212168,
+            "bytes": 527852,
+            "events": 128
+          },
+          {
+            "seconds": 0.2446227,
+            "bytes": 241213,
+            "events": 54
+          }
+        ]
+      }
+    ]
+  },
+  "not_tested": [
+    "administrator positive collection",
+    "Windows 11/Server/ARM64",
+    "real USN success",
+    "Hyper-V/Sysmon/Docker/Mihomo/portable/modules positive environments",
+    "5GB,72h,crash/concurrent-prune",
+    "IPC/UI latency",
+    "all Windows APIs or all original API fields"
+  ]
+}

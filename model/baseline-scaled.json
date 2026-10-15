@@ -1,0 +1,269 @@
+﻿{
+  "during_backfill": {
+    "errors": [],
+    "median_ms": 10.031,
+    "p95_ms": 17.197,
+    "reads_before_schema_ready": 24,
+    "reads_during_backfill": 2558
+  },
+  "environment": {
+    "arch": "x86_64",
+    "fixtures": "fixtures\\scaled",
+    "os": "windows",
+    "scenario_files": 3
+  },
+  "generated_by": "crates/storage/examples/refactor-baseline.rs",
+  "invalid_fixtures": {
+    "detail": [],
+    "rejected": 0,
+    "total": 0
+  },
+  "load": {
+    "counts": {
+      "objects": 14400,
+      "records": 35840,
+      "snapshots": 64
+    },
+    "files": [
+      {
+        "file": "10-scale-baseline.jsonl",
+        "inserted": 14400,
+        "messages": 32,
+        "ms": 13826
+      },
+      {
+        "file": "11-scale-changes.jsonl",
+        "inserted": 1440,
+        "messages": 32,
+        "ms": 2693
+      },
+      {
+        "file": "12-scale-events.jsonl",
+        "inserted": 20000,
+        "messages": 40,
+        "ms": 18128
+      }
+    ],
+    "total_ms": 34816
+  },
+  "queries": [
+    {
+      "cold_median_ms": 33.16,
+      "cold_p95_ms": 34.727,
+      "query": "timeline.default",
+      "result": "rows=100 facets=17",
+      "warm_median_ms": 16.082,
+      "warm_p95_ms": 36.667
+    },
+    {
+      "cold_median_ms": 29.739,
+      "cold_p95_ms": 48.791,
+      "query": "timeline.by_category",
+      "result": "rows=100 facets=17",
+      "warm_median_ms": 14.076,
+      "warm_p95_ms": 35.814
+    },
+    {
+      "cold_median_ms": 28.481,
+      "cold_p95_ms": 32.15,
+      "query": "timeline.by_item",
+      "result": "rows=100 facets=17",
+      "warm_median_ms": 14.164,
+      "warm_p95_ms": 26.523
+    },
+    {
+      "cold_median_ms": 45.553,
+      "cold_p95_ms": 66.399,
+      "query": "timeline.by_source",
+      "result": "rows=100 facets=17",
+      "warm_median_ms": 26.714,
+      "warm_p95_ms": 43.775
+    },
+    {
+      "cold_median_ms": 31.211,
+      "cold_p95_ms": 33.043,
+      "query": "timeline.kind_events",
+      "result": "rows=100 facets=17",
+      "warm_median_ms": 15.942,
+      "warm_p95_ms": 35.524
+    },
+    {
+      "cold_median_ms": 31.4,
+      "cold_p95_ms": 44.347,
+      "query": "timeline.kind_coverage",
+      "result": "rows=0 facets=17",
+      "warm_median_ms": 14.698,
+      "warm_p95_ms": 31.778
+    },
+    {
+      "cold_median_ms": 36.088,
+      "cold_p95_ms": 46.998,
+      "query": "timeline.self_activity_hide",
+      "result": "rows=100 facets=17",
+      "warm_median_ms": 15.861,
+      "warm_p95_ms": 30.332
+    },
+    {
+      "cold_median_ms": 72.35,
+      "cold_p95_ms": 73.318,
+      "query": "timeline.keyword_hit",
+      "result": "rows=100 facets=17",
+      "warm_median_ms": 53.082,
+      "warm_p95_ms": 85.331
+    },
+    {
+      "cold_median_ms": 93.878,
+      "cold_p95_ms": 110.778,
+      "query": "timeline.keyword_absent",
+      "result": "rows=0 facets=17",
+      "warm_median_ms": 79.456,
+      "warm_p95_ms": 89.372
+    },
+    {
+      "cold_median_ms": 126.771,
+      "cold_p95_ms": 134.496,
+      "query": "objects.default",
+      "result": "total=14400 rows=100",
+      "warm_median_ms": 106.643,
+      "warm_p95_ms": 112.724
+    },
+    {
+      "cold_median_ms": 84.673,
+      "cold_p95_ms": 89.69,
+      "query": "objects.by_category",
+      "result": "total=1800 rows=100",
+      "warm_median_ms": 69.57,
+      "warm_p95_ms": 86.077
+    },
+    {
+      "cold_median_ms": 73.366,
+      "cold_p95_ms": 76.446,
+      "query": "objects.by_source",
+      "result": "total=1800 rows=100",
+      "warm_median_ms": 60.49,
+      "warm_p95_ms": 79.483
+    },
+    {
+      "cold_median_ms": 91.139,
+      "cold_p95_ms": 92.571,
+      "query": "objects.by_item",
+      "result": "total=0 rows=0",
+      "warm_median_ms": 74.054,
+      "warm_p95_ms": 115.368
+    },
+    {
+      "cold_median_ms": 176.244,
+      "cold_p95_ms": 192.768,
+      "query": "objects.keyword_hit",
+      "result": "total=1800 rows=100",
+      "warm_median_ms": 156.727,
+      "warm_p95_ms": 193.348
+    },
+    {
+      "cold_median_ms": 164.173,
+      "cold_p95_ms": 172.049,
+      "query": "objects.keyword_absent",
+      "result": "total=0 rows=0",
+      "warm_median_ms": 153.557,
+      "warm_p95_ms": 164.22
+    },
+    {
+      "cold_median_ms": 117.135,
+      "cold_p95_ms": 121.79,
+      "query": "objects.detail_first_row",
+      "result": "id=\"tcp-1003\"",
+      "warm_median_ms": 104.735,
+      "warm_p95_ms": 114.259
+    },
+    {
+      "cold_median_ms": 49.597,
+      "cold_p95_ms": 60.552,
+      "query": "timeline.detail_task_evidence",
+      "result": "keys=7",
+      "warm_median_ms": 24.81,
+      "warm_p95_ms": 37.472
+    },
+    {
+      "cold_median_ms": 22.892,
+      "cold_p95_ms": 34.254,
+      "query": "snapshots.list",
+      "result": "rows=50",
+      "warm_median_ms": 8.558,
+      "warm_p95_ms": 20.523
+    },
+    {
+      "cold_median_ms": 14.93,
+      "cold_p95_ms": 21.733,
+      "query": "retention.status",
+      "result": "mode=\"unlimited\" live_bytes=52834304",
+      "warm_median_ms": 0.067,
+      "warm_p95_ms": 11.377
+    }
+  ],
+  "replay": {
+    "errors": [],
+    "snapshot_replay_inserted": 0,
+    "state_unchanged": true
+  },
+  "reproducibility": {
+    "identical": true,
+    "run_a": {
+      "digest": "f30931c1dc878e522005ca3ef3932d9a9182834971bbcc82cf5d5f808a3ebf3a",
+      "rows": {
+        "object_times": 14400,
+        "objects": 14400,
+        "records": 35840
+      }
+    },
+    "run_b": {
+      "digest": "f30931c1dc878e522005ca3ef3932d9a9182834971bbcc82cf5d5f808a3ebf3a",
+      "rows": {
+        "object_times": 14400,
+        "objects": 14400,
+        "records": 35840
+      }
+    }
+  },
+  "sizes": {
+    "db_bytes": 53010432,
+    "shm_bytes": 32768,
+    "wal_bytes": 0
+  },
+  "stages": [
+    {
+      "file": "10-scale-baseline.jsonl",
+      "inserted": 14400,
+      "messages": 32,
+      "no_longer_observed_rows": 0,
+      "objects": 14400,
+      "projection_added": 14400,
+      "projection_removed": 0,
+      "projection_removed_sample": [],
+      "records": 14400
+    },
+    {
+      "file": "11-scale-changes.jsonl",
+      "inserted": 1440,
+      "messages": 32,
+      "no_longer_observed_rows": 0,
+      "objects": 14400,
+      "projection_added": 0,
+      "projection_removed": 0,
+      "projection_removed_sample": [],
+      "records": 15840
+    },
+    {
+      "file": "12-scale-events.jsonl",
+      "inserted": 20000,
+      "messages": 40,
+      "no_longer_observed_rows": 0,
+      "objects": 14400,
+      "projection_added": 0,
+      "projection_removed": 0,
+      "projection_removed_sample": [],
+      "records": 35840
+    }
+  ],
+  "worst_query_cold_p95_ms": 192.768,
+  "worst_query_warm_p95_ms": 193.348
+}
