@@ -21,7 +21,8 @@
         "pcscope/crates/storage/src/flow.rs",
         "pcscope/crates/storage/Cargo.toml",
         "pcscope/crates/contracts/src/reference.rs",
-        "pcscope/scripts/build-parallel-boundaries.cjs"
+        "pcscope/scripts/build-parallel-boundaries.cjs",
+        "pcscope/scripts/build-lifecycle-audit.cjs"
       ],
       "must_not_modify": [
         "前端展示规则",
