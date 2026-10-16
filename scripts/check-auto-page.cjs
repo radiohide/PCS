@@ -16,7 +16,7 @@ const root=path.resolve(__dirname,'..');
     const record={name,box,list,anchor,pages:0};
     record.pager=PCScopeAutoPage.mount(anchor,{
      query:async cursor=>{
-      qa.calls.push({name,cursor});qa.active++;qa.max=Math.max(qa.max,qa.active);
+      qa.calls.push({name,cursor,remaining:box.scrollHeight-box.clientHeight-box.scrollTop});qa.active++;qa.max=Math.max(qa.max,qa.active);
       try{if(qa.delay)await new Promise(resolve=>setTimeout(resolve,qa.delay));if(qa.fail&&cursor)throw Error('failure');
        return {status:'loaded',data:qa.empty?[]:Array.from({length:count},(_,i)=>({id:name+'-'+(cursor||'first')+'-'+i})),page:{has_more:hasMore&&(qa.empty||qa.repeat||!cursor),next_cursor:qa.repeat&&cursor?cursor:qa.empty?'empty-'+qa.calls.length:'next'}};
       }finally{qa.active--;}
@@ -28,8 +28,13 @@ const root=path.resolve(__dirname,'..');
    window.example=install('scroll');return example.pager.reset();
   });
   await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>qa.calls.length),1,'offscreen sentinel must not fetch more');
-  await page.evaluate(()=>{example.box.scrollTop=10000;});await page.waitForFunction(()=>example.pages===2);
+  await page.evaluate(()=>{example.box.scrollTop=180;});await page.waitForFunction(()=>example.pages===2);
+  assert((await page.evaluate(()=>qa.calls[1].remaining))>200,'next page is read before the nested list reaches its bottom');
   await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>qa.calls.length),2,'terminal page must stop');
+  await page.evaluate(async()=>{clear();const outer=document.createElement('div');outer.className='box';const spacer=document.createElement('div');spacer.style.height='300px';document.querySelector('#fixture').append(outer);window.example=install('clipped');outer.append(spacer,example.box);window.outer=outer;await example.pager.reset();example.box.scrollTop=180;});
+  await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>qa.calls.length),1,'an outer scroll container still hides the inner list');
+  await page.evaluate(()=>outer.scrollTop=300);await page.waitForFunction(()=>example.pages===2);
+  assert((await page.evaluate(()=>qa.calls[1].remaining))>200,'revealing a nested list starts its early read without requiring bottom');
   await page.evaluate(async()=>{clear();qa.fail=true;window.example=install('failure');await example.pager.reset();example.box.scrollTop=10000;});
   await page.waitForFunction(()=>!example.anchor.querySelector('button').hidden);const failed=await page.evaluate(()=>qa.calls.length);
   await page.waitForTimeout(500);assert.equal(await page.evaluate(()=>qa.calls.length),failed,'errors must not auto-retry');assert.equal(await page.locator('.item').count(),20,'append failure retains existing rows');
@@ -45,6 +50,6 @@ const root=path.resolve(__dirname,'..');
   await page.evaluate(async()=>{clear();qa.delay=60;window.one=install('one');window.two=install('two');await one.pager.reset();await two.pager.reset();qa.max=0;one.box.scrollTop=10000;two.box.scrollTop=10000;});
   await page.waitForFunction(()=>one.pages===2&&two.pages===2,null,{timeout:6000}).catch(async error=>{console.error(JSON.stringify(await page.evaluate(()=>({calls:qa.calls,pages:[one.pages,two.pages],rects:[one,two].map(x=>({box:x.box.getBoundingClientRect().toJSON(),anchor:x.anchor.getBoundingClientRect().toJSON(),hidden:x.anchor.hidden,scroll:x.box.scrollTop}))}))));throw error;});assert.equal(await page.evaluate(()=>qa.max),1,'automatic reads from different lists are serialized');
   await page.evaluate(async()=>{clear();qa.delay=120;window.example=install('stale',{count:1,hasMore:false});const first=example.pager.reset();example.pager.reset();await first;});await page.waitForFunction(()=>example.pages===1);assert.equal(await page.locator('.item').count(),1,'a reset rejects old results');
-  assert.deepEqual(errors,[]);console.log('PASS auto pagination: visibility, end, retry, cursor progress, empty-page bound, hidden views, disposal, serial reads and stale responses');
+  assert.deepEqual(errors,[]);console.log('PASS auto pagination: screen-ahead preloading, nested clipping, end, retry, cursor progress, empty-page bound, hidden views, disposal, serial reads and stale responses');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

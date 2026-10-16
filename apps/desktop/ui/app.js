@@ -409,7 +409,7 @@ async function renderTimeline(){
   showFoldMode();
   let pagingReady=!timelineCollapsed;
   const pagingInput=new AbortController();
-  results.addEventListener('click',event=>{if(event.target.closest('[data-timeline-toggle],[data-timeline-time-toggle]'))pagingReady=false;},{capture:true,signal:pagingInput.signal});
+  results.addEventListener('click',event=>{if(event.target.closest('[data-timeline-toggle],[data-timeline-time-toggle],[data-timeline-category-toggle],[data-timeline-show-all]'))pagingReady=false;},{capture:true,signal:pagingInput.signal});
   state.disposePage=()=>{pagingInput.abort();groupControls.dispose();};
   mountModuleFileHistory();
   let catalog=[],requestId=0,timer;
@@ -450,7 +450,7 @@ async function renderTimeline(){
       timelineWalk.watermark=response.page?.watermark||null;
       const html=PCScopeModelView.timeline(response);
       if(append)groupControls.append(html);else {results.innerHTML=html;groupControls.sync();}
-      if(append&&timelineCollapsed)pagingReady=false;
+      if(append&&(timelineCollapsed||results.querySelector('.timeline-group.is-collapsed,[data-timeline-category-toggle][aria-pressed=false]')))pagingReady=false;
       groupControls.markBoundary(!!response.page?.has_more);
       results.setAttribute('aria-busy','false');bindObjects(results);
     },

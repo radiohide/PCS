@@ -1,5 +1,6 @@
 (function(global){
   'use strict';
+  const MAX_LOOKAHEAD=1200;
   // One automatic request per window. IPC also serializes queries, but this avoids filling its queue.
   const controllers=new Set(),waiting=[];let running=false,timer=null,frame=null;
   function recheck(){
@@ -29,17 +30,26 @@
     summary.textContent='问题详情';details.append(summary,reason);details.hidden=true;
     anchor.replaceChildren(status,retry,details);
     const alive=()=>!disposed&&anchor.isConnected;
+    let scrollRoot=null;
+    for(let parent=anchor.parentElement;parent;parent=parent.parentElement){
+      if(/auto|scroll/.test(getComputedStyle(parent).overflowY)){scrollRoot=parent;break;}
+    }
     const near=()=>{
       if(!alive()||!active()||!anchor.getClientRects().length)return false;
-      const rect=anchor.getBoundingClientRect();if(!rect.width||!rect.height||rect.bottom<0||rect.top>innerHeight+160)return false;
+      const rect=anchor.getBoundingClientRect();if(!rect.width||!rect.height)return false;
+      let top=0,bottom=innerHeight;
       for(let parent=anchor.parentElement;parent;parent=parent.parentElement){
         const style=getComputedStyle(parent);
         if(/auto|scroll|hidden|clip/.test(style.overflowY)){
           const bounds=parent.getBoundingClientRect();
-          if(rect.bottom<bounds.top||rect.top>bounds.bottom+120)return false;
+          top=Math.max(top,bounds.top+parent.clientTop);bottom=Math.min(bottom,bounds.top+parent.clientTop+parent.clientHeight);
         }
       }
-      return true;
+      if(bottom<=top)return false;
+      // Read one page about a visible screen before the end, including nested scrollers.
+      // The cap bounds lookahead on large displays; normal paging guards still serialize work.
+      const lookahead=Math.min(MAX_LOOKAHEAD,Math.max(160,bottom-top));
+      return rect.bottom>=top&&rect.top<=bottom+lookahead;
     };
     function paint(){
       anchor.hidden=!loaded&&!busy&&!fault||!active();
@@ -84,7 +94,7 @@
     function dispose(){if(disposed)return;disposed=true;generation++;observer.disconnect();controllers.delete(controller);}
     const controller={reset,pause:()=>reset({load:false}),resume:()=>{if(alive()){paint();enqueue();}},check:enqueue,dispose,advance:async()=>{queued=false;if(alive()&&!busy&&!fault&&more&&canAutoLoad()&&near())await run(true);}};
     retry.onclick=()=>{if(!busy){if(restartOnRetry)reset();else{fault=null;run(loaded);}}};
-    const observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting))enqueue();},{root:null,rootMargin:'0px 0px 160px 0px'});
+    const observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting))enqueue();},{root:scrollRoot,rootMargin:'0px 0px '+MAX_LOOKAHEAD+'px 0px'});
     observer.observe(anchor);controllers.add(controller);return controller;
   }
   function disposeWithin(container){for(const controller of [...controllers])if(controller.anchor&&container.contains(controller.anchor))controller.dispose();}
