@@ -1,5 +1,7 @@
 mod self_activity;
 mod timeline_policy;
+mod display;
+mod display_counts;
 mod registration_dictionary;
 mod item_controls;
 mod related;
@@ -185,7 +187,7 @@ impl Store {
         if version < 7 {
             let tx = conn.unchecked_transaction()?;
             evidence::ensure(&tx)?;
-            tx.execute_batch(&format!("PRAGMA user_version={};", model::SCHEMA_VERSION))?;
+            tx.execute_batch("PRAGMA user_version=7;")?;
             tx.commit()?;
         }
         if version < 8 {
@@ -203,7 +205,7 @@ impl Store {
             if !has_phase {
                 tx.execute_batch("ALTER TABLE object_actions ADD COLUMN phase TEXT;")?;
             }
-            tx.execute_batch(&format!("PRAGMA user_version={};", model::SCHEMA_VERSION))?;
+            tx.execute_batch("PRAGMA user_version=8;")?;
             tx.commit()?;
         }
         if version < 9 {
@@ -219,6 +221,13 @@ impl Store {
         evidence::ensure_query_indexes(&conn)?;
         coverage::ensure_projection_counts(&conn)?;
         model::ensure_query_indexes(&conn)?;
+        {
+            let tx=conn.unchecked_transaction()?;
+            display::ensure(&tx)?;
+            display_counts::ensure(&tx)?;
+            tx.execute_batch("PRAGMA user_version=10;")?;
+            tx.commit()?;
+        }
         // How deep the projection backlog may get before ingest stops accepting more. A default
         // rather than a constant so a machine that collects faster than it projects can be tuned
         // without a rebuild.
@@ -673,7 +682,11 @@ impl Store {
 
     /// S22: the query layer, reading the object model rather than the raw store.
     pub fn query(&self, request: &pcscope_contracts::query::QueryRequest) -> Result<pcscope_contracts::query::QueryResponse> {
-        query::answer(&self.conn, request)
+        if !self.conn.is_autocommit(){return query::answer(&self.conn,request);}
+        let tx=self.conn.unchecked_transaction()?;
+        let response=query::answer(&tx,request)?;
+        tx.commit()?;
+        Ok(response)
     }
 
     /// The migration needs the connection to write in batches rather than through the store's own
@@ -707,6 +720,13 @@ impl Store {
     pub fn project_pending(&self, machine_id: &str, installation_id: &str, limit: usize) -> Result<projection::Report> {
         let tx = self.conn.unchecked_transaction()?;
         let report = projection::project_pending(&tx, machine_id, installation_id, limit)?;
+        tx.commit()?;
+        Ok(report)
+    }
+    /// Existing projection worker's bounded display maintenance; never called by a UI reader.
+    pub fn prepare_display(&self, limit: usize, budget: std::time::Duration) -> Result<Value> {
+        let tx=self.conn.unchecked_transaction()?;
+        let report=display::advance(&tx,limit,budget)?;
         tx.commit()?;
         Ok(report)
     }

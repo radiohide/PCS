@@ -46,6 +46,7 @@ const PCScopeModelView=(()=>{
   // They are listed rather than dropped from PATHS: the renderer does read them, and a check that
   // silently skipped them would stop noticing if the contract renamed one.
   const OPTIONAL_PATHS=[
+    ['data[].display_state.updating','新版后台展示资料分批准备，旧后台省略'],
     ...['data[].record_basis','data.summary.record_basis'].map(field=>[field,'新版查询区分当前采样资料与仅有日志的记录；旧后台省略时不推测来源']),
     ['data.bindings[].valid_to','契约在绑定仍然开放时省略该字段；固定响应集里没有已关闭的绑定'],
     ...['data[].context.','data.actions_preview[].context.'].flatMap(prefix=>['type_id','type_name','display_name','key_facts','presentation','subject_label','subject_detail','subject_basis','field_label','logon_type','program_label','attribution_status','attribution_reason','classification_status','stored_instance_id','stored_action_id','identity_status'].map(field=>[prefix+field,'新版查询按动作证据提供上下文；旧后台及没有该类证据的记录省略'])),
@@ -248,7 +249,7 @@ const PCScopeModelView=(()=>{
     const rows=response.data||[];
     if(!rows.length)return '<div class="empty">尚无处理结果，暂不能判断信息是否已更新。</div>';
     const failed=rows.reduce((n,row)=>n+Number(row.failed||0),0),pending=rows.reduce((n,row)=>n+Number(row.pending||0),0);
-    return `<p>${failed?`${failed} 条记录未能处理，部分变化可能无法显示。`:pending?`${pending} 条记录正在处理，最新变化可能稍后显示。`:'已收到的记录处理完成。'}</p><details><summary>处理详情</summary><div class="object-table-wrap"><table class="table"><thead><tr><th>投影</th><th>规则版本</th><th>结构版本</th><th>待办</th><th>失败</th><th>最近错误</th><th>更新于</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.projection)}</td><td>${esc(String(row.rule_version||'').slice(0,12))}</td><td>${esc(String(row.schema_version))}</td><td>${esc(String(row.pending))}</td><td>${esc(String(row.failed))}</td><td>${esc(row.last_error||'—')}</td><td>${esc(time(row.updated_at))}</td></tr>`).join('')}</tbody></table></div></details>`;
+    return `<p>${failed?`${failed} 条记录未能处理，部分变化可能无法显示。`:rows.some(row=>row.display_state?.updating)?'正在更新展示资料，已有记录可查看。':pending?`${pending} 条记录正在处理，最新变化可能稍后显示。`:'已收到的记录处理完成。'}</p><details><summary>处理详情</summary><div class="object-table-wrap"><table class="table"><thead><tr><th>投影</th><th>规则版本</th><th>结构版本</th><th>待办</th><th>失败</th><th>最近错误</th><th>更新于</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.projection)}</td><td>${esc(String(row.rule_version||'').slice(0,12))}</td><td>${esc(String(row.schema_version))}</td><td>${esc(String(row.pending))}</td><td>${esc(String(row.failed))}</td><td>${esc(row.last_error||'—')}</td><td>${esc(time(row.updated_at))}</td></tr>`).join('')}</tbody></table></div></details>`;
   }
 
 

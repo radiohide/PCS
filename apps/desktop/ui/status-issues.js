@@ -27,6 +27,8 @@
       const projection=status.projection_worker;
       if(projection?.state==='retrying')set('processing',{title:'记录处理遇到问题',impact:'部分最新变化暂时无法显示，后台正在重试。',detail:detail(projection.error),action:'health',actionLabel:'查看采集健康'});
       else if(['idle','projecting'].includes(projection?.state))remove('processing');
+      if(projection?.display_error||Number(projection?.display?.failed_total)>0)set('display',{title:'展示资料更新未完成',impact:'已有记录可查看，部分最新内容稍后显示。',detail:projection.display_error?detail(projection.display_error):'',action:'health',actionLabel:'查看处理情况'});
+      else if(projection?.display)remove('display');
     }
     function monitoring(data){
       if(data.settings?.configured===false)set('permissions',{title:'尚未选择采集权限',impact:'监控范围尚未设置。',action:'permissions',actionLabel:'选择采集权限'});

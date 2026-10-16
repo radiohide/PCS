@@ -23,7 +23,7 @@ fn clock_reading_only(before:&Value,after:&Value)->bool {
     changed
 }
 
-fn visible(action:&str,type_id:&str,field:&str,before:Option<&Value>,after:Option<&Value>,routine:bool)->bool {
+pub(crate) fn visible(action:&str,type_id:&str,field:&str,before:Option<&Value>,after:Option<&Value>,routine:bool)->bool {
     // Explicit source events and lifecycle actions never get hidden by a field-name heuristic.
     if !SNAPSHOT_CHANGES.contains(&action)||field.is_empty(){return true}
     let (Some(before),Some(after))=(before,after)else{return true};

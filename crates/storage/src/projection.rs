@@ -311,6 +311,7 @@ fn apply(tx: &Connection, input: &EvidenceInput, context: &AdapterContext, resul
         };
         let outcome = if expanded { identity::apply_expanded(tx, &request)? } else { identity::apply(tx, &request)? };
         let Some(instance_id) = outcome.instance_id else { continue };
+        crate::display::bind_scope(tx,instance_id,input)?;
         // A COM snapshot can contain the root, InprocServer32 and LocalServer32 for one
         // instance. Its evidence address names the whole snapshot, so claim each item before
         // applying its distinct fields. Keep the normal instance-level reference for evidence
@@ -758,7 +759,7 @@ fn record_action(tx: &Connection, input: &EvidenceInput, context: &AdapterContex
                 identity::apply_event(tx,&request)?
             } else {identity::apply_expanded(tx,&request)?};
             match resolved.instance_id {
-                Some(id) => (Some(id), None, Some(identity.type_id.clone())),
+                Some(id) => {crate::display::bind_scope(tx,id,input)?;(Some(id), None, Some(identity.type_id.clone()))},
                 None => (None, Some("the target identity could not be resolved".to_owned()), Some(identity.type_id.clone())),
             }
         }

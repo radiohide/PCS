@@ -1,4 +1,4 @@
-//! S04 object-model schema (database schema version 6).
+//! Object-model schema (database schema version 10; display tables live in display.rs).
 //!
 //! Adds the entities the object model needs — instances, source bindings, field facts and their
 //! history, object actions, evidence references, per-scope coverage and projection state — without
@@ -13,7 +13,7 @@ use anyhow::{Context, Result};
 use rusqlite::{params, Connection, OptionalExtension};
 use serde_json::Value;
 
-pub const SCHEMA_VERSION: i64 = 9;
+pub const SCHEMA_VERSION: i64 = 10;
 pub(crate) const OBSERVATION_ADDRESS_INDEX: &str = "evidence_refs_observation_address";
 /// Settings key holding the fingerprint of the catalog this database was last projected against.
 pub const CATALOG_FINGERPRINT_KEY: &str = "model_catalog_v1";
@@ -372,13 +372,13 @@ mod tests {
             let reader = Store::open_reader(&path, std::time::Duration::from_secs(6)).unwrap();
             assert_eq!(reader.conn.query_row("SELECT count(*) FROM sqlite_schema WHERE name=?", [OBSERVATION_ADDRESS_INDEX], |row| row.get::<_,i64>(0)).unwrap(), 0);
             assert!(reader.query(&pcscope_contracts::query::QueryRequest::InstanceList(Default::default())).is_ok());
-            assert_eq!(reader.conn.query_row("PRAGMA user_version", [], |row| row.get::<_,i64>(0)).unwrap(), 9);
+            assert_eq!(reader.conn.query_row("PRAGMA user_version", [], |row| row.get::<_,i64>(0)).unwrap(), SCHEMA_VERSION);
         }
         {
             let store = Store::open(&path).unwrap();
             ensure_query_indexes(&store.conn).unwrap();
             assert_eq!(store.conn.query_row("SELECT count(*) FROM sqlite_schema WHERE name=?", [OBSERVATION_ADDRESS_INDEX], |row| row.get::<_,i64>(0)).unwrap(), 1);
-            assert_eq!(store.conn.query_row("PRAGMA user_version", [], |row| row.get::<_,i64>(0)).unwrap(), 9);
+            assert_eq!(store.conn.query_row("PRAGMA user_version", [], |row| row.get::<_,i64>(0)).unwrap(), SCHEMA_VERSION);
             assert_eq!(settings_map(&store.conn), before);
             assert_eq!(store.conn.query_row("SELECT data FROM records WHERE kind='collector.test'", [], |row| row.get::<_,String>(0)).unwrap(), "{\"keep\":\"原始材料\"}");
             assert_eq!(store.conn.query_row("SELECT name FROM type_definitions WHERE type_id='account.user'", [], |row| row.get::<_,String>(0)).unwrap(), "sentinel");
@@ -402,7 +402,7 @@ mod tests {
         assert_eq!(store.conn.query_row("SELECT count(*) FROM sqlite_schema WHERE name=?", [OBSERVATION_ADDRESS_INDEX], |row| row.get::<_,i64>(0)).unwrap(), 0);
         assert_eq!(store.conn.query_row("SELECT count(*) FROM evidence_refs", [], |row| row.get::<_,i64>(0)).unwrap(), 2000);
         assert_eq!(settings_map(&store.conn), before);
-        assert_eq!(store.conn.query_row("PRAGMA user_version", [], |row| row.get::<_,i64>(0)).unwrap(), 9);
+        assert_eq!(store.conn.query_row("PRAGMA user_version", [], |row| row.get::<_,i64>(0)).unwrap(), SCHEMA_VERSION);
         ensure_query_indexes(&store.conn).unwrap();
     }
 

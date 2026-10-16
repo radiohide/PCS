@@ -300,7 +300,7 @@ async function refreshStatus(automatic=false){
   const operation=document.querySelector('#operation'),progress=document.querySelector('#progress');
   try{
     const status=await api('status');if(!valid())return false;state.status=status;issues.syncStatus(status);
-    const text=status.collecting?'正在采集':'监控中';if(operation.textContent!==text)operation.textContent=text;
+    const text=status.collecting?'正在采集':status.projection_worker?.display?.pending===true?'正在更新记录':'监控中';if(operation.textContent!==text)operation.textContent=text;
     const last=status.last_collection;progress.hidden=!status.collecting;
     if(status.collecting&&last?.total)progress.value=100*last.completed/last.total;else if(status.collecting)progress.removeAttribute('value');else progress.value=0;
     return true;

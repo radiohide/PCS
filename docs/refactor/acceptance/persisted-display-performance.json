@@ -1,0 +1,47 @@
+{
+  "basis": "bounded real-history sample in isolated database; five runs, same queries; no IPC or UI time",
+  "cold": {
+    "objects": {
+      "bytes": 470359,
+      "max_ms": 259.5478,
+      "median_ms": 219.38240000000002,
+      "rows": 200
+    },
+    "timeline": {
+      "bytes": 517597,
+      "max_ms": 973.4372,
+      "median_ms": 933.1766,
+      "rows": 200
+    }
+  },
+  "existing_sample": true,
+  "extract_ms": 108.3134,
+  "precomputed": {
+    "objects": {
+      "bytes": 470359,
+      "max_ms": 118.6646,
+      "median_ms": 108.8406,
+      "rows": 200
+    },
+    "timeline": {
+      "bytes": 517607,
+      "max_ms": 42.3363,
+      "median_ms": 41.3353,
+      "rows": 200
+    }
+  },
+  "preparation": {
+    "max_slice_ms": 97.0,
+    "slices": 574,
+    "total_ms": 32179.110299999997
+  },
+  "sample": {
+    "actions": 2000,
+    "evidence_metadata": 4082,
+    "objects": 1419,
+    "raw_records": 1928,
+    "snapshots": 437
+  },
+  "sample_db_bytes": 45948928,
+  "semantic_match": true
+}

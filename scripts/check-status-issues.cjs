@@ -9,6 +9,9 @@ issues.set('backend',{title:'offline'});issues.syncStatus({last_collection:{ok:t
 issues.syncStatus({event_collection:{channels:{System:{ok:true}}}});assert.equal(issues.list().length,0);
 issues.syncStatus({usn_collection:{ok:false,error:'failed'},projection_worker:{state:'retrying',error:'failed'}});assert.equal(issues.list().length,2);
 issues.syncStatus({usn_collection:{ok:true},projection_worker:{state:'idle'}});assert.equal(issues.list().length,0);
+issues.syncStatus({projection_worker:{state:'idle',display:{pending:true,failed_total:0}}});assert.equal(issues.list().length,0,'background preparation requires no user action');
+issues.syncStatus({projection_worker:{state:'idle',display:{pending:true,failed_total:1}}});assert.equal(issues.list()[0].id,'display');
+issues.syncStatus({projection_worker:{state:'idle',display:{pending:false,failed_total:0}}});assert.equal(issues.list().length,0,'explicit display recovery clears its own issue');
 issues.monitoring({settings:{configured:true,mode:'enhanced'},elevated:false});assert.equal(issues.list()[0].action,'permissions');
 issues.monitoring({settings:{configured:true,mode:'low'},elevated:false});assert.equal(issues.list().length,0,'ordinary mode chosen by the user is not an authorization error');
 issues.monitoring({report:{error:'failed'}});issues.monitoring({checking:true,report:{}});assert.equal(issues.list().length,1);issues.monitoring({report:{checked_at:'now'}});assert.equal(issues.list().length,0);

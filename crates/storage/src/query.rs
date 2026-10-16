@@ -84,8 +84,10 @@ fn instance_bound(watermark: &str) -> i64 {
 
 /// The action bound a watermark carries, for the same reason the instance bound exists.
 fn action_bound(watermark: &str) -> i64 {
-    watermark.rsplit('a').next().and_then(|value| value.parse().ok()).unwrap_or(i64::MAX)
+    watermark.rsplit('a').next().and_then(|value|value.split('g').next()).and_then(|value| value.parse().ok()).unwrap_or(i64::MAX)
 }
+
+fn display_bound(watermark:&str)->Option<i64> {watermark.rsplit_once('g').and_then(|(_,value)|value.parse().ok())}
 
 /// The query a watermark belongs to.
 fn watermark_fingerprint(watermark: &str) -> &str {
@@ -148,20 +150,20 @@ pub fn types(conn: &Connection) -> Result<QueryResponse> {
     Ok(response(status, Value::Array(entries), None, None))
 }
 
-fn sort_sql(sort: InstanceSort) -> (&'static str, bool) {
+fn sort_sql(sort: InstanceSort,display_name:&str) -> (String, bool) {
     // The key column and whether the comparison runs descending. Every sort ends with instance_id
     // so two rows that tie on the key still have one stable order.
     match sort {
-        InstanceSort::NameAsc => (display_name_sql(), false),
-        InstanceSort::NameDesc => (display_name_sql(), true),
+        InstanceSort::NameAsc => (display_name.to_owned(), false),
+        InstanceSort::NameDesc => (display_name.to_owned(), true),
         InstanceSort::ChangedDesc => {
             // This key also appears in WHERE clauses for page boundaries and counts, where a
             // SELECT alias would not exist. Keep the projected value and every comparison equal.
             static KEY: std::sync::LazyLock<String> = std::sync::LazyLock::new(|| format!("coalesce({CHANGED_AT_SQL},'')"));
-            (KEY.as_str(), true)
+            (KEY.to_string(), true)
         }
-        InstanceSort::SeenDesc => ("last_observed_at", true),
-        InstanceSort::TypeAsc => ("type_id", false),
+        InstanceSort::SeenDesc => ("last_observed_at".into(), true),
+        InstanceSort::TypeAsc => ("type_id".into(), false),
     }
 }
 
@@ -244,6 +246,26 @@ fn short_path_name(path: &str) -> String {
     path.trim_end_matches(['\\', '/']).rsplit(['\\', '/']).next().unwrap_or(path).to_owned()
 }
 
+/// Reconstruct changed fields at the action's observation. In particular, a subsequent rename
+/// must never rename an old snapshot change. Event subjects still come from their own evidence.
+fn historical_facts(conn:&Connection,instance:i64,type_id:&str,at:&str)->Result<Vec<Value>> {
+    let mut facts=key_facts(conn,instance,type_id)?;
+    let mut statement=conn.prepare("SELECT before_value,before_status,before_source_time,observed_from
+        FROM fact_history WHERE instance_id=? AND field_id=? AND observed_until>?
+        ORDER BY observed_until LIMIT 1")?;
+    for fact in &mut facts {
+        if matches!(fact["status"].as_str(),Some("masked"|"unreadable"|"conflicting"|"evidence_pruned"))
+            || pcscope_contracts::semantics::is_mask_sentinel(&fact["value"]) {continue;}
+        let prior:Option<(Option<String>,Option<String>,Option<String>,String)>=statement.query_row(
+            params![instance,fact["field_id"].as_str(),at],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?))).optional()?;
+        if let Some((value,status,time,observed))=prior {
+            fact["value"]=value.and_then(|v|serde_json::from_str::<Value>(&v).ok()).unwrap_or(Value::Null);
+            fact["status"]=json!(status);fact["source_time"]=json!(time);fact["observed_at"]=json!(observed);
+        }
+    }
+    Ok(facts)
+}
+
 /// Keep historical event labels tied to that event's own evidence. Current object facts are a
 /// separately marked fallback, so a renamed task does not silently rename its old executions.
 fn action_context(conn: &Connection, action_row: i64, instance: Option<i64>, target_type: Option<&str>, action_id: &str, field_id: Option<&str>, labels: &mut HistoryLabelCache) -> Result<Value> {
@@ -253,13 +275,14 @@ fn action_context(conn: &Connection, action_row: i64, instance: Option<i64>, tar
         None => None,
     };
     let type_id = current.as_ref().and_then(|object|object["type_id"].as_str()).or(target_type).unwrap_or_default();
-    let facts = instance.map(|id| key_facts(conn,id,type_id)).transpose()?.unwrap_or_default();
+    let at:String=conn.query_row("SELECT observed_at FROM object_actions WHERE action_row=?",[action_row],|r|r.get(0))?;
+    let facts = instance.map(|id| historical_facts(conn,id,type_id,&at)).transpose()?.unwrap_or_default();
     let registry_identity=current.as_ref().and_then(|object|Some((object["scope"].as_str()?,object["native_key"].as_str()?,object["identity_status"].as_str()?)));
     let present = presentation(type_id, &facts,registry_identity);
     let mut context = json!({
         "type_id":type_id,
         "type_name":pcscope_contracts::model::type_summary(type_id).map(|(_,name,_)|name),
-        "display_name":current.as_ref().and_then(|object|object["display_name"].as_str()),
+        "display_name":present["name"],
         "identity_status":current.as_ref().and_then(|object|object["identity_status"].as_str()),
         "key_facts":facts,
         "presentation":present,
@@ -424,9 +447,10 @@ fn action_context(conn: &Connection, action_row: i64, instance: Option<i64>, tar
 
 /// The collection this instance is bound to, as coverage views.
 fn coverage_of(conn: &Connection, instance_id: i64) -> Result<Vec<Value>> {
+    if !crate::display::available(conn)? {return Ok(Vec::new());}
     let mut statement = conn.prepare(
         "SELECT DISTINCT c.source,c.scope,c.configured,c.last_result,c.last_success_at,c.last_attempt_at,c.history_state,c.detail
-         FROM source_bindings b JOIN coverage_scopes c ON c.source=b.source
+         FROM object_collection_scopes b JOIN coverage_scopes c ON c.source=b.source AND c.scope=b.scope
          WHERE b.instance_id=? ORDER BY c.source,c.scope",
     )?;
     let rows = statement.query_map(params![instance_id], |row| {
@@ -445,6 +469,22 @@ fn coverage_of(conn: &Connection, instance_id: i64) -> Result<Vec<Value>> {
 }
 
 fn summary_row(conn: &Connection, row: &rusqlite::Row<'_>) -> rusqlite::Result<Value> {
+    let instance_id: i64 = row.get(0)?;
+    if let Some(mut summary)=crate::display::cached(conn,"object",instance_id).map_err(sql_display_error)? {
+        // These cheap live attributes change every poll, independently of semantic display facts.
+        summary["seen_at"]=json!(row.get::<_,Option<String>>(10)?);
+        summary["lifecycle"]=json!(row.get::<_,String>(8)?);
+        summary["coverage"]=json!(coverage_of(conn,instance_id).map_err(sql_display_error)?);
+        return Ok(summary);
+    }
+    uncached_summary_row(conn,row)
+}
+
+fn sql_display_error(error:anyhow::Error)->rusqlite::Error {
+    rusqlite::Error::ToSqlConversionFailure(error.into())
+}
+
+fn uncached_summary_row(conn: &Connection, row: &rusqlite::Row<'_>) -> rusqlite::Result<Value> {
     let instance_id: i64 = row.get(0)?;
     let type_id: String = row.get(1)?;
     let fact = key_facts(conn, instance_id, &type_id).unwrap_or_default();
@@ -522,10 +562,21 @@ fn summary_row(conn: &Connection, row: &rusqlite::Row<'_>) -> rusqlite::Result<V
     }))
 }
 
+pub(crate) fn build_summary(conn:&Connection,id:i64)->Result<Option<Value>> {
+    let display_name=display_name_sql();
+    Ok(conn.query_row(&format!("SELECT i.instance_id,i.type_id,{ALIAS},i.category,
+        coalesce((SELECT name FROM type_definitions t WHERE t.type_id=i.type_id),i.type_id),
+        {display_name},i.scope,i.identity_status,i.lifecycle,{CHANGED_AT_SQL},i.last_observed_at,i.native_key
+        FROM object_instances i WHERE i.instance_id=?"),[id],|row|uncached_summary_row(conn,row)).optional()?)
+}
+
 /// The instances matching a filter, one page at a time.
 pub fn instances(conn: &Connection, filter: &InstanceFilter) -> Result<QueryResponse> {
-    let display_name=display_name_sql();
-    let (key, descending) = sort_sql(filter.sort);
+    let display_name=if crate::display::available(conn)? {
+        format!("coalesce((SELECT d.sort_name FROM display_objects d WHERE d.instance_id=i.instance_id
+          AND d.revision='{}' AND NOT EXISTS(SELECT 1 FROM display_work w WHERE w.kind='object' AND w.id=i.instance_id)),{})",crate::display::revision(),display_name_sql())
+    }else{display_name_sql().to_owned()};
+    let (key, descending) = sort_sql(filter.sort,&display_name);
     let limit = clamp(filter.limit);
     // Where the walk is, and how big a page is, are not part of which walk it is.
     let mut probe = filter.clone();
@@ -654,6 +705,9 @@ pub fn instances(conn: &Connection, filter: &InstanceFilter) -> Result<QueryResp
 /// Counts over the same filter, per kind. They are never summed across kinds: an instance and an
 /// action are not the same thing counted twice.
 fn counts_for(conn: &Connection, clauses: &[String], args: &[Box<dyn rusqlite::ToSql>]) -> Result<Counts> {
+    if clauses==["1=1"] && args.is_empty() && crate::display::available(conn)? {
+        if let Some(counts)=crate::display_counts::counts(conn)? {return Ok(counts);}
+    }
     let where_clause = clauses.join(" AND ");
     let bound: Vec<&dyn rusqlite::ToSql> = args.iter().map(|value| value.as_ref()).collect();
     // A reader never installs the optional index. Do not even prepare an INDEXED BY clause
@@ -786,8 +840,17 @@ fn key_facts_all(conn: &Connection, instance_id: i64, type_id: &str) -> Result<V
     Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
 }
 
+fn action_visibility_sql(conn:&Connection,routine:bool)->Result<String> {
+    let fallback=format!("pcscope_action_visible(a.action_id,coalesce((SELECT type_id FROM object_instances i WHERE i.instance_id=a.instance_id),a.target_type,''),coalesce(a.field_id,''),a.before_value,a.after_value,{})",u8::from(routine));
+    if !crate::display::available(conn)? {return Ok(fallback);}
+    Ok(format!("coalesce((SELECT {} FROM display_actions d WHERE d.action_row=a.action_row AND d.revision='{}'
+        AND d.identity_guard={} AND NOT EXISTS(SELECT 1 FROM display_identity_work w WHERE w.instance_id=a.instance_id)
+        AND NOT EXISTS(SELECT 1 FROM display_work w WHERE w.kind='action' AND w.id=a.action_row)),{fallback})",
+        if routine{"visible_all"}else{"visible_main"},crate::display::revision(),crate::display::identity_guard_sql()))
+}
+
 fn action_views(conn: &Connection, instance: Option<i64>, unassigned: Option<bool>, limit: usize) -> Result<(Vec<Value>, bool)> {
-    let mut clauses = vec!["pcscope_action_visible(a.action_id,coalesce((SELECT type_id FROM object_instances i WHERE i.instance_id=a.instance_id),a.target_type,''),coalesce(a.field_id,''),a.before_value,a.after_value,1)".to_owned()];
+    let mut clauses = vec![action_visibility_sql(conn,true)?];
     match instance {
         Some(id) => clauses.push(format!("instance_id = {id}")),
         None => {
@@ -836,6 +899,14 @@ fn action_views(conn: &Connection, instance: Option<i64>, unassigned: Option<boo
 }
 
 fn enrich_action_context(conn: &Connection, action: &mut Value, labels: &mut HistoryLabelCache) -> Result<()> {
+    if let Some(view)=crate::display::cached(conn,"action",action["_action_row"].as_i64().unwrap_or_default())? {
+        *action=view;
+        return Ok(());
+    }
+    uncached_enrich_action_context(conn,action,labels)
+}
+
+fn uncached_enrich_action_context(conn: &Connection, action: &mut Value, labels: &mut HistoryLabelCache) -> Result<()> {
     let context = action_context(conn, action["_action_row"].as_i64().unwrap_or_default(), action["instance_id"].as_i64(), action["_target_type"].as_str(), action["action_id"].as_str().unwrap_or_default(), action["field_id"].as_str(),labels)?;
     if matches!(context["attribution_status"].as_str(),Some("unverified"|"mismatch")) {
         action["instance_id"]=Value::Null;
@@ -853,6 +924,33 @@ fn enrich_action_context(conn: &Connection, action: &mut Value, labels: &mut His
         object.remove("_target_type");
     }
     Ok(())
+}
+
+pub(crate) fn build_action(conn:&Connection,id:i64)->Result<Option<(Value,bool,bool)>> {
+    let raw:Option<Value>=conn.query_row("SELECT action_id,title,result,phase,precision,occurred_at,
+        interval_from,interval_until,observed_at,field_id,before_value,after_value,unassigned_reason,
+        source_record,target_type,instance_id FROM object_actions WHERE action_row=?",[id],|row| {
+        let precision:String=row.get(4)?;let occurred:Option<String>=row.get(5)?;
+        Ok(json!({"action_id":row.get::<_,String>(0)?,"title":row.get::<_,Option<String>>(1)?,
+            "result":row.get::<_,String>(2)?,"phase":row.get::<_,Option<String>>(3)?,"precision":precision,
+            "occurred_at":occurred,"interval_from":row.get::<_,Option<String>>(6)?,
+            "interval_until":row.get::<_,Option<String>>(7)?,"observed_at":row.get::<_,String>(8)?,
+            "field_id":row.get::<_,Option<String>>(9)?,
+            "before":row.get::<_,Option<String>>(10)?.and_then(|v|serde_json::from_str::<Value>(&v).ok()),
+            "after":row.get::<_,Option<String>>(11)?.and_then(|v|serde_json::from_str::<Value>(&v).ok()),
+            "unassigned_reason":row.get::<_,Option<String>>(12)?,
+            "source_record":row.get::<_,Option<String>>(13)?.and_then(|v|serde_json::from_str::<Value>(&v).ok()),
+            "_target_type":row.get::<_,Option<String>>(14)?,"instance_id":row.get::<_,Option<i64>>(15)?,
+            "time_derived":precision!="exact"||occurred.is_none(),"_action_row":id}))
+    }).optional()?;
+    let Some(mut view)=raw else{return Ok(None)};
+    let type_id:Option<String>=view["instance_id"].as_i64().map(|id|conn.query_row("SELECT type_id FROM object_instances WHERE instance_id=?",[id],|r|r.get(0)).optional()).transpose()?.flatten();
+    let show=|routine|crate::timeline_policy::visible(view["action_id"].as_str().unwrap_or_default(),
+        type_id.as_deref().or(view["_target_type"].as_str()).unwrap_or_default(),
+        view["field_id"].as_str().unwrap_or_default(),Some(&view["before"]),Some(&view["after"]),routine);
+    let (main,all)=(show(false),show(true));
+    uncached_enrich_action_context(conn,&mut view,&mut HistoryLabelCache::new())?;
+    Ok(Some((view,main,all)))
 }
 
 fn binding_views(conn: &Connection, instance_id: i64) -> Result<Vec<Value>> {
@@ -895,7 +993,7 @@ pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryRespons
     let mut probe = filter.clone();
     probe.cursor = None;
     probe.limit = 0;
-    let walk = fingerprint(&probe);
+    let walk = fingerprint(&(&probe,crate::display::revision()));
     let (walk_watermark, window, cursor_key, cursor_id) = match filter.cursor.as_deref() {
         Some(cursor) => match decode_cursor(cursor) {
             Some((issued, key, id)) if watermark_fingerprint(&issued) == walk => (issued.clone(), Some(action_bound(&issued)), key, id),
@@ -903,14 +1001,27 @@ pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryRespons
                 return Ok(QueryResponse::rejected(ResponseStatus::Unsupported, "stale_cursor", "this cursor belongs to a different query; start the walk again", pcscope_contracts::model::catalog_version()))
             }
         },
-        None => (watermark(conn, &walk)?, None, String::new(), 0),
+        None => {
+            let mut mark=watermark(conn,&walk)?;
+            if crate::display::published(conn)? {mark.push_str(&format!("g{}",crate::display::generation(conn)?));}
+            (mark,None,String::new(),0)
+        },
     };
 
     // The anchor is the latest time the action is known to have been in effect. It is a fallback
     // whenever the source did not state a moment, which is why the response marks it rather than
     // presenting it as when something happened.
-    let anchor = "coalesce(a.interval_until,a.occurred_at,a.observed_at)";
-    let mut clauses = vec![format!("pcscope_action_visible(a.action_id,coalesce((SELECT type_id FROM object_instances i WHERE i.instance_id=a.instance_id),a.target_type,''),coalesce(a.field_id,''),a.before_value,a.after_value,{})",if filter.include_routine{1}else{0})];
+    let prepared=display_bound(&walk_watermark);
+    let anchor = if prepared.is_some(){"d.anchor"}else{"coalesce(a.interval_until,a.occurred_at,a.observed_at)"};
+    let mut clauses = if let Some(generation)=prepared {
+        vec![format!("d.revision='{}' AND d.prepared_generation<={generation} AND d.{} AND d.identity_guard={}
+            AND NOT EXISTS(SELECT 1 FROM display_work w WHERE w.kind='action' AND w.id=a.action_row)
+            AND NOT EXISTS(SELECT 1 FROM display_identity_work w WHERE w.instance_id=a.instance_id)",crate::display::revision(),if filter.include_routine{"visible_all"}else{"visible_main"},crate::display::identity_guard_sql())]
+    }else{
+        // While old history is being prepared, preserve the original query path. Looking up
+        // millions of missing display rows before LIMIT would make migration slower to browse.
+        vec![format!("pcscope_action_visible(a.action_id,coalesce((SELECT type_id FROM object_instances i WHERE i.instance_id=a.instance_id),a.target_type,''),coalesce(a.field_id,''),a.before_value,a.after_value,{})",u8::from(filter.include_routine))]
+    };
     let mut args: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
     if let Some(bound) = window {
         clauses.push("a.action_row <= ?".into());
@@ -922,11 +1033,12 @@ pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryRespons
     if !filter.include_routine {
         // One security update summary per observation; full object history retains both fields.
         // Bind the sibling lookup to this page walk's watermark, too.
+        let sibling=if let Some(generation)=prepared {format!("EXISTS(SELECT 1 FROM display_actions ready WHERE ready.action_row=s.action_row AND ready.revision='{}' AND ready.prepared_generation<={generation} AND ready.visible_all AND NOT EXISTS(SELECT 1 FROM display_work w WHERE w.kind='action' AND w.id=s.action_row))",crate::display::revision())}else{"pcscope_action_visible(s.action_id,'security.protection',s.field_id,s.before_value,s.after_value,1)".into()};
         clauses.push(format!("NOT(a.action_id='observed.state_changed' AND coalesce(a.field_id,'')='engine_version'
             AND EXISTS(SELECT 1 FROM object_instances i WHERE i.instance_id=a.instance_id AND i.type_id='security.protection')
             AND EXISTS(SELECT 1 FROM object_actions s WHERE s.instance_id=a.instance_id AND s.observed_at=a.observed_at
                 AND s.field_id='signature_version' AND s.action_id='observed.state_changed' AND s.action_row<={}
-                AND pcscope_action_visible(s.action_id,'security.protection',s.field_id,s.before_value,s.after_value,1)))",action_bound(&walk_watermark)));
+                AND {sibling}))",action_bound(&walk_watermark)));
     }
     if let Some(action_id) = &filter.action_id {
         clauses.push("a.action_id = ?".into());
@@ -967,12 +1079,14 @@ pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryRespons
         args.push(Box::new(cursor_id));
     }
 
+    let from=if prepared.is_some(){"display_actions d INDEXED BY display_actions_anchor CROSS JOIN object_actions a ON a.action_row=d.action_row"}else{"object_actions a"};
+    let stored=if prepared.is_some(){"d.view"}else{"NULL"};
     let sql = format!(
         "SELECT a.action_row, a.action_id, a.title, a.result, a.phase, a.precision, a.occurred_at,
                 a.interval_from, a.interval_until, a.observed_at, a.field_id, a.before_value, a.after_value,
-                a.unassigned_reason, a.instance_id, {anchor} AS anchor,a.source_record,a.target_type
-         FROM object_actions a WHERE {} ORDER BY anchor DESC, a.action_row DESC LIMIT ?",
-        clauses.join(" AND ")
+                a.unassigned_reason, a.instance_id, {anchor} AS anchor,a.source_record,a.target_type,{stored}
+         FROM {from} WHERE {} ORDER BY {anchor} DESC, {} DESC LIMIT ?",
+        clauses.join(" AND "),if prepared.is_some(){"d.action_row"}else{"a.action_row"}
     );
     let mut statement = conn.prepare(&sql)?;
     let bound: Vec<&dyn rusqlite::ToSql> = args.iter().map(|value| value.as_ref()).collect();
@@ -982,8 +1096,8 @@ pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryRespons
     let rows = statement.query_map(all.as_slice(), |row| {
         let precision: String = row.get(5)?;
         let occurred: Option<String> = row.get(6)?;
-        Ok((
-            json!({
+        let cached:Option<String>=row.get(18)?;
+        let view=if let Some(text)=cached {serde_json::from_str::<Value>(&text).map_err(|e|rusqlite::Error::ToSqlConversionFailure(Box::new(e)))?}else{json!({
                 "action_id": row.get::<_, String>(1)?,
                 "title": row.get::<_, Option<String>>(2)?,
                 "result": row.get::<_, String>(3)?,
@@ -1004,7 +1118,8 @@ pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryRespons
                 "source_record": row.get::<_, Option<String>>(16)?.and_then(|text|serde_json::from_str::<Value>(&text).ok()),
                 "_action_row": row.get::<_, i64>(0)?,
                 "_target_type": row.get::<_, Option<String>>(17)?,
-            }),
+            })};
+        Ok((view,
             row.get::<_, String>(15)?,
             row.get::<_, i64>(0)?,
         ))
@@ -1020,7 +1135,7 @@ pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryRespons
     let mut data: Vec<Value> = all_rows.into_iter().map(|(value, _, _)| value).collect();
     let mut labels=HistoryLabelCache::new();
     for action in &mut data {
-        enrich_action_context(conn,action,&mut labels)?;
+        if prepared.is_none(){enrich_action_context(conn,action,&mut labels)?;}
         if !filter.include_routine && action["field_id"]=="signature_version" && action["context"]["type_id"]=="security.protection" {
             let engine:Option<(Option<String>,Option<String>)>=conn.query_row("SELECT before_value,after_value FROM object_actions s WHERE instance_id=? AND observed_at=? AND field_id='engine_version' AND action_id='observed.state_changed' AND action_row<=? AND pcscope_action_visible(s.action_id,'security.protection',s.field_id,s.before_value,s.after_value,1) ORDER BY action_row DESC LIMIT 1",params![action["instance_id"].as_i64(),action["observed_at"].as_str(),action_bound(&walk_watermark)],|r|Ok((r.get(0)?,r.get(1)?))).optional()?;
             if let Some((before,after))=engine {
@@ -1160,6 +1275,14 @@ pub fn projection(conn: &Connection) -> Result<QueryResponse> {
             entry["failed"] = json!(queue["by_state"]["failed"].as_u64().unwrap_or(0));
             entry["last_error"] = json!(last_error);
         }
+    }
+    if crate::display::available(conn)? {
+        let display=crate::display::status(conn)?;
+        entries.push(json!({"projection":"display","rule_version":crate::display::revision(),
+            "schema_version":crate::model::SCHEMA_VERSION,"cursor":display.to_string(),
+            "watermark":Value::Null,"pending":display["pending"],"failed":display["failed"],
+            "last_error":conn.query_row("SELECT last_error FROM display_work WHERE attempts>0 ORDER BY id DESC LIMIT 1",[],|r|r.get::<_,Option<String>>(0)).optional()?.flatten(),
+            "updated_at":conn.query_row("SELECT strftime('%Y-%m-%dT%H:%M:%fZ','now')",[],|r|r.get::<_,String>(0))?,"display_state":display}));
     }
     let status = if entries.is_empty() { ResponseStatus::Empty } else { ResponseStatus::Loaded };
     Ok(response(status, Value::Array(entries), None, None))

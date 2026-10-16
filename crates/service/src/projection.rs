@@ -3,7 +3,7 @@ use anyhow::Result;
 use pcscope_storage::Store;
 use serde_json::{json, Value};
 use std::sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}};
-use std::time::Duration;
+use std::time::{Duration,Instant};
 
 pub struct Worker {
     pub ready: Arc<AtomicBool>,
@@ -20,18 +20,34 @@ impl Worker {
         let status = Arc::new(Mutex::new(json!({"state":"catching_up"})));
         let (worker_ready, worker_stop, worker_status) = (ready.clone(), stop.clone(), status.clone());
         let thread = std::thread::Builder::new().name("object-projection".into()).spawn(move || {
+            let mut display:std::result::Result<Value,String>=Ok(json!({"pending":true}));
+            let mut display_retry_at=Instant::now();let mut display_failures=0u32;
             while !worker_stop.load(Ordering::SeqCst) {
                 // Release the shared writer after every small atomic batch.
                 let result = store.lock().map_err(|_| anyhow::anyhow!("storage lock poisoned"))
                     .and_then(|store| store.project_pending(&machine, &installation, 64));
+                // Reacquire after raw projection: collectors get a chance to commit between
+                // the two bounded transactions. Display work cannot be starved by raw backlog.
+                std::thread::yield_now();
+                if Instant::now()>=display_retry_at {
+                    display=store.lock().map_err(|_| anyhow::anyhow!("storage lock poisoned"))
+                        .and_then(|store|store.prepare_display(32,Duration::from_millis(40))).map_err(|error|error.to_string());
+                    if display.is_err() {
+                        display_failures=display_failures.saturating_add(1);
+                        display_retry_at=Instant::now()+Duration::from_secs((1u64<<display_failures.min(6)).min(60));
+                    }else{display_failures=0;display_retry_at=Instant::now();}
+                }
                 let delay = match result {
                     Ok(report) => {
                         if report.examined == 0 { worker_ready.store(true, Ordering::SeqCst); }
                         *worker_status.lock().unwrap() = json!({"state":if report.examined==0 {"idle"} else {"projecting"},
                             "examined":report.examined,"projected":report.projected,
                             "rejected":report.rejected,"unadapted":report.unadapted,
+                            "display":display.as_ref().ok(),"display_error":display.as_ref().err().map(ToString::to_string),
                             "at":chrono::Utc::now().to_rfc3339()});
-                        if report.examined == 0 { Duration::from_millis(250) } else { Duration::from_millis(10) }
+                        if report.examined == 0 {
+                            if display.as_ref().ok().is_some_and(|d|d["built"].as_u64().unwrap_or(0)>0||d["linked"].as_u64().unwrap_or(0)>0) {Duration::from_millis(50)}else{Duration::from_millis(250)}
+                        } else {Duration::from_millis(10)}
                     }
                     Err(error) => {
                         // Transaction rollback leaves the evidence and pending work intact.
