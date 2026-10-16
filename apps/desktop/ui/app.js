@@ -69,7 +69,7 @@ async function renderObjects(){
     content.querySelector('#model-type').innerHTML='<option value="">全部类型</option>'+catalog.filter(t=>!modelFilters.category||t.category===modelFilters.category).map(t=>`<option value="${esc(t.type_id)}" ${t.type_id===modelFilters.type_id?'selected':''}>${esc(PCScopeObjectNames.typeName(t))}${t.supplied_by_source?'':'（尚未接入来源）'}</option>`).join('');
   };
   const request=()=>{
-    const body={query:'instance_list',sort:modelFilters.sort,limit:50};
+    const body={query:'instance_list',sort:modelFilters.sort,limit:100};
     if(modelFilters.category)body.category=modelFilters.category;
     if(modelFilters.type_id)body.type_id=modelFilters.type_id;
     if(modelFilters.search)body.search=modelFilters.search;
@@ -214,7 +214,7 @@ function mountModuleFileHistory(){
   let loaded=false;
   const pager=PCScopeAutoPage.mount(more,{
     active:()=>section.open,
-    query:cursor=>api('query',{request:{query:'source_readings',source:'pcscope.execution.module-file-state',cursor,limit:50}}),
+    query:cursor=>api('query',{request:{query:'source_readings',source:'pcscope.execution.module-file-state',cursor,limit:100}}),
     onStart:()=>{refresh.disabled=true;feedback.textContent='正在读取检查记录…';},
     apply:(response,{append})=>{
       const html=PCScopeModelView.moduleFiles(response);
@@ -275,7 +275,7 @@ async function render(){
       content.insertAdjacentHTML('beforeend','<section class="panel status-panel"><h2>资源与监控范围</h2><label>来源 <select id="reading-source"><option value="">全部</option><option value="pcscope.execution.module-scan-status">程序模块监控情况</option><option value="pcscope.execution.resources">资源采样</option><option value="pcscope.collector.scoped-configuration">采集范围配置</option><option value="pcscope.collector.event-channel-coverage">日志可用情况</option><option value="pcscope.usn.watch-list">文件监控名单</option></select></label><div id="source-readings"></div><div id="readings-next"></div></section>');
       const readingPanel=content.querySelector('#source-readings'),readingSelect=content.querySelector('#reading-source'),readingNext=content.querySelector('#readings-next');
       const readingsPager=PCScopeAutoPage.mount(readingNext,{
-        query:cursor=>api('query',{request:{query:'source_readings',source:readingSelect.value||null,cursor,limit:50}}),
+        query:cursor=>api('query',{request:{query:'source_readings',source:readingSelect.value||null,cursor,limit:100}}),
         onStart:({append})=>{if(!append)readingPanel.textContent='正在读取…';},
         apply:(response,{append})=>{
           if(!append)readingPanel.innerHTML=PCScopeModelView.sourceReadings(response);
@@ -418,7 +418,7 @@ async function renderTimeline(){
     content.querySelector('#timeline-type').innerHTML='<option value="">全部类型</option>'+catalog.filter(t=>!timelineFilters.category||t.category===timelineFilters.category).map(t=>`<option value="${esc(t.type_id)}" ${t.type_id===timelineFilters.type_id?'selected':''}>${esc(PCScopeObjectNames.typeName(t))}</option>`).join('');
   };
   const request=()=>{
-    const body={query:'action_timeline',limit:timelineWalk.cursor?80:200,include_unassigned:timelineFilters.unassigned,include_routine:timelineFilters.routine};
+    const body={query:'action_timeline',limit:200,include_unassigned:timelineFilters.unassigned,include_routine:timelineFilters.routine};
     if(timelineFilters.action)body.action_id=timelineFilters.action;
     if(timelineFilters.category)body.category=timelineFilters.category;
     if(timelineFilters.type_id)body.type_id=timelineFilters.type_id;
@@ -446,17 +446,25 @@ async function renderTimeline(){
     canAutoLoad:()=>pagingReady,
     query:cursor=>{timelineWalk.cursor=cursor;return api('query',{request:request()});},
     onStart:({append})=>{if(!append){results.setAttribute('aria-busy','true');results.innerHTML='<div class="empty">正在读取变化记录…</div>';}},
-    apply:(response,{append})=>{
+    apply:async(response,{append})=>{
       timelineWalk.watermark=response.page?.watermark||null;
-      const html=PCScopeModelView.timeline(response);
-      if(append)groupControls.append(html);else {results.innerHTML=html;groupControls.sync();}
+      const revision=requestId;let batch=0;
+      const current=()=>!pagingInput.signal.aborted&&results.isConnected&&revision===requestId;
+      // Fetch a full page, then yield between small paint batches so scrolling stays responsive.
+      for(const {html,pending} of PCScopeModelView.timelineBatches(response)){
+        if(!current())return;
+        if(append||batch)groupControls.append(html);else {results.innerHTML=html;groupControls.sync();}
+        ++batch;groupControls.markBoundary(pending||!!response.page?.has_more);
+        if(pending)await new Promise(resolve=>requestAnimationFrame(resolve));
+      }
+      if(!current())return;
       if(append&&(timelineCollapsed||results.querySelector('.timeline-group.is-collapsed,[data-timeline-category-toggle][aria-pressed=false]')))pagingReady=false;
       groupControls.markBoundary(!!response.page?.has_more);
       results.setAttribute('aria-busy','false');bindObjects(results);
     },
     onError:(error,{append})=>{results.setAttribute('aria-busy','false');if(!append)results.innerHTML=`<div class="empty">${errorHtml(error)}</div>`;}
   });
-  const refresh=()=>{pagingReady=!timelineCollapsed;return pager.reset();};
+  const refresh=()=>{++requestId;pagingReady=!timelineCollapsed;return pager.reset();};
   const allowPaging=event=>{
     if(event.type==='keydown'&&(!['ArrowDown','PageDown','End',' '].includes(event.key)||event.target.closest('input,select,textarea,[contenteditable]')||event.key===' '&&event.target.closest('button,summary')))return;
     if(event.type==='wheel'&&event.deltaY<=0)return;

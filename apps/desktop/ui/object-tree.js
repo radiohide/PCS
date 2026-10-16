@@ -10,7 +10,7 @@ const PCScopeObjectTree=(()=>{
     container.innerHTML=`<div class="object-tree-layout"><section class="object-tree-browser" aria-label="对象分类"><div class="object-tree-heading"><strong>本机对象</strong><p class="muted">${searchMode?'按分类显示匹配结果。':'展开类型查看对象，点击名称查看详情。'}</p></div><div data-tree-groups></div><div data-tree-feedback role="status"></div><div data-tree-more></div></section><section class="object-tree-detail" aria-label="对象详情"><p class="empty">选择左侧对象，查看状态与最近变化。</p></section></div>`;
     const tree=container.querySelector('[data-tree-groups]'),detail=container.querySelector('.object-tree-detail'),feedback=container.querySelector('[data-tree-feedback]'),more=container.querySelector('[data-tree-more]');
     const alive=()=>!disposed&&container.isConnected;
-    const base=()=>{const request={query:'instance_list',sort:filters.sort,limit:50};for(const key of ['search','category','type_id','lifecycle'])if(filters[key])request[key]=filters[key];return request;};
+    const base=()=>{const request={query:'instance_list',sort:filters.sort,limit:100};for(const key of ['search','category','type_id','lifecycle'])if(filters[key])request[key]=filters[key];return request;};
     function group(category){
       // Unknown categories share a readable fallback, while retaining each object's type.
       const key=categoryNames[category]?category:'other';

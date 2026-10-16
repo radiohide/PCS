@@ -73,6 +73,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.locator('#model-more button').click();await page.locator('#model-results button[data-object]').first().waitFor();
   const defaultLists=await page.evaluate(()=>window.__qa.calls.filter(call=>call.query==='instance_list'&&!call.cursor));
   assert.equal(defaultLists.length,2);assert(defaultLists.every(call=>!call.category&&!call.type_id&&!call.search),'retry must work without forcing a filter');checks.push('default-list timeout gives page-specific guidance, retains original error, and retries unfiltered');
+  assert(defaultLists.every(call=>call.limit===100),'object lists use the measured 100-row batch');
   const clickAlias=async alias=>{const buttons=page.locator('#model-results button[data-object-alias]');for(let i=0;i<await buttons.count();i++)if(await buttons.nth(i).getAttribute('data-object-alias')===alias){await buttons.nth(i).click();return;}throw Error('Missing alias button '+alias);};
   await page.locator('#model-results button[data-object]').first().click();
   await page.waitForTimeout(80);
@@ -206,7 +207,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   checks.push('production logon and privilege timestamps differing by microseconds share one time card and retain both original times');
   const grouped79=Array.from({length:79},(_,index)=>({...timelineRows[0],instance_id:index+1,context:{type_id:index<50?'runtime.process':index<68?'startup.service':index<76?'network.adapter':'file.watched_file',subject_label:'分组示例 '+(index+1),attribution_status:'stored'}}));
   await page.evaluate(data=>{window.__qa.timeline=data;},grouped79);
-  await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-category-toggle').first().waitFor();
+  await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===79);
   const group79=page.locator('.timeline-group').first(),processChip=group79.locator('[data-timeline-category-toggle="运行进程"]');
   assert.equal(await group79.locator('.timeline-group-count').textContent(),'79 条记录');
   for(const [label,count] of [['运行进程',50],['系统服务',18],['网卡',8],['文件',3]])assert.equal(await group79.locator('[data-timeline-category-toggle="'+label+'"] .timeline-category-count').textContent(),String(count));
@@ -263,12 +264,13 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   checks.push('expanded and collapsed controls retain position and size at desktop, narrow and mobile widths; a sticky group can be toggled twice at the same pointer location without queries');
   await page.setViewportSize({width:1440,height:1000});
   const allTypes=require('../model/catalog.json').types.map((type,index)=>({...timelineRows[0],instance_id:index+1,context:{type_id:type.id,subject_label:'类型示例 '+index,attribution_status:'stored'}}));
-  await page.evaluate(data=>{window.__qa.timeline=data;},allTypes);await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-category-toggle').first().waitFor();
+  await page.evaluate(data=>{window.__qa.timeline=data;},allTypes);await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===101);
   assert.equal(await page.locator('.timeline-category-count').evaluateAll(nodes=>nodes.reduce((total,node)=>total+Number(node.textContent),0)),101,'every known type contributes to the counters');
   const categoryLayout=await page.locator('.timeline-category-controls').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,width:el.clientWidth,contentWidth:el.scrollWidth}));
   assert(categoryLayout.scroll>categoryLayout.height);assert(categoryLayout.contentWidth<=categoryLayout.width+1,'many category names remain within the rail');
   await page.locator('.timeline-category-toggle').last().click();assert.equal(await page.locator('.timeline-category-toggle[aria-pressed=false]').count(),1,'the last category remains reachable');
   checks.push('narrow layouts fold correctly and all 101 object types remain reachable in bounded category controls');
+
   const colorsByTheme={};
   for(const theme of ['dark','light']){
     await page.locator('#app').evaluate((app,value)=>app.dataset.theme=value,theme);
@@ -286,6 +288,14 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   }
   await page.locator('#app').evaluate(app=>app.dataset.theme='dark');
   checks.push('category colors are stable and distinct for common types in both themes, match record types and stay usable when folded');
+  await page.evaluate(data=>{window.__qa.timeline=data;window.__qa.renderWaits=[];window.__qa.holdRender=true;window.__qa.originalFrame=window.requestAnimationFrame;window.requestAnimationFrame=callback=>{if(window.__qa.holdRender&&document.querySelector('#timeline-results[aria-busy=true] .timeline-entry')){window.__qa.renderWaits.push(callback);return 0;}return window.__qa.originalFrame(callback);};document.querySelector('[data-page="timeline"]').click();},Array.from({length:200},(_,index)=>({...timelineRows[0],instance_id:index+1})));
+  await page.waitForFunction(()=>window.__qa.renderWaits.length>0);
+  assert.equal(await page.locator('.timeline-entry').count(),50,'the first render batch is bounded while the rest wait for the next frame');
+  await page.evaluate(row=>window.__qa.timeline=[row],{...timelineRows[0],context:{type_id:'startup.service',subject_label:'新的筛选结果',attribution_status:'stored'}});await page.locator('#timeline-clear').click();await page.waitForTimeout(40);
+  await page.evaluate(()=>{window.__qa.holdRender=false;window.requestAnimationFrame=window.__qa.originalFrame;for(const callback of window.__qa.renderWaits.splice(0))requestAnimationFrame(callback);});
+  await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===1&&document.querySelector('#timeline-results').textContent.includes('新的筛选结果'));
+  assert.equal(await page.locator('#timeline-results').getAttribute('aria-busy'),'false');
+  checks.push('a 200-row response renders in bounded 50-row batches and changing filters cancels stale pending render batches');
   const startupRows=Array.from({length:200},(_,index)=>({...timelineRows[0],instance_id:index+1,interval_from:index<80?'2026-10-15T03:00:30.1160614Z':index<83?'2026-10-15T03:00:29.9816849Z':'2026-10-15T02:00:00Z',interval_until:index<80?'2026-10-15T03:02:41.3133775Z':index<83?'2026-10-15T03:02:41.1726548Z':'2026-10-15T02:05:00Z',context:{type_id:index<80?'network.endpoint':index<83?'network.dns_cache_entry':'file.watched_file',subject_label:'首屏示例 '+index,attribution_status:'stored'}}));
   const afterStartup={...timelineRows[0],interval_from:'2026-10-15T01:00:00Z',interval_until:'2026-10-15T01:05:00Z'};
   await page.evaluate(({first,second})=>{window.__qa.timelinePages=[{status:'loaded',data:first,page:{has_more:true,next_cursor:'after-first-200'}},{status:'loaded',data:[second],page:{has_more:false}}];},{first:startupRows,second:afterStartup});
@@ -298,9 +308,9 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').at(-1).limit),200);
   await page.screenshot({path:path.join(output,'timeline-first-200-grouped.png'),fullPage:false});
   await page.locator('#timeline-more').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===201);
-  assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').at(-1).limit),80,'subsequent scrolling keeps small serial pages');
+  assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').at(-1).limit),200,'subsequent scrolling uses the measured 200-row batch');
   assert.equal(await page.locator('.timeline-group-count').nth(1).textContent(),'117 条记录','reading past the cutoff confirms and relabels the completed group');
-  checks.push('startup reads exactly 200 rows, immediately merges 80 network and 3 DNS rows, does not prefetch, then loads 80-row pages on scroll');
+  checks.push('startup reads exactly 200 rows, merges 80 network and 3 DNS rows, does not prefetch distant pages, then requests 200-row batches on scroll');
   // Keep this deliberately small first page outside the auto-loader's viewport margin
   // until the test scrolls, including when compilation makes browser steps slower.
   await page.setViewportSize({width:1440,height:640});

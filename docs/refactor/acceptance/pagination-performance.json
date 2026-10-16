@@ -1,0 +1,589 @@
+{
+  "date": "2026-10-16",
+  "before_version": "0.2.9",
+  "after_version": "0.2.10",
+  "backend_version": "0.2.6",
+  "method": "Live same-account read-only IPC; real WebView2; collection running; no parallel regression during final before/after; short local samples, not sustained percentile guarantees",
+  "backend": {
+    "started_at": "2026-10-16T01:42:38.798Z",
+    "database_gib": 14.64,
+    "counts": {
+      "objects": 14003,
+      "records": 190182,
+      "snapshots": 161383
+    },
+    "measurements": [
+      {
+        "family": "timeline",
+        "size": 80,
+        "first": {
+          "samples": 3,
+          "rows": [
+            80,
+            80,
+            80
+          ],
+          "median_ms": 700.8,
+          "max_ms": 1024.7,
+          "mean_kib": 204.3
+        },
+        "next": {
+          "samples": 3,
+          "rows": [
+            80,
+            80,
+            80
+          ],
+          "median_ms": 755.9,
+          "max_ms": 1149.7,
+          "mean_kib": 194.4
+        }
+      },
+      {
+        "family": "timeline",
+        "size": 120,
+        "first": {
+          "samples": 3,
+          "rows": [
+            120,
+            120,
+            120
+          ],
+          "median_ms": 904.8,
+          "max_ms": 1189.7,
+          "mean_kib": 297
+        },
+        "next": {
+          "samples": 3,
+          "rows": [
+            120,
+            120,
+            120
+          ],
+          "median_ms": 1049.2,
+          "max_ms": 1271.4,
+          "mean_kib": 283.6
+        }
+      },
+      {
+        "family": "timeline",
+        "size": 200,
+        "first": {
+          "samples": 3,
+          "rows": [
+            200,
+            200,
+            200
+          ],
+          "median_ms": 1182.6,
+          "max_ms": 1504.7,
+          "mean_kib": 500.2
+        },
+        "next": {
+          "samples": 3,
+          "rows": [
+            200,
+            200,
+            200
+          ],
+          "median_ms": 1149.1,
+          "max_ms": 1170.8,
+          "mean_kib": 462
+        }
+      },
+      {
+        "family": "objects",
+        "size": 50,
+        "first": {
+          "samples": 2,
+          "rows": [
+            50,
+            50
+          ],
+          "median_ms": 1359.3,
+          "max_ms": 1359.3,
+          "mean_kib": 430.3
+        },
+        "next": {
+          "samples": 2,
+          "rows": [
+            50,
+            50
+          ],
+          "median_ms": 2488.8,
+          "max_ms": 2488.8,
+          "mean_kib": 776.3
+        }
+      },
+      {
+        "family": "objects",
+        "size": 100,
+        "first": {
+          "samples": 3,
+          "rows": [
+            100,
+            100,
+            100
+          ],
+          "median_ms": 1501.1,
+          "max_ms": 5412.1,
+          "mean_kib": 1206.3
+        },
+        "next": {
+          "samples": 3,
+          "rows": [
+            100,
+            100,
+            100
+          ],
+          "median_ms": 2406.6,
+          "max_ms": 2410.4,
+          "mean_kib": 2152.1
+        }
+      },
+      {
+        "family": "objects",
+        "size": 200,
+        "first": {
+          "samples": 3,
+          "rows": [
+            200,
+            200,
+            200
+          ],
+          "median_ms": 1853.9,
+          "max_ms": 1878.4,
+          "mean_kib": 3358.1
+        },
+        "next": {
+          "samples": 3,
+          "rows": [
+            200,
+            200,
+            200
+          ],
+          "median_ms": 2932.5,
+          "max_ms": 3260.1,
+          "mean_kib": 4792.7
+        }
+      }
+    ],
+    "errors": [
+      {
+        "family": "objects",
+        "size": 50,
+        "error": "查询超时，已停止本次查询。请增加采集项或变化类型筛选后重试；历史数据保留。"
+      }
+    ],
+    "fixture": {
+      "timeline_rows": 1000,
+      "page_ms": [
+        1201.2,
+        1164.6,
+        1072.6,
+        1047.2,
+        1203.4
+      ]
+    },
+    "finished_at": "2026-10-16T01:43:50.410Z"
+  },
+  "direct_render": {
+    "engine": "actual installed WebView2 via local CDP; live read-only IPC; collector running",
+    "checked_at": "2026-10-16T01:46:54.649Z",
+    "measurements": [
+      {
+        "family": "timeline",
+        "size": 80,
+        "rows": 1000,
+        "pages": [
+          {
+            "rows": 200,
+            "query_ms": 1362.9000000059605,
+            "html_ms": 54.80000001192093,
+            "dom_layout_ms": 83.19999998807907,
+            "paint_wall_ms": 13.800000011920929
+          },
+          {
+            "rows": 80,
+            "query_ms": 992.6999999880791,
+            "html_ms": 15.199999988079071,
+            "dom_layout_ms": 24.30000001192093,
+            "paint_wall_ms": 5.0999999940395355
+          },
+          {
+            "rows": 80,
+            "query_ms": 855.5,
+            "html_ms": 13.700000017881393,
+            "dom_layout_ms": 18.599999994039536,
+            "paint_wall_ms": 4.0999999940395355
+          },
+          {
+            "rows": 80,
+            "query_ms": 802.9000000059605,
+            "html_ms": 14.900000005960464,
+            "dom_layout_ms": 24.099999994039536,
+            "paint_wall_ms": 6.699999988079071
+          },
+          {
+            "rows": 80,
+            "query_ms": 790.8000000119209,
+            "html_ms": 13.099999994039536,
+            "dom_layout_ms": 20.400000005960464,
+            "paint_wall_ms": 4.5
+          },
+          {
+            "rows": 80,
+            "query_ms": 899.5,
+            "html_ms": 16.5,
+            "dom_layout_ms": 24.299999982118607,
+            "paint_wall_ms": 8.400000005960464
+          },
+          {
+            "rows": 80,
+            "query_ms": 944.7000000178814,
+            "html_ms": 16,
+            "dom_layout_ms": 27,
+            "paint_wall_ms": 7
+          },
+          {
+            "rows": 80,
+            "query_ms": 995.1999999880791,
+            "html_ms": 15.5,
+            "dom_layout_ms": 27.900000005960464,
+            "paint_wall_ms": 12.699999988079071
+          },
+          {
+            "rows": 80,
+            "query_ms": 1012.0999999940395,
+            "html_ms": 15.100000023841858,
+            "dom_layout_ms": 29.099999994039536,
+            "paint_wall_ms": 15
+          },
+          {
+            "rows": 80,
+            "query_ms": 795.5,
+            "html_ms": 10.5,
+            "dom_layout_ms": 22.799999982118607,
+            "paint_wall_ms": 6.9000000059604645
+          },
+          {
+            "rows": 80,
+            "query_ms": 823.2000000178814,
+            "html_ms": 12.199999988079071,
+            "dom_layout_ms": 22.19999998807907,
+            "paint_wall_ms": 10.400000005960464
+          }
+        ],
+        "total_load_ms": 10891,
+        "render_total_ms": 521.3999999761581,
+        "max_render_ms": 138,
+        "dom_nodes": 15123
+      },
+      {
+        "family": "timeline",
+        "size": 200,
+        "rows": 1000,
+        "pages": [
+          {
+            "rows": 200,
+            "query_ms": 1087.800000011921,
+            "html_ms": 30.799999982118607,
+            "dom_layout_ms": 34.60000002384186,
+            "paint_wall_ms": 6.399999976158142
+          },
+          {
+            "rows": 200,
+            "query_ms": 1327.2000000178814,
+            "html_ms": 34.599999994039536,
+            "dom_layout_ms": 49.30000001192093,
+            "paint_wall_ms": 15.099999994039536
+          },
+          {
+            "rows": 200,
+            "query_ms": 1154.0999999940395,
+            "html_ms": 31.599999994039536,
+            "dom_layout_ms": 46.20000001788139,
+            "paint_wall_ms": 9.399999976158142
+          },
+          {
+            "rows": 200,
+            "query_ms": 1259.6000000238419,
+            "html_ms": 31.19999998807907,
+            "dom_layout_ms": 43.5,
+            "paint_wall_ms": 11.599999994039536
+          },
+          {
+            "rows": 200,
+            "query_ms": 1489.800000011921,
+            "html_ms": 30.599999994039536,
+            "dom_layout_ms": 54.19999998807907,
+            "paint_wall_ms": 16.100000023841858
+          }
+        ],
+        "total_load_ms": 6763.700000017881,
+        "render_total_ms": 386.59999999403954,
+        "max_render_ms": 84.7999999821186,
+        "dom_nodes": 15123
+      },
+      {
+        "family": "objects",
+        "size": 50,
+        "rows": 50,
+        "query_ms": 1299.699999988079,
+        "html_ms": 4.700000017881393,
+        "dom_layout_ms": 11.099999994039536,
+        "paint_wall_ms": 2.9000000059604645,
+        "dom_nodes": 613,
+        "payload_fields": {
+          "alias": 10721,
+          "category": 450,
+          "changed_at": 200,
+          "coverage": 338350,
+          "display_name": 100,
+          "identity_status": 550,
+          "instance_id": 91,
+          "key_facts": 66521,
+          "lifecycle": 400,
+          "presentation": 3250,
+          "record_basis": 450,
+          "scope": 2300,
+          "seen_at": 1500,
+          "type_id": 1250,
+          "type_name": 400
+        }
+      },
+      {
+        "family": "objects",
+        "size": 100,
+        "rows": 100,
+        "query_ms": 1572.9000000059605,
+        "html_ms": 8.599999994039536,
+        "dom_layout_ms": 16.100000023841858,
+        "paint_wall_ms": 4.299999982118607,
+        "dom_nodes": 1205,
+        "payload_fields": {
+          "alias": 22491,
+          "category": 891,
+          "changed_at": 422,
+          "coverage": 1030554,
+          "display_name": 200,
+          "identity_status": 1100,
+          "instance_id": 204,
+          "key_facts": 131003,
+          "lifecycle": 806,
+          "presentation": 7352,
+          "record_basis": 900,
+          "scope": 4696,
+          "seen_at": 3084,
+          "type_id": 2590,
+          "type_name": 786
+        }
+      },
+      {
+        "family": "objects",
+        "size": 200,
+        "rows": 200,
+        "query_ms": 4096.5,
+        "html_ms": 16,
+        "dom_layout_ms": 36,
+        "paint_wall_ms": 10.300000011920929,
+        "dom_nodes": 2299,
+        "payload_fields": {
+          "alias": 52001,
+          "category": 1613,
+          "changed_at": 822,
+          "coverage": 3101198,
+          "display_name": 400,
+          "identity_status": 2200,
+          "instance_id": 504,
+          "key_facts": 186946,
+          "lifecycle": 1606,
+          "presentation": 14111,
+          "record_basis": 1844,
+          "scope": 11432,
+          "seen_at": 6084,
+          "type_id": 5480,
+          "type_name": 1505
+        }
+      }
+    ]
+  },
+  "isolated_render": [
+    {
+      "chunk": 200,
+      "rows": 1000,
+      "total_wall_ms": 666.8999999761581,
+      "total_cpu_render_ms": 546.4999999701977,
+      "max_chunk_ms": 133.7999999821186,
+      "median_chunk_ms": 105.89999997615814
+    },
+    {
+      "chunk": 100,
+      "rows": 1000,
+      "total_wall_ms": 657.9000000059605,
+      "total_cpu_render_ms": 516,
+      "max_chunk_ms": 59.19999998807907,
+      "median_chunk_ms": 53.30000001192093
+    },
+    {
+      "chunk": 50,
+      "rows": 1000,
+      "total_wall_ms": 750.9000000059605,
+      "total_cpu_render_ms": 522.4000000059605,
+      "max_chunk_ms": 35.400000005960464,
+      "median_chunk_ms": 25.299999982118607
+    }
+  ],
+  "module_history": [
+    {
+      "family": "module_history",
+      "limit": 50,
+      "rows": 50,
+      "query_ms": 471.7999999821186,
+      "render_ms": 30,
+      "kib": 196.8798828125
+    },
+    {
+      "family": "module_history",
+      "limit": 100,
+      "rows": 100,
+      "query_ms": 177.2999999821186,
+      "render_ms": 28.400000005960464,
+      "kib": 392.28125
+    },
+    {
+      "family": "module_history",
+      "limit": 200,
+      "rows": 200,
+      "query_ms": 396,
+      "render_ms": 70.2000000178814,
+      "kib": 862.5009765625
+    }
+  ],
+  "full_auto_pagination": {
+    "before": {
+      "candidate_patch": false,
+      "engine": "actual WebView2 and native IPC through actual pagination controller",
+      "rows": 1000,
+      "total_wall_ms": 14577.199999988079,
+      "requests": [
+        {
+          "query": "action_timeline",
+          "limit": 200,
+          "rows": 200,
+          "ms": 1575.2000000178814
+        },
+        {
+          "query": "action_timeline",
+          "limit": 80,
+          "rows": 80,
+          "ms": 1034.2999999821186
+        },
+        {
+          "query": "action_timeline",
+          "limit": 80,
+          "rows": 80,
+          "ms": 1096.4000000059605
+        },
+        {
+          "query": "action_timeline",
+          "limit": 80,
+          "rows": 80,
+          "ms": 1017.3000000119209
+        },
+        {
+          "query": "action_timeline",
+          "limit": 80,
+          "rows": 80,
+          "ms": 1149
+        },
+        {
+          "query": "action_timeline",
+          "limit": 80,
+          "rows": 80,
+          "ms": 1400
+        },
+        {
+          "query": "action_timeline",
+          "limit": 80,
+          "rows": 80,
+          "ms": 1030
+        },
+        {
+          "query": "action_timeline",
+          "limit": 80,
+          "rows": 80,
+          "ms": 1081
+        },
+        {
+          "query": "action_timeline",
+          "limit": 80,
+          "rows": 80,
+          "ms": 1023.6000000238419
+        },
+        {
+          "query": "action_timeline",
+          "limit": 80,
+          "rows": 80,
+          "ms": 1220.5999999940395
+        },
+        {
+          "query": "action_timeline",
+          "limit": 80,
+          "rows": 80,
+          "ms": 1132.7999999821186
+        }
+      ],
+      "frame_p95_ms": 16.800000000046566,
+      "frames_over_50ms": 2,
+      "max_frame_ms": 83.29999999993015
+    },
+    "after": {
+      "candidate_patch": true,
+      "engine": "actual WebView2 and native IPC through actual pagination controller",
+      "rows": 1000,
+      "total_wall_ms": 9993.300000011921,
+      "requests": [
+        {
+          "query": "action_timeline",
+          "limit": 200,
+          "rows": 200,
+          "ms": 1971.5
+        },
+        {
+          "query": "action_timeline",
+          "limit": 200,
+          "rows": 200,
+          "ms": 1919.800000011921
+        },
+        {
+          "query": "action_timeline",
+          "limit": 200,
+          "rows": 200,
+          "ms": 1663.5
+        },
+        {
+          "query": "action_timeline",
+          "limit": 200,
+          "rows": 200,
+          "ms": 1606.0999999940395
+        },
+        {
+          "query": "action_timeline",
+          "limit": 200,
+          "rows": 200,
+          "ms": 1579.5
+        }
+      ],
+      "frame_p95_ms": 16.800000000046566,
+      "frames_over_50ms": 2,
+      "max_frame_ms": 50.10000000009313
+    },
+    "wall_time_reduction_percent": 31.4
+  },
+  "candidate_sha256": {
+    "apps/desktop/ui/app.js": "6bac9adf674299e7e81240c044e17c9ad6605a13417473e03718de909ad8254c",
+    "apps/desktop/ui/model-view.js": "b6004d622a12de4105975e85d050f5fb5aaf60918ef66d966c7556a96bb18a73",
+    "apps/desktop/ui/object-tree.js": "6f4f20b6c4d2e612ca558a33e651038d03600f441841eb0b2c97a78f97abc461"
+  }
+}

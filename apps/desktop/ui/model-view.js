@@ -211,6 +211,13 @@ const PCScopeModelView=(()=>{
     }).join('')+'</section>').join('')+'</div>';
   }
 
+  // Keep response rows inside the renderer while the view yields between small DOM batches.
+  function* timelineBatches(response,size=50){
+    const rows=Array.isArray(response.data)?response.data:[];
+    if(!rows.length){yield {html:timeline(response),pending:false};return;}
+    for(let from=0;from<rows.length;from+=size)yield {html:timeline({...response,data:rows.slice(from,from+size)}),pending:from+size<rows.length};
+  }
+
   /// The alias a row's instance carries, so the same button the object list uses also works here.
   /// The timeline row names the instance by id; the detail query takes either, so the id is used.
   function instanceAlias(response,row){
@@ -395,6 +402,6 @@ const PCScopeModelView=(()=>{
       return '<article class="panel module-file-card"><strong>'+esc(name)+'</strong><p>'+esc(moduleFileAssessment(payload))+'</p><small class="muted">检查时间：'+esc(time(row.observed_at))+' · 发布者：'+esc(check.publisher||'未取得发布者信息')+'</small><details><summary>文件与诊断详情</summary><p>'+esc(payload.path||row.item_id)+' · '+esc(statuses[check.status]||'未知')+'</p><p>变化：'+esc((payload.changes||[]).map(c=>labels[c]||c).join('、')||'无已确认差异')+'</p><p>发布者类别：'+esc(origins[check.module_origin]||'归属未知')+'</p><p>签名：'+esc(signatures[check.signature_status]||'未知')+'；发布者：'+esc(check.publisher||'未知')+'；版本：'+esc(check.version||'未知')+'</p>'+(check.pe_status?'<p>PE 文件：'+esc(pe[check.pe_status]||check.pe_status)+(check.pe_error?' · '+esc(check.pe_error):'')+'。</p>':'')+'<p>关联模块观察：'+bindings.map(b=>esc(b.process_name)+' / PID '+esc(b.pid)+' / 建立 '+esc(time(b.process_start))+' / 最近观察 '+esc(time(b.last_observed))+(b.module_path?' / 原观察路径 '+esc(b.module_path):'')).join('<br>')+'</p>'+(check.error?'<p>'+esc(check.error)+'</p>':'')+'<small>证据 '+esc(row.evidence?.id)+'</small><details><summary>前后状态与完整原始字段</summary><pre>'+esc(JSON.stringify(payload,null,2))+'</pre></details></details></article>';
     }).join('');
   }
-  return {treePage,moduleFileAssessment,coverageImpact,moduleFiles,sourceReadings, PATHS, OPTIONAL_PATHS, list, detail, timeline, coverage, projection, comparison, overview, listSummary, messageOf, instanceOptions, isEmpty, migrationStatus};
+  return {treePage,moduleFileAssessment,coverageImpact,moduleFiles,sourceReadings, PATHS, OPTIONAL_PATHS, list, detail, timeline,timelineBatches, coverage, projection, comparison, overview, listSummary, messageOf, instanceOptions, isEmpty, migrationStatus};
 })();
 if(typeof module!=='undefined'&&module.exports)module.exports=PCScopeModelView;
