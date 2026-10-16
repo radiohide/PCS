@@ -409,6 +409,7 @@ async function renderTimeline(){
   showFoldMode();
   let pagingReady=!timelineCollapsed;
   const pagingInput=new AbortController();
+  results.addEventListener('click',event=>{if(event.target.closest('[data-timeline-toggle],[data-timeline-time-toggle]'))pagingReady=false;},{capture:true,signal:pagingInput.signal});
   state.disposePage=()=>{pagingInput.abort();groupControls.dispose();};
   mountModuleFileHistory();
   let catalog=[],requestId=0,timer;

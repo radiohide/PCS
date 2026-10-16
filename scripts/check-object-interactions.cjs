@@ -37,6 +37,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
     if(q.query==='instance_actions'&&window.__qa.actionPages)return window.__qa.actionPages[q.cursor?1:0];
     if(q.query==='action_timeline'&&window.__qa.timelinePages){
      if(q.cursor==='point-older'&&window.__qa.holdPointOlder)await new Promise(resolve=>window.__qa.releasePointOlder=resolve);
+     if(q.cursor==='older-page'&&window.__qa.holdOlderPage)await new Promise(resolve=>window.__qa.releaseOlderPage=resolve);
      return window.__qa.timelinePages[q.cursor?1:0];
     }
     if(q.query==='action_timeline'&&window.__qa.routineFixture)return {...empty,status:'loaded',data:q.include_routine?[...window.__qa.routineFixture.main,...window.__qa.routineFixture.routine]:window.__qa.routineFixture.main};
@@ -244,6 +245,23 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
     await group79.locator('[data-timeline-toggle]').click();assert.equal(await group79.locator('.timeline-branch:visible').count(),79);
   }
   await page.setViewportSize({width:1440,height:1000});
+  const olderFoldRows=Array.from({length:10},(_,index)=>({...timelineRows[0],instance_id:100+index,interval_from:'2026-10-15T02:00:00Z',interval_until:'2026-10-15T02:05:00Z',context:{type_id:'startup.service',subject_label:'下一组示例 '+index,attribution_status:'stored'}}));
+  await page.evaluate(data=>window.__qa.timeline=data,[...grouped79,...olderFoldRows]);await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===89);
+  const fixedGroup=page.locator('.timeline-group').first(),fixedToggle=fixedGroup.locator('[data-timeline-toggle]');
+  const fixedCalls=await page.evaluate(()=>window.__qa.calls.length);
+  for(const width of [1440,960,700]){
+    await page.setViewportSize({width,height:760});
+    await page.locator('main').evaluate(el=>{el.scrollTop+=el.querySelector('.timeline-group').getBoundingClientRect().top-el.getBoundingClientRect().top+500;});
+    const before=await fixedToggle.boundingBox(),point={x:before.x+before.width/2,y:before.y+before.height/2};
+    await page.mouse.click(point.x,point.y);assert.equal(await fixedToggle.getAttribute('aria-expanded'),'false');
+    const after=await fixedToggle.boundingBox();
+    for(const key of ['x','y','width','height'])assert(Math.abs(before[key]-after[key])<2,'fold control retains '+key+' at width '+width);
+    await page.mouse.click(point.x,point.y);assert.equal(await fixedToggle.getAttribute('aria-expanded'),'true','the same pointer position expands the sticky group again');
+    assert(await fixedGroup.evaluate(group=>group.scrollWidth<=group.clientWidth+1));
+  }
+  assert.equal(await page.evaluate(()=>window.__qa.calls.length),fixedCalls,'anchoring a single fold control never starts a query');
+  checks.push('expanded and collapsed controls retain position and size at desktop, narrow and mobile widths; a sticky group can be toggled twice at the same pointer location without queries');
+  await page.setViewportSize({width:1440,height:1000});
   const allTypes=require('../model/catalog.json').types.map((type,index)=>({...timelineRows[0],instance_id:index+1,context:{type_id:type.id,subject_label:'类型示例 '+index,attribution_status:'stored'}}));
   await page.evaluate(data=>{window.__qa.timeline=data;},allTypes);await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-category-toggle').first().waitFor();
   assert.equal(await page.locator('.timeline-category-count').evaluateAll(nodes=>nodes.reduce((total,node)=>total+Number(node.textContent),0)),101,'every known type contributes to the counters');
@@ -289,12 +307,14 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   const currentRange={precision:'interval',time_derived:true,interval_from:'2026-10-15T02:48:26Z',interval_until:'2026-10-15T02:50:18Z',observed_at:'2026-10-15T02:50:18Z',result:'observed'};
   const currentEvents=Array.from({length:5},(_,index)=>({...currentRange,...(index>=3?{interval_from:'2026-10-15T02:48:00Z',interval_until:'2026-10-15T02:49:50Z'}:{}),instance_id:index+1,action_id:'startup.service_state_changed',field_id:'state',before:'Stopped',after:'Running',context:{type_id:'startup.service',subject_label:index?'示例服务 '+index:'Volume Shadow Copy',attribution_status:'stored'}}));
   const olderEvents=Array.from({length:3},(_,index)=>({...currentRange,instance_id:index+6,interval_from:'2026-10-15T02:42:10Z',interval_until:'2026-10-15T02:45:00Z',action_id:'observed.configuration_changed',field_id:'target',before:'C:\\Applications\\Old Version\\bin\\tool.exe',after:'C:\\Applications\\New Version\\bin\\tool.exe',context:{type_id:'desktop.shortcut',subject_label:'开发工具快捷方式 '+index,attribution_status:'stored'}}));
-  await page.evaluate(({first,second})=>{window.__qa.timelinePages=[{status:'loaded',data:first,page:{has_more:true,next_cursor:'older-page'}},{status:'loaded',data:second,page:{has_more:false}}];},{first:currentEvents.slice(0,3),second:[...currentEvents.slice(3),...olderEvents]});
+  await page.evaluate(({first,second})=>{window.__qa.holdOlderPage=true;window.__qa.timelinePages=[{status:'loaded',data:first,page:{has_more:true,next_cursor:'older-page'}},{status:'loaded',data:second,page:{has_more:false}}];},{first:currentEvents.slice(0,3),second:[...currentEvents.slice(3),...olderEvents]});
   await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-entry').first().waitFor();
   assert.equal(await page.locator('.timeline-group').count(),1);
   assert.doesNotMatch(await page.locator('.timeline-entry').first().innerText(),/状态发生变化|已记录|服务已开始运行/);
   await page.locator('.timeline-entry details summary').first().click();
   await page.evaluate(()=>{const group=document.querySelector('.timeline-group');group.querySelector('[data-timeline-category-toggle="系统服务"]').click();group.querySelector('[data-timeline-toggle]').click();});
+  await page.evaluate(()=>{window.__qa.holdOlderPage=false;window.__qa.releaseOlderPage?.();});
+  await page.locator('#timeline-more').scrollIntoViewIfNeeded();await page.locator('#timeline-more').hover();await page.mouse.wheel(0,240);
   await page.locator('#timeline-more').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===8);
   assert.equal(await page.locator('.timeline-list').count(),1);assert.equal(await page.locator('.timeline-group').count(),2);
   assert.equal(await page.locator('.timeline-group-count').first().textContent(),'5 条记录');
@@ -347,6 +367,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.setViewportSize({width:1440,height:1000});
   const foldRows=Array.from({length:9},(_,index)=>({...timelineRows[0],instance_id:index+1,interval_from:'2026-10-15T0'+(3-Math.floor(index/3))+':00:00Z',interval_until:'2026-10-15T0'+(3-Math.floor(index/3))+':05:00Z',context:{type_id:index%3===0?'runtime.process':index%3===1?'startup.service':'file.watched_file',subject_label:'模式示例 '+index,attribution_status:'stored'}}));
   const foldPages=[{status:'loaded',data:foldRows.slice(0,6),page:{has_more:true,next_cursor:'fold-older'}},{status:'loaded',data:foldRows.slice(6),page:{has_more:true,next_cursor:'fold-even-older'}}];
+  await page.locator('main').evaluate(el=>el.scrollTop=0);
   await page.evaluate(pages=>window.__qa.timelinePages=pages,foldPages);
   await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===6);
   const foldButton=page.locator('#timeline-fold-all'),firstFoldGroup=page.locator('.timeline-group').first();

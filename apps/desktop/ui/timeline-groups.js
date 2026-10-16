@@ -123,10 +123,15 @@ const PCScopeTimelineGroups=(()=>{
       if(!button||!root.contains(button))return;
       const group=button.closest('.timeline-group');if(!group)return;
       const state=stateOf(group);
-      if(button.hasAttribute('data-timeline-toggle')||button.hasAttribute('data-timeline-time-toggle'))state.collapsed=!state.collapsed;
+      const folding=button.hasAttribute('data-timeline-toggle')||button.hasAttribute('data-timeline-time-toggle');
+      const scroller=folding?root.closest('main'):null,anchor=group.querySelector('[data-timeline-toggle]');
+      const before=scroller?anchor.getBoundingClientRect().top:null;
+      if(folding)state.collapsed=!state.collapsed;
       else if(button.hasAttribute('data-timeline-show-all'))state.muted.clear();
       else {const category=button.dataset.timelineCategoryToggle;if(state.muted.has(category))state.muted.delete(category);else state.muted.add(category);}
       update(group);
+      // Keep a sticky time control within reach when its long list is collapsed or restored.
+      if(scroller)scroller.scrollTop+=anchor.getBoundingClientRect().top-before;
     };
     root.addEventListener('click',onClick);
     function sync(groups){
