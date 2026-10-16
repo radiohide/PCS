@@ -128,7 +128,7 @@ footer{justify-content:space-between;flex-shrink:0;gap:12px;height:38px}
 .timeline-group-toggle{display:flex;align-items:center;gap:6px;flex:none;width:auto;padding:2px 4px;white-space:nowrap}
 .timeline-time-end{display:flex;align-items:center;gap:8px;font-size:16px;color:var(--muted);font-weight:400}
 .timeline-time-separator{font-size:11px;font-weight:400}
-.timeline-fold-label,.timeline-fold-icon{font-size:11px;color:var(--muted)}.timeline-fold-icon{font-size:15px;line-height:1}
+.timeline-fold-label{font-size:11px;color:var(--muted)}.timeline-fold-icon{display:block;width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--muted)}
 .timeline-group-toggle:hover .timeline-fold-label{color:var(--accent)}
 .timeline-group-options{min-width:0}
 .timeline-category-controls{display:flex;flex-wrap:wrap;gap:6px;max-height:min(280px,38vh);overflow-y:auto;scrollbar-width:thin;padding:2px}
