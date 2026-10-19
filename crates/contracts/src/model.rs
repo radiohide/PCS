@@ -6,6 +6,7 @@
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::sync::LazyLock;
+use std::collections::HashMap;
 
 /// Version of the catalog this build understands. `scripts/check-model-catalog.cjs` fails when this
 /// and the catalog disagree, so a consumer cannot silently run against a different model.
@@ -39,7 +40,8 @@ pub fn catalog_version() -> &'static str {
 /// changes with the checkout form would defeat its own purpose: two work streams reporting "the same
 /// rule version" must actually mean the same rules.
 pub fn catalog_fingerprint() -> String {
-    format!("{:x}", Sha256::digest(normalise_line_endings(CATALOG_JSON).as_bytes()))
+    static FINGERPRINT:LazyLock<String>=LazyLock::new(||format!("{:x}",Sha256::digest(normalise_line_endings(CATALOG_JSON).as_bytes())));
+    FINGERPRINT.clone()
 }
 
 /// CRLF and LF describe the same content; only the content belongs in a version identifier.
@@ -62,18 +64,20 @@ pub fn sources() -> &'static [Value] {
 /// The type definition for an ID, or `None` when the ID is not registered. A candidate naming an
 /// unregistered type is a contract violation, never a new type discovered at runtime.
 pub fn type_definition(type_id: &str) -> Option<&'static Value> {
-    types().iter().find(|entry| entry["id"].as_str() == Some(type_id))
+    static INDEX:LazyLock<HashMap<&'static str,&'static Value>>=LazyLock::new(||types().iter().filter_map(|entry|Some((entry["id"].as_str()?,entry))).collect());
+    INDEX.get(type_id).copied()
 }
 /// The registered spelling of an action id, when the catalog declares it.
 ///
 /// The catalog is static, so this turns a runtime string into the `'static` id a candidate has to
 /// carry — without it, a caller would have to own the string it looked up.
 pub fn registered_action_id(action_id: &str) -> Option<&'static str> {
-    actions().iter().find_map(|action| action["id"].as_str().filter(|id| *id == action_id))
+    action_definition(action_id)?["id"].as_str()
 }
 
 pub fn action_definition(action_id: &str) -> Option<&'static Value> {
-    actions().iter().find(|entry| entry["id"].as_str() == Some(action_id))
+    static INDEX:LazyLock<HashMap<&'static str,&'static Value>>=LazyLock::new(||actions().iter().filter_map(|entry|Some((entry["id"].as_str()?,entry))).collect());
+    INDEX.get(action_id).copied()
 }
 /// Field IDs declared by a type. Empty when the type is unknown.
 pub fn field_ids(type_id: &str) -> Vec<&'static str> {
@@ -83,12 +87,18 @@ pub fn field_ids(type_id: &str) -> Vec<&'static str> {
         .unwrap_or_default()
 }
 pub fn has_field(type_id: &str, field_id: &str) -> bool {
-    field_ids(type_id).contains(&field_id)
+    field_value(type_id,field_id).is_some()
+}
+fn field_value(type_id:&str,field_id:&str)->Option<&'static Value>{
+    static INDEX:LazyLock<HashMap<&'static str,HashMap<&'static str,&'static Value>>>=LazyLock::new(||types().iter().filter_map(|typ|{
+        let id=typ["id"].as_str()?;let fields=typ["fields"].as_array()?.iter().filter_map(|field|Some((field["id"].as_str()?,field))).collect();Some((id,fields))
+    }).collect());
+    INDEX.get(type_id)?.get(field_id).copied()
 }
 /// Label and kind a type declares for a field. A projection reads these instead of inventing a
 /// display name, so the frontend never has to map a field ID to something readable itself.
 pub fn field_definition(type_id: &str, field_id: &str) -> Option<(&'static str, &'static str)> {
-    let field = type_definition(type_id)?.get("fields")?.as_array()?.iter().find(|entry| entry["id"].as_str() == Some(field_id))?;
+    let field = field_value(type_id,field_id)?;
     Some((field["value"]["label"].as_str()?, field["value"]["kind"].as_str()?))
 }
 /// Category and display name of a type, for building a summary without a second lookup.
@@ -118,5 +128,14 @@ mod tests {
         assert!(has_field("startup.scheduled_task", "path"));
         assert!(!has_field("startup.scheduled_task", "not_a_field"));
         assert!(field_ids("no.such.type").is_empty());
+    }
+
+    #[test]
+    fn indexed_catalog_preserves_every_declared_definition_and_digest() {
+        assert_eq!(catalog_fingerprint(),format!("{:x}",Sha256::digest(normalise_line_endings(CATALOG_JSON).as_bytes())));
+        for typ in types(){let id=typ["id"].as_str().unwrap();assert_eq!(type_definition(id),Some(typ));
+            for field in typ["fields"].as_array().unwrap(){let field_id=field["id"].as_str().unwrap();assert!(has_field(id,field_id));
+                assert_eq!(field_definition(id,field_id),Some((field["value"]["label"].as_str().unwrap(),field["value"]["kind"].as_str().unwrap())));}}
+        for action in actions(){let id=action["id"].as_str().unwrap();assert_eq!(action_definition(id),Some(action));assert_eq!(registered_action_id(id),Some(id));}
     }
 }

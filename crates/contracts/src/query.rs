@@ -45,6 +45,10 @@ pub enum LifecycleFilter {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct InstanceFilter {
+    /// Append-only pages already retain the first page's totals. Callers may omit repeated
+    /// related-evidence counts without changing the identity or ordering of the page walk.
+    #[serde(default = "default_true")]
+    pub include_counts: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub category: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -78,7 +82,7 @@ fn default_limit() -> usize {
 impl Default for InstanceFilter {
     fn default() -> Self {
         Self {
-            category: None, type_id: None, search: None, scope: None, identity_status: None,
+            include_counts: true, category: None, type_id: None, search: None, scope: None, identity_status: None,
             coverage: None, source: None, lifecycle: None, sort: default_sort(), cursor: None, limit: default_limit(),
         }
     }

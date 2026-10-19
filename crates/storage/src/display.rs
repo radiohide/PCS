@@ -63,14 +63,23 @@ pub(crate) fn ensure(conn: &Connection) -> Result<()> {
         for (column,definition) in columns {if !existing.iter().any(|name|name==column){conn.execute_batch(&format!("ALTER TABLE {table} ADD COLUMN {column} {definition};"))?;}}
     }
     conn.execute_batch("CREATE INDEX IF NOT EXISTS display_actions_anchor ON display_actions(anchor DESC,action_row DESC);")?;
-    // No historical table is scanned or copied at startup. A rule update resets three small
-    // cursors; old rows are ignored by revision until bounded replacement commits.
+    conn.execute_batch("CREATE INDEX IF NOT EXISTS display_objects_name_asc ON display_objects(revision,sort_name,instance_id);
+        CREATE INDEX IF NOT EXISTS display_objects_name_desc ON display_objects(revision,sort_name DESC,instance_id);
+        CREATE TRIGGER IF NOT EXISTS display_object_cache_removed AFTER DELETE ON display_objects
+        WHEN EXISTS(SELECT 1 FROM object_instances WHERE instance_id=OLD.instance_id) BEGIN
+          INSERT OR IGNORE INTO display_work(kind,id) VALUES('object',OLD.instance_id); END;")?;
+    // The fallback timeline is used during a rule rebuild. Its effective-time expression must
+    // have an index too, otherwise SQLite evaluates visibility and sorts the entire history
+    // before returning the first page.
+    conn.execute_batch("CREATE INDEX IF NOT EXISTS object_actions_anchor ON object_actions(coalesce(interval_until,occurred_at,observed_at) DESC,action_row DESC);")?;
+    // No historical table is scanned or copied at startup. A display rule update resets only
+    // the semantic cursors; the independent, exact source-scope index keeps its progress.
     let changed=conn.execute("INSERT INTO display_build(id,revision,object_bound,action_bound,evidence_bound)
         SELECT 1,?,coalesce((SELECT max(instance_id) FROM object_instances),0),
         coalesce((SELECT max(action_row) FROM object_actions),0),coalesce((SELECT max(seq) FROM evidence),0)
         ON CONFLICT(id) DO UPDATE SET revision=excluded.revision,object_cursor=0,action_cursor=0,
-        evidence_cursor=0,published=0,object_bound=excluded.object_bound,action_bound=excluded.action_bound,
-        evidence_bound=excluded.evidence_bound WHERE display_build.revision<>excluded.revision", [revision()])?;
+        published=0,object_bound=excluded.object_bound,action_bound=excluded.action_bound
+        WHERE display_build.revision<>excluded.revision", [revision()])?;
     if changed!=0 {
         conn.execute_batch("INSERT OR IGNORE INTO display_work(kind,id) SELECT 'action',action_row FROM object_actions ORDER BY action_row DESC LIMIT 200;
             INSERT OR IGNORE INTO display_work(kind,id) SELECT 'object',instance_id FROM object_instances ORDER BY instance_id DESC LIMIT 100;")?;
@@ -157,31 +166,37 @@ pub(crate) fn cached(conn: &Connection, kind: &str, id: i64) -> Result<Option<Va
 
 /// Historical associations use the exact cited material's source, item and native identity.
 /// Business identity scope and the collector's schema/context/shard scope are never equated.
-fn historical_scopes(conn:&Connection,limit:usize)->Result<usize> {
+fn historical_scopes(conn:&Connection,limit:usize,budget:Duration)->Result<usize> {
+    let started=Instant::now();
     let (cursor,bound):(i64,i64)=conn.query_row("SELECT evidence_cursor,evidence_bound FROM display_build WHERE id=1",[],|r|Ok((r.get(0)?,r.get(1)?)))?;
     if cursor>=bound{return Ok(0);}
     let rows={let mut q=conn.prepare("SELECT seq,evidence_id,source,item_id,native_record_id,source_scope FROM evidence WHERE seq>? AND seq<=? ORDER BY seq LIMIT ?")?;
         let rows=q.query_map(params![cursor,bound,limit as i64],|r|Ok((r.get::<_,i64>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?,r.get::<_,String>(3)?,r.get::<_,String>(4)?,r.get::<_,String>(5)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;rows};
-    for (_,evidence,source,item,native,scope) in &rows {
-        let business=pcscope_contracts::semantics::business_scope(scope);
-        let machine=pcscope_contracts::adapters::installation_scope(&business);
-        conn.execute("INSERT OR IGNORE INTO object_collection_scopes(instance_id,source,scope)
+    let mut insert=conn.prepare_cached("INSERT OR IGNORE INTO object_collection_scopes(instance_id,source,scope)
             SELECT DISTINCT b.instance_id,?,? FROM source_bindings b
             WHERE b.source=? AND b.item_id=? AND b.native_record_id IN (?,?) AND (b.scope IN (?,?) OR ?='')
+            AND NOT EXISTS(SELECT 1 FROM object_collection_scopes c WHERE c.instance_id=b.instance_id AND c.source=? AND c.scope=?)
             AND (EXISTS(SELECT 1 FROM evidence_refs r WHERE r.subject_kind='observation'
                 AND r.subject_id=CAST(b.instance_id AS TEXT) AND r.evidence_id=?)
               OR EXISTS(SELECT 1 FROM object_actions a JOIN evidence_refs r ON r.subject_kind='action'
-                AND r.subject_id=CAST(a.action_row AS TEXT) WHERE a.instance_id=b.instance_id AND r.evidence_id=?))",
-            params![source,scope,source,item,native,evidence,business,machine,scope,evidence,evidence])?;
+                AND r.subject_id=CAST(a.action_row AS TEXT) WHERE a.instance_id=b.instance_id AND r.evidence_id=?))")?;
+    let mut last=cursor;let mut examined=0;
+    for (seq,evidence,source,item,native,scope) in &rows {
+        if examined>0&&started.elapsed()>=budget{break;}
+        let business=pcscope_contracts::semantics::business_scope(scope);
+        let machine=pcscope_contracts::adapters::installation_scope(&business);
+        insert.execute(
+            params![source,scope,source,item,native,evidence,business,machine,scope,source,scope,evidence,evidence])?;
+        last=*seq;examined+=1;
     }
-    let cursor=rows.last().map(|row|row.0).unwrap_or(bound);
-    conn.execute("UPDATE display_build SET evidence_cursor=? WHERE id=1",[cursor])?;
-    Ok(rows.len())
+    if rows.is_empty(){last=bound;}
+    conn.execute("UPDATE display_build SET evidence_cursor=? WHERE id=1",[last])?;
+    Ok(examined)
 }
 
-fn build_one(conn:&Connection,kind:&str,id:i64)->Result<()> {
+fn build_one(conn:&Connection,kind:&str,id:i64,labels:&mut crate::query::ProcessLabelCache)->Result<()> {
     if kind=="object" {
-        if let Some(mut summary)=crate::query::build_summary(conn,id)? {
+        if let Some(mut summary)=crate::query::build_summary(conn,id,labels)? {
             summary["coverage"]=json!([]); // live, exact-scope status is cheap and is not duplicated.
             conn.execute("INSERT INTO display_objects VALUES(?,?,?,?) ON CONFLICT(instance_id) DO UPDATE SET
                 revision=excluded.revision,sort_name=excluded.sort_name,summary=excluded.summary",
@@ -205,6 +220,7 @@ fn build_one(conn:&Connection,kind:&str,id:i64)->Result<()> {
 /// New/changed rows get priority; historical cursors still advance each round (no starvation).
 pub(crate) fn advance(conn:&Connection,limit:usize,budget:Duration)->Result<Value> {
     let started=Instant::now();let mut built=0usize;let mut failed=0usize;
+    let mut labels=crate::query::ProcessLabelCache::default();
     let limit=limit.clamp(1,128);
     // Rare identity/binding corrections invalidate a signature immediately. Expand their history
     // in indexed, bounded slices rather than enqueueing an object's entire history in one write.
@@ -220,8 +236,10 @@ pub(crate) fn advance(conn:&Connection,limit:usize,budget:Duration)->Result<Valu
     let pending={let mut q=conn.prepare("SELECT kind,id FROM display_work WHERE retry_at IS NULL OR retry_at<=strftime('%Y-%m-%dT%H:%M:%fZ','now') ORDER BY id DESC,kind LIMIT ?")?;
         let rows=q.query_map([limit as i64],|r|Ok((r.get::<_,String>(0)?,r.get::<_,i64>(1)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;rows};
     for (kind,id) in pending {
-        if started.elapsed()>=budget {break;}
-        match build_one(conn,&kind,id) {
+        // Reserve half the slice for rebuilding history. A steady stream of current changes
+        // must not reduce a 150k-action rebuild to one old action per wake-up.
+        if started.elapsed()>=budget/2 {break;}
+        match build_one(conn,&kind,id,&mut labels) {
             Ok(())=>built+=1,
             Err(error)=>{
                 conn.execute("UPDATE display_work SET attempts=attempts+1,last_error=?,retry_at=strftime('%Y-%m-%dT%H:%M:%fZ','now','+60 seconds') WHERE kind=? AND id=?",params![error.to_string(),kind,id])?;
@@ -229,12 +247,16 @@ pub(crate) fn advance(conn:&Connection,limit:usize,budget:Duration)->Result<Valu
             }
         }
     }
-    // Reserve one historical item of each kind even while new material keeps arriving.
-    for (kind,table,key) in [("object","object_instances","instance_id"),("action","object_actions","action_row")] {
+    // Rotate the historical tasks durably. Each gets a real time slice, including scope backfill;
+    // only the rows actually completed advance a cursor. Restarting resumes the same work.
+    let turn:u64=conn.query_row("SELECT coalesce((SELECT value FROM settings WHERE key='display.history_turn.v1'),'0')",[],|r|r.get::<_,String>(0))?.parse().unwrap_or(0);
+    conn.execute("INSERT INTO settings(key,value) VALUES('display.history_turn.v1',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",[(turn.wrapping_add(1)%4).to_string()])?;
+    let historical=match turn%4 {0=>Some(("object","object_instances","instance_id")),1|2=>Some(("action","object_actions","action_row")),_=>None};
+    if let Some((kind,table,key))=historical {
         let (cursor,bound):(i64,i64)=conn.query_row(&format!("SELECT {kind}_cursor,{kind}_bound FROM display_build WHERE id=1"),[],|r|Ok((r.get(0)?,r.get(1)?)))?;
-        if cursor>=bound {continue;}
+        if cursor<bound {
         let ids={let mut q=conn.prepare(&format!("SELECT {key} FROM {table} WHERE {key}>? AND {key}<=? ORDER BY {key} LIMIT ?"))?;
-            let rows=q.query_map(params![cursor,bound,(limit/2).max(1) as i64],|r|r.get::<_,i64>(0))?.collect::<rusqlite::Result<Vec<_>>>()?;rows};
+            let rows=q.query_map(params![cursor,bound,limit as i64],|r|r.get::<_,i64>(0))?.collect::<rusqlite::Result<Vec<_>>>()?;rows};
         let mut last=cursor;
         for id in &ids {
             if last!=cursor && started.elapsed()>=budget {break;}
@@ -242,7 +264,7 @@ pub(crate) fn advance(conn:&Connection,limit:usize,budget:Duration)->Result<Valu
             // A failed item gets a retry deadline; it cannot reset/hold up the history cursor.
             let eligible:bool=conn.query_row("SELECT retry_at IS NULL OR retry_at<=strftime('%Y-%m-%dT%H:%M:%fZ','now') FROM display_work WHERE kind=? AND id=?",params![kind,id],|r|r.get(0))?;
             if eligible {
-                match build_one(conn,kind,*id) {Ok(())=>built+=1,Err(error)=>{
+                match build_one(conn,kind,*id,&mut labels) {Ok(())=>built+=1,Err(error)=>{
                     conn.execute("UPDATE display_work SET attempts=attempts+1,last_error=?,retry_at=strftime('%Y-%m-%dT%H:%M:%fZ','now','+60 seconds') WHERE kind=? AND id=?",params![error.to_string(),kind,id])?;failed+=1;
                 }}
             }
@@ -250,12 +272,14 @@ pub(crate) fn advance(conn:&Connection,limit:usize,budget:Duration)->Result<Valu
         }
         if ids.is_empty(){last=bound;}
         conn.execute(&format!("UPDATE display_build SET {kind}_cursor=? WHERE id=1"),[last])?;
+        }
     }
-    let linked=historical_scopes(conn,limit*2)?;
+    let linked=if historical.is_none(){historical_scopes(conn,2048,budget.saturating_sub(started.elapsed()))?}else{0};
     crate::display_counts::advance(conn,limit*2)?;
     let state=status(conn)?;let pending=state["updating"]==true;
+    let history_pending=["object","action","evidence"].iter().any(|kind|state[format!("{kind}_cursor")].as_i64()<state[format!("{kind}_bound")].as_i64())||state["counts_ready"]!=true;
     if !pending {conn.execute("UPDATE display_build SET published=1 WHERE id=1 AND published=0",[])?;}
-    Ok(json!({"built":built,"failed":failed,"failed_total":state["failed"],"linked":linked,"pending":pending,"elapsed_ms":started.elapsed().as_millis()}))
+    Ok(json!({"built":built,"failed":failed,"failed_total":state["failed"],"linked":linked,"pending":pending,"history_pending":history_pending,"elapsed_ms":started.elapsed().as_millis()}))
 }
 
 pub(crate) fn published(conn:&Connection)->Result<bool> {

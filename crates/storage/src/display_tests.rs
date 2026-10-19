@@ -100,6 +100,85 @@ fn scopes_use_exact_collection_addresses_and_history_recovery_does_not_cross_sha
 }
 
 #[test]
+fn presentation_rule_changes_keep_exact_scope_backfill_progress() {
+    let store=material();finish(&store);
+    let before:(i64,i64)=store.reader().query_row("SELECT evidence_cursor,evidence_bound FROM display_build",[],|r|Ok((r.get(0)?,r.get(1)?))).unwrap();
+    store.reader().execute("UPDATE display_build SET revision='previous-display-rule'",[]).unwrap();
+    ensure(store.reader()).unwrap();
+    let after:(i64,i64)=store.reader().query_row("SELECT evidence_cursor,evidence_bound FROM display_build",[],|r|Ok((r.get(0)?,r.get(1)?))).unwrap();
+    assert_eq!(after,before,"presentation changes do not change source scope evidence");
+    finish(&store);
+    assert_eq!(list(&store)[0]["coverage"][0]["scope"],SCOPE);
+}
+
+#[test]
+fn rebuilding_timeline_uses_effective_time_order_without_sorting_the_full_history() {
+    let store=material();
+    let plan=store.reader().prepare("EXPLAIN QUERY PLAN SELECT action_row FROM object_actions a ORDER BY coalesce(a.interval_until,a.occurred_at,a.observed_at) DESC,a.action_row DESC LIMIT 201").unwrap()
+        .query_map([],|r|r.get::<_,String>(3)).unwrap().collect::<rusqlite::Result<Vec<_>>>().unwrap().join(" ");
+    assert!(plan.contains("object_actions_anchor"),"{plan}");assert!(!plan.contains("TEMP B-TREE"),"{plan}");
+    let raw=timeline(&store);finish(&store);assert_eq!(raw,timeline(&store));
+}
+
+#[test]
+fn progress_queries_do_not_visit_completed_queue_history() {
+    use std::sync::{Arc,atomic::{AtomicUsize,Ordering}};
+    let store=material();
+    store.reader().execute_batch("WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<50000)
+        INSERT INTO projection_queue(evidence_id,item_id,projection,state,enqueued_at,updated_at)
+        SELECT 'old-'||x,'one','object_model','done','2026-10-01','2026-10-01' FROM n;
+        INSERT INTO projection_queue(evidence_id,item_id,projection,state,enqueued_at,updated_at)
+        VALUES('pending-test','one','object_model','pending','2026-10-01','2026-10-01'),
+              ('failed-test','one','object_model','failed','2026-10-01','2026-10-01');").unwrap();
+    let steps=Arc::new(AtomicUsize::new(0));let counter=steps.clone();
+    store.reader().progress_handler(1000,Some(move||counter.fetch_add(1000,Ordering::Relaxed)>20000));
+    let result=store.query(&QueryRequest::ProjectionStatus).unwrap();
+    for row in result.data.unwrap().as_array().unwrap(){if row["projection"]=="objects"{assert_eq!(row["pending"],1);assert_eq!(row["failed"],1);}}
+    assert!(steps.load(Ordering::Relaxed)<=21000);
+}
+
+#[test]
+fn appended_object_pages_can_omit_counts_without_changing_the_walk() {
+    let store=material();let conn=store.reader();
+    conn.execute_batch("INSERT INTO object_instances(type_id,category,machine_id,installation_id,scope,native_key,display_name,identity_status,lifecycle,first_observed_at,last_observed_at)
+        VALUES('startup.scheduled_task','startup','M','I','machine:M','other','第二个任务','confirmed','active','2026-10-16','2026-10-16');").unwrap();
+    let first=store.query(&QueryRequest::InstanceList(InstanceFilter{limit:1,..Default::default()})).unwrap();assert!(first.counts.is_some());
+    let cursor=first.page.unwrap().next_cursor.unwrap();
+    let with=store.query(&QueryRequest::InstanceList(InstanceFilter{limit:1,cursor:Some(cursor.clone()),..Default::default()})).unwrap();
+    let without=store.query(&QueryRequest::InstanceList(InstanceFilter{limit:1,cursor:Some(cursor),include_counts:false,..Default::default()})).unwrap();
+    assert_eq!(with.data,without.data);assert_eq!(with.page,without.page);assert!(without.counts.is_none());
+}
+
+#[test]
+fn ordered_names_merge_dirty_new_and_missing_cache_rows_without_skips_or_duplicates() {
+    use pcscope_contracts::query::InstanceSort;
+    let store=material();let conn=store.reader();
+    conn.execute_batch("WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<60)
+        INSERT INTO object_instances(type_id,category,machine_id,installation_id,scope,native_key,display_name,identity_status,lifecycle,first_observed_at,last_observed_at)
+        SELECT 'startup.scheduled_task','startup','M','I','machine:M','fast-'||x,CASE WHEN x%2=0 THEN '相同名称' ELSE '其他名称' END,'confirmed','active','2026-10-16','2026-10-16' FROM n;").unwrap();
+    finish(&store);
+    conn.execute_batch("UPDATE object_instances SET display_name='AAA changed' WHERE native_key='fast-10';
+        DELETE FROM display_objects WHERE instance_id=(SELECT instance_id FROM object_instances WHERE native_key='fast-15');
+        INSERT INTO object_instances(type_id,category,machine_id,installation_id,scope,native_key,display_name,identity_status,lifecycle,first_observed_at,last_observed_at)
+        VALUES('startup.scheduled_task','startup','M','I','machine:M','fast-new','AAA new','confirmed','active','2026-10-16','2026-10-16');").unwrap();
+    for sort in [InstanceSort::NameAsc,InstanceSort::NameDesc] {
+        conn.execute("UPDATE display_build SET object_cursor=0",[]).unwrap();
+        let expected=store.query(&QueryRequest::InstanceList(InstanceFilter{sort,limit:100,include_counts:false,..Default::default()})).unwrap().data.unwrap();
+        conn.execute("UPDATE display_build SET object_cursor=object_bound",[]).unwrap();
+        let mut visited=Vec::new();let mut cursor=None;
+        for _ in 0..32 {
+            let page=store.query(&QueryRequest::InstanceList(InstanceFilter{sort,limit:7,include_counts:false,cursor,..Default::default()})).unwrap();
+            visited.extend(page.data.unwrap().as_array().unwrap().iter().cloned());
+            cursor=page.page.unwrap().next_cursor;if cursor.is_none(){break;}
+        }
+        assert!(cursor.is_none(),"name paging did not reach its end");
+        assert_eq!(Value::Array(visited),expected,"{sort:?}");
+        let searched=store.query(&QueryRequest::InstanceList(InstanceFilter{sort,search:Some("AAA".into()),include_counts:false,..Default::default()})).unwrap();
+        assert_eq!(searched.data.unwrap().as_array().unwrap().len(),2);
+    }
+}
+
+#[test]
 fn historical_rename_is_reconstructed_even_when_the_display_is_rebuilt_later() {
     let mut store=material();
     snapshot(&mut store,"renamed","2026-10-16T04:00:00Z","后来的名称",false,SCOPE);

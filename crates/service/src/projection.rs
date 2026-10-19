@@ -31,7 +31,7 @@ impl Worker {
                 std::thread::yield_now();
                 if Instant::now()>=display_retry_at {
                     display=store.lock().map_err(|_| anyhow::anyhow!("storage lock poisoned"))
-                        .and_then(|store|store.prepare_display(32,Duration::from_millis(40))).map_err(|error|error.to_string());
+                        .and_then(|store|store.prepare_display(128,Duration::from_millis(40))).map_err(|error|error.to_string());
                     if display.is_err() {
                         display_failures=display_failures.saturating_add(1);
                         display_retry_at=Instant::now()+Duration::from_secs((1u64<<display_failures.min(6)).min(60));
@@ -46,7 +46,7 @@ impl Worker {
                             "display":display.as_ref().ok(),"display_error":display.as_ref().err().map(ToString::to_string),
                             "at":chrono::Utc::now().to_rfc3339()});
                         if report.examined == 0 {
-                            if display.as_ref().ok().is_some_and(|d|d["built"].as_u64().unwrap_or(0)>0||d["linked"].as_u64().unwrap_or(0)>0) {Duration::from_millis(50)}else{Duration::from_millis(250)}
+                            if display.as_ref().ok().is_some_and(|d|d["history_pending"]==true||d["built"].as_u64().unwrap_or(0)>0||d["linked"].as_u64().unwrap_or(0)>0) {Duration::from_millis(10)}else{Duration::from_millis(250)}
                         } else {Duration::from_millis(10)}
                     }
                     Err(error) => {

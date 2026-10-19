@@ -120,6 +120,7 @@ impl Store {
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
         let path = path.as_ref();
         let mut conn = Connection::open(path)?;
+        conn.set_prepared_statement_cache_capacity(64);
         conn.busy_timeout(std::time::Duration::from_secs(5))?;
         let version: u32 = conn.query_row("PRAGMA user_version", [], |r| r.get(0))?;
         // Refuse rather than write: an older binary must never touch a newer structure. Reading a
@@ -270,6 +271,7 @@ impl Store {
     /// Independent WAL reader: never takes the collection writer's mutex or performs migrations.
     pub fn open_reader(path: impl AsRef<Path>, budget: std::time::Duration) -> Result<Self> {
         let conn=Connection::open_with_flags(path,rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY|rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX)?;
+        conn.set_prepared_statement_cache_capacity(64);
         timeline_policy::install(&conn)?;
         // Readers refuse a newer structure too; a partially understood model must not be presented
         // as if it were complete.

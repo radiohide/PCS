@@ -29,12 +29,13 @@ const PCScopeObjectTree=(()=>{
       branches.set(type,entry);group(category).append(element);
       entry.pager=PCScopeAutoPage.mount(entry.more,{
         active:()=>!searchMode&&element.open&&alive(),
-        query:cursor=>query({...base(),type_id:type,...(cursor?{cursor}:{})}),
+        query:cursor=>query({...base(),type_id:type,include_counts:!cursor,...(cursor?{cursor}:{})}),
         onStart:()=>{entry.feedback.textContent='正在读取…';},
         apply:(response,{append:adding})=>{
           if(!adding){entry.body.replaceChildren();entry.aliases.clear();}
           const page=PCScopeModelView.treePage(response);append(entry,page.nodes);
-          entry.count.textContent=page.total==null?`已显示 ${entry.aliases.size}`:`${page.total} 个`;
+          if(!adding)entry.total=page.total;
+          entry.count.textContent=entry.total==null?`已显示 ${entry.aliases.size}`:`${entry.total} 个`;
           entry.feedback.textContent=entry.aliases.size?'':'没有符合筛选条件的对象。';
         },
         onError:error=>{entry.feedback.innerHTML=errorHtml(error);}
@@ -61,16 +62,18 @@ const PCScopeObjectTree=(()=>{
       const entry=branches.get(type);if(!alive()||entry.loaded)return;
       entry.loaded=true;return entry.pager.reset();
     }
+    let matchesTotal=null;
     const matchesPager=PCScopeAutoPage.mount(more,{
       active:()=>alive()&&searchMode,
-      query:cursor=>query({...base(),...(cursor?{cursor}:{})}),
+      query:cursor=>query({...base(),include_counts:!cursor,...(cursor?{cursor}:{})}),
       onStart:()=>{feedback.textContent='正在查找对象…';},
       apply:(response,{append:adding})=>{
         if(!adding){for(const entry of branches.values())entry.pager.dispose();tree.replaceChildren();branches.clear();groups.clear();}
         const page=PCScopeModelView.treePage(response);
+        if(!adding)matchesTotal=page.total;
         for(const node of page.nodes){const entry=branch(node.type,node.category,node.typeName);append(entry,[node]);entry.element.open=true;entry.element.parentElement.parentElement.open=true;entry.count.textContent=`已显示 ${entry.aliases.size}`;}
         const loaded=[...branches.values()].reduce((n,b)=>n+b.aliases.size,0);
-        feedback.textContent=page.total==null?`已显示 ${loaded} 个对象`:`找到 ${page.total} 个对象，已显示 ${loaded} 个`;
+        feedback.textContent=matchesTotal==null?`已显示 ${loaded} 个对象`:`找到 ${matchesTotal} 个对象，已显示 ${loaded} 个`;
         if(!loaded)feedback.textContent='没有匹配的对象。可以调整筛选条件。';
       },
       onError:error=>{feedback.innerHTML=errorHtml(error);}

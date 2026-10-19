@@ -69,7 +69,7 @@ async function renderObjects(){
     content.querySelector('#model-type').innerHTML='<option value="">全部类型</option>'+catalog.filter(t=>!modelFilters.category||t.category===modelFilters.category).map(t=>`<option value="${esc(t.type_id)}" ${t.type_id===modelFilters.type_id?'selected':''}>${esc(PCScopeObjectNames.typeName(t))}${t.supplied_by_source?'':'（尚未接入来源）'}</option>`).join('');
   };
   const request=()=>{
-    const body={query:'instance_list',sort:modelFilters.sort,limit:100};
+    const body={query:'instance_list',sort:modelFilters.sort,limit:100,include_counts:!modelWalk.cursor};
     if(modelFilters.category)body.category=modelFilters.category;
     if(modelFilters.type_id)body.type_id=modelFilters.type_id;
     if(modelFilters.search)body.search=modelFilters.search;
@@ -186,7 +186,7 @@ async function renderCompare(){
   const load=async()=>{
     const id=++requestId;
     selectedAlias='';historyPager.pause();
-    const body={query:'instance_list',limit:200,sort:'name_asc'};
+    const body={query:'instance_list',limit:200,sort:'name_asc',include_counts:false};
     if(compareFilters.search)body.search=compareFilters.search;
     if(compareFilters.type_id)body.type_id=compareFilters.type_id;
     const response=await api('query',{request:body});

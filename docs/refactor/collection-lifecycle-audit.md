@@ -1,4 +1,4 @@
-# 采集全过程与成对变化审查（0.2.14）
+# 采集全过程与成对变化审查（0.2.15）
 
 [总评与整改顺序](collection-lifecycle-audit.md) · [101 类对象](collection-lifecycle-types.md) · [133 个来源](collection-lifecycle-sources.md) · [225 个采集定义](collection-lifecycle-items.md) · [可核对数据](collection-lifecycle-audit.json)
 

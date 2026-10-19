@@ -20,6 +20,7 @@ use serde_json::{json, Value};
 #[path = "history_labels.rs"]
 mod history_labels;
 type HistoryLabelCache = std::collections::HashMap<i64, history_labels::ComMetadata>;
+pub(crate) use history_labels::ProcessLabelCache;
 pub(crate) fn is_legacy_com_rule(rule: &str) -> bool {
     history_labels::LEGACY_COM_RULES.contains(&rule)
 }
@@ -136,7 +137,7 @@ pub fn answer(conn: &Connection, request: &QueryRequest) -> Result<QueryResponse
 /// `supplied_by_source` is false for a type no source reaches: the UI must show it as not collected
 /// rather than as an empty collection, which is what the flag exists for.
 pub fn types(conn: &Connection) -> Result<QueryResponse> {
-    let mut statement = conn.prepare("SELECT type_id,category,name,supplied_by_source FROM type_definitions ORDER BY category,type_id")?;
+    let mut statement = conn.prepare_cached("SELECT type_id,category,name,supplied_by_source FROM type_definitions ORDER BY category,type_id")?;
     let rows = statement.query_map([], |row| {
         Ok(json!({
             "type_id": row.get::<_, String>(0)?,
@@ -182,7 +183,7 @@ fn lifecycle_clause(filter: &LifecycleFilter) -> Option<&'static str> {
 /// Identity, readable names and the type's declared state summary, using the shared presentation model.
 fn key_facts(conn: &Connection, instance_id: i64, type_id: &str) -> Result<Vec<Value>> {
     let summary_fields = pcscope_contracts::model::summary_field_ids(type_id);
-    let mut statement = conn.prepare(
+    let mut statement = conn.prepare_cached(
         "SELECT field_id,field_kind,value,value_type,value_status,source_time,observed_at,derivation
          FROM object_facts WHERE instance_id=? ORDER BY field_id",
     )?;
@@ -250,7 +251,7 @@ fn short_path_name(path: &str) -> String {
 /// must never rename an old snapshot change. Event subjects still come from their own evidence.
 fn historical_facts(conn:&Connection,instance:i64,type_id:&str,at:&str)->Result<Vec<Value>> {
     let mut facts=key_facts(conn,instance,type_id)?;
-    let mut statement=conn.prepare("SELECT before_value,before_status,before_source_time,observed_from
+    let mut statement=conn.prepare_cached("SELECT before_value,before_status,before_source_time,observed_from
         FROM fact_history WHERE instance_id=? AND field_id=? AND observed_until>?
         ORDER BY observed_until LIMIT 1")?;
     for fact in &mut facts {
@@ -271,7 +272,7 @@ fn historical_facts(conn:&Connection,instance:i64,type_id:&str,at:&str)->Result<
 fn action_context(conn: &Connection, action_row: i64, instance: Option<i64>, target_type: Option<&str>, action_id: &str, field_id: Option<&str>, labels: &mut HistoryLabelCache) -> Result<Value> {
     let display_name=display_name_sql();
     let current: Option<Value> = match instance {
-        Some(id) => conn.query_row(&format!("SELECT i.type_id,{display_name},i.scope,i.native_key,i.machine_id,i.installation_id,i.identity_status FROM object_instances i WHERE i.instance_id=?"), [id], |row| Ok(json!({"type_id":row.get::<_,String>(0)?,"display_name":row.get::<_,Option<String>>(1)?,"scope":row.get::<_,String>(2)?,"native_key":row.get::<_,String>(3)?,"machine_id":row.get::<_,String>(4)?,"installation_id":row.get::<_,String>(5)?,"identity_status":row.get::<_,String>(6)?}))).optional()?,
+        Some(id) => conn.prepare_cached(&format!("SELECT i.type_id,{display_name},i.scope,i.native_key,i.machine_id,i.installation_id,i.identity_status FROM object_instances i WHERE i.instance_id=?"))?.query_row([id], |row| Ok(json!({"type_id":row.get::<_,String>(0)?,"display_name":row.get::<_,Option<String>>(1)?,"scope":row.get::<_,String>(2)?,"native_key":row.get::<_,String>(3)?,"machine_id":row.get::<_,String>(4)?,"installation_id":row.get::<_,String>(5)?,"identity_status":row.get::<_,String>(6)?}))).optional()?,
         None => None,
     };
     let type_id = current.as_ref().and_then(|object|object["type_id"].as_str()).or(target_type).unwrap_or_default();
@@ -296,7 +297,7 @@ fn action_context(conn: &Connection, action_row: i64, instance: Option<i64>, tar
     });
     // Start at this action's primary-key prefix. Without the explicit join order SQLite may
     // scan every retained event for each timeline row, despite both address indexes existing.
-    let mut statement = conn.prepare(
+    let mut statement = conn.prepare_cached(
         "SELECT r.data,e.source,e.item_id,e.native_record_id,e.source_scope,e.evidence_id,e.source_time,e.observed_at,e.ingested_at,e.structure_version FROM evidence_refs er
          CROSS JOIN evidence e ON e.evidence_id=er.evidence_id AND e.kind=er.evidence_kind
          CROSS JOIN records r ON r.seq=CAST(substr(e.payload_ref,8) AS INTEGER)
@@ -453,7 +454,7 @@ fn action_context(conn: &Connection, action_row: i64, instance: Option<i64>, tar
 /// The collection this instance is bound to, as coverage views.
 fn coverage_of(conn: &Connection, instance_id: i64) -> Result<Vec<Value>> {
     if !crate::display::available(conn)? {return Ok(Vec::new());}
-    let mut statement = conn.prepare(
+    let mut statement = conn.prepare_cached(
         "SELECT DISTINCT c.source,c.scope,c.configured,c.last_result,c.last_success_at,c.last_attempt_at,c.history_state,c.detail
          FROM object_collection_scopes b JOIN coverage_scopes c ON c.source=b.source AND c.scope=b.scope
          WHERE b.instance_id=? ORDER BY c.source,c.scope",
@@ -490,6 +491,9 @@ fn sql_display_error(error:anyhow::Error)->rusqlite::Error {
 }
 
 fn uncached_summary_row(conn: &Connection, row: &rusqlite::Row<'_>) -> rusqlite::Result<Value> {
+    uncached_summary_row_cached(conn,row,&mut ProcessLabelCache::default())
+}
+fn uncached_summary_row_cached(conn:&Connection,row:&rusqlite::Row<'_>,labels:&mut ProcessLabelCache)->rusqlite::Result<Value>{
     let instance_id: i64 = row.get(0)?;
     let type_id: String = row.get(1)?;
     let fact = key_facts(conn, instance_id, &type_id).unwrap_or_default();
@@ -504,7 +508,7 @@ fn uncached_summary_row(conn: &Connection, row: &rusqlite::Row<'_>) -> rusqlite:
         && field("name").is_none_or(|f|f["status"]=="not_provided") {
         if let Some(pid)=field("pid").filter(|f|f["status"]=="known").and_then(|f|f["value"].as_u64()) {
             if legacy_process {presentation["record_status"]=json!("legacy_snapshot");}
-            if let Ok(Some(label))=history_labels::legacy_process_label(conn,instance_id,&scope,pid,process_started) {
+            if let Ok(Some(label))=history_labels::legacy_process_label_cached(conn,instance_id,&scope,pid,process_started,labels) {
                 presentation["record_label"]=json!(label);
                 if !legacy_process {presentation["record_status"]=json!("snapshot_named");}
             } else if legacy_process {
@@ -532,7 +536,7 @@ fn uncached_summary_row(conn: &Connection, row: &rusqlite::Row<'_>) -> rusqlite:
     // Old event placeholders often have no inventory facts. A log label can describe that
     // record, but must never become a verified current process/session name or identity.
     if record_basis == "event_only" && fact.is_empty() {
-        let mut statement=conn.prepare("SELECT action_row,action_id FROM object_actions WHERE instance_id=? ORDER BY action_row DESC LIMIT 9")?;
+        let mut statement=conn.prepare_cached("SELECT action_row,action_id FROM object_actions WHERE instance_id=? ORDER BY action_row DESC LIMIT 9")?;
         let actions=statement.query_map([instance_id],|r|Ok((r.get::<_,i64>(0)?,r.get::<_,String>(1)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;
         let mut labels=std::collections::BTreeSet::new();let mut invalid=false;
         if actions.len()<=8 {
@@ -567,12 +571,12 @@ fn uncached_summary_row(conn: &Connection, row: &rusqlite::Row<'_>) -> rusqlite:
     }))
 }
 
-pub(crate) fn build_summary(conn:&Connection,id:i64)->Result<Option<Value>> {
-    let display_name=display_name_sql();
-    Ok(conn.query_row(&format!("SELECT i.instance_id,i.type_id,{ALIAS},i.category,
+pub(crate) fn build_summary(conn:&Connection,id:i64,labels:&mut ProcessLabelCache)->Result<Option<Value>> {
+    static SQL:std::sync::LazyLock<String>=std::sync::LazyLock::new(||format!("SELECT i.instance_id,i.type_id,{ALIAS},i.category,
         coalesce((SELECT name FROM type_definitions t WHERE t.type_id=i.type_id),i.type_id),
-        {display_name},i.scope,i.identity_status,i.lifecycle,{CHANGED_AT_SQL},i.last_observed_at,i.native_key
-        FROM object_instances i WHERE i.instance_id=?"),[id],|row|uncached_summary_row(conn,row)).optional()?)
+        {},i.scope,i.identity_status,i.lifecycle,{CHANGED_AT_SQL},i.last_observed_at,i.native_key
+        FROM object_instances i WHERE i.instance_id=?",display_name_sql()));
+    Ok(conn.prepare_cached(&SQL)?.query_row([id],|row|uncached_summary_row_cached(conn,row,labels)).optional()?)
 }
 
 /// The instances matching a filter, one page at a time.
@@ -587,6 +591,7 @@ pub fn instances(conn: &Connection, filter: &InstanceFilter) -> Result<QueryResp
     let mut probe = filter.clone();
     probe.cursor = None;
     probe.limit = 0;
+    probe.include_counts = true;
     // A dictionary update may change displayed names and their ordering without adding data.
     // Its revision therefore belongs to an instance walk, independently of the data watermark.
     let walk = fingerprint(&(&probe,crate::registration_dictionary::revision()));
@@ -662,7 +667,31 @@ pub fn instances(conn: &Connection, filter: &InstanceFilter) -> Result<QueryResp
     }
 
     let order = if descending { "DESC" } else { "ASC" };
-    let sql = format!(
+    let fast_names=matches!(filter.sort,InstanceSort::NameAsc|InstanceSort::NameDesc)
+        &&filter.category.is_none()&&filter.type_id.is_none()&&filter.source.is_none()&&filter.scope.is_none()&&filter.identity_status.is_none()
+        &&crate::display::available(conn)?&&conn.query_row("SELECT revision=? AND object_cursor>=object_bound FROM display_build WHERE id=1",[crate::display::revision()],|r|r.get::<_,bool>(0))?;
+    let fields=format!("i.instance_id,i.type_id,{ALIAS},i.category,
+        coalesce((SELECT name FROM type_definitions t WHERE t.type_id=i.type_id),i.type_id),
+        {display_name},i.scope,i.identity_status,i.lifecycle,{CHANGED_AT_SQL},i.last_observed_at,i.native_key");
+    let sql = if fast_names {
+        // Prepared names have their own order index. Changed rows are a small, complementary
+        // set: they remain visible with fresh facts instead of disappearing until prepared.
+        // Limit both sorted streams before merging, so no full-catalog sort is needed.
+        let ready_clauses=clauses.join(" AND ").replace(&display_name,"d.sort_name");
+        format!("WITH ready AS (
+            SELECT d.instance_id,d.sort_name AS sort_key FROM display_objects d INDEXED BY display_objects_name_{}
+            CROSS JOIN object_instances i ON i.instance_id=d.instance_id
+            WHERE d.revision='{}' AND NOT EXISTS(SELECT 1 FROM display_work w WHERE w.kind='object' AND w.id=d.instance_id)
+            AND {ready_clauses} ORDER BY d.sort_name {order},d.instance_id ASC LIMIT ?),
+          changed AS (
+            SELECT i.instance_id,{display_name} AS sort_key FROM display_work w
+            CROSS JOIN object_instances i ON i.instance_id=w.id
+            WHERE w.kind='object' AND {} ORDER BY sort_key {order},i.instance_id ASC LIMIT ?),
+          page_rows AS (SELECT * FROM ready UNION ALL SELECT * FROM changed)
+          SELECT {fields} FROM page_rows p CROSS JOIN object_instances i ON i.instance_id=p.instance_id
+          ORDER BY p.sort_key {order},p.instance_id ASC LIMIT ?",
+          if descending{"desc"}else{"asc"},crate::display::revision(),clauses.join(" AND "))
+    } else {format!(
         "SELECT i.instance_id, i.type_id, {ALIAS}, i.category,
                 coalesce((SELECT name FROM type_definitions t WHERE t.type_id=i.type_id), i.type_id),
                 {display_name}, i.scope, i.identity_status, i.lifecycle,
@@ -673,12 +702,13 @@ pub fn instances(conn: &Connection, filter: &InstanceFilter) -> Result<QueryResp
          ORDER BY {key} {order}, i.instance_id ASC
          LIMIT ?",
         clauses.join(" AND ")
-    );
-    let mut statement = conn.prepare(&sql)?;
+    )};
+    let mut statement = conn.prepare_cached(&sql)?;
     let bound: Vec<&dyn rusqlite::ToSql> = args.iter().map(|value| value.as_ref()).collect();
-    let mut all: Vec<&dyn rusqlite::ToSql> = bound;
+    let mut all: Vec<&dyn rusqlite::ToSql> = bound.clone();
     let limit_plus_one = (limit + 1) as i64;
     all.push(&limit_plus_one);
+    if fast_names {all.extend(bound);all.push(&limit_plus_one);all.push(&limit_plus_one);}
     let rows = statement.query_map(all.as_slice(), |row| summary_row(conn, row))?;
     let mut data = rows.collect::<rusqlite::Result<Vec<_>>>()?;
 
@@ -703,8 +733,8 @@ pub fn instances(conn: &Connection, filter: &InstanceFilter) -> Result<QueryResp
     };
 
     let page = Page { next_cursor, limit, watermark: walk_watermark, has_more };
-    let counts = counts_for(conn, &clauses, &args)?;
-    Ok(response(status, Value::Array(data), Some(page), Some(counts)))
+    let counts = if filter.include_counts {Some(counts_for(conn, &clauses, &args)?)}else{None};
+    Ok(response(status, Value::Array(data), Some(page), counts))
 }
 
 /// Counts over the same filter, per kind. They are never summed across kinds: an instance and an
@@ -738,7 +768,10 @@ fn counts_sql(where_clause: &str, indexed: bool) -> String {
         // UNION ALL carries at most one next address. MIN with a strict indexed lower bound
         // skips all repeated citations without an in-memory set or a temporary DISTINCT tree.
         let addresses = format!(
-            ", route_scale(probe_limit) AS MATERIALIZED (
+            ", sparse_probe(refs) AS MATERIALIZED (
+                SELECT count(*) FROM (SELECT 1 FROM evidence_refs r
+                    WHERE r.subject_kind='observation' AND r.subject_id IN (SELECT subject_id FROM matched) LIMIT 1000)
+             ), route_scale(probe_limit) AS MATERIALIZED (
                 SELECT max(10000,min(250000,((SELECT count(*) FROM evidence_refs)+3)/4))
              ), addresses(evidence_id) AS (
                 SELECT min(evidence_id) FROM evidence_refs INDEXED BY {index} WHERE subject_kind='observation'
@@ -757,6 +790,7 @@ fn counts_sql(where_clause: &str, indexed: bool) -> String {
         // both branches retain exact counts. The CAST prevents address x subject seek fan-out.
         let evidence = format!(
             "CASE WHEN (SELECT count(*) FROM matched)=0 THEN 0
+             WHEN (SELECT refs FROM sparse_probe)<1000 THEN ({by_subject})
              WHEN (SELECT count(*) FROM matched)*10 < (SELECT count(*) FROM object_instances)*9
                AND (SELECT count(*) FROM (
                 SELECT 1 FROM evidence_refs r WHERE r.subject_kind='observation'
@@ -821,7 +855,7 @@ fn type_of(conn: &Connection, instance_id: i64) -> Result<String> {
 
 /// Every declared field of the instance, not only the identity ones.
 fn key_facts_all(conn: &Connection, instance_id: i64, type_id: &str) -> Result<Vec<Value>> {
-    let mut statement = conn.prepare(
+    let mut statement = conn.prepare_cached(
         "SELECT field_id,field_kind,value,value_type,value_status,source_time,observed_at,derivation,conflict_sources
          FROM object_facts WHERE instance_id=? ORDER BY field_kind,field_id",
     )?;
@@ -865,7 +899,7 @@ fn action_views(conn: &Connection, instance: Option<i64>, unassigned: Option<boo
         }
     }
     let where_clause = if clauses.is_empty() { "1=1".to_owned() } else { clauses.join(" AND ") };
-    let mut statement = conn.prepare(&format!(
+    let mut statement = conn.prepare_cached(&format!(
         "SELECT action_id,title,result,phase,precision,occurred_at,interval_from,interval_until,observed_at,field_id,before_value,after_value,unassigned_reason,source_record,action_row,target_type,instance_id
          FROM object_actions a WHERE {where_clause} ORDER BY coalesce(interval_until,occurred_at,observed_at) DESC, action_row DESC LIMIT ?"
     ))?;
@@ -959,7 +993,7 @@ pub(crate) fn build_action(conn:&Connection,id:i64)->Result<Option<(Value,bool,b
 }
 
 fn binding_views(conn: &Connection, instance_id: i64) -> Result<Vec<Value>> {
-    let mut statement = conn.prepare(
+    let mut statement = conn.prepare_cached(
         "SELECT source,item_id,scope,native_record_id,valid_from,valid_to FROM source_bindings WHERE instance_id=? ORDER BY valid_from,source",
     )?;
     let rows = statement.query_map(params![instance_id], |row| {
@@ -1093,7 +1127,7 @@ pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryRespons
          FROM {from} WHERE {} ORDER BY {anchor} DESC, {} DESC LIMIT ?",
         clauses.join(" AND "),if prepared.is_some(){"d.action_row"}else{"a.action_row"}
     );
-    let mut statement = conn.prepare(&sql)?;
+    let mut statement = conn.prepare_cached(&sql)?;
     let bound: Vec<&dyn rusqlite::ToSql> = args.iter().map(|value| value.as_ref()).collect();
     let mut all: Vec<&dyn rusqlite::ToSql> = bound;
     let limit_plus_one = (limit + 1) as i64;
@@ -1220,7 +1254,7 @@ pub fn source_readings(conn: &Connection, source: Option<&str>, cursor: Option<&
     let where_sql="source IN ('pcscope.execution.module-file-state','pcscope.execution.module-scan-status','pcscope.execution.resources','pcscope.collector.scoped-configuration','pcscope.collector.event-channel-coverage','pcscope.usn.watch-list') AND (?1 IS NULL OR source=?1) AND seq<=?2 AND pruned_at IS NULL";
     let count:i64=conn.query_row(&format!("SELECT count(*) FROM evidence WHERE {where_sql}"),params![source,bound],|row|row.get(0))?;
     let limit=clamp(limit);
-    let mut statement=conn.prepare(&format!("SELECT seq,evidence_id,item_id,source,source_scope,observed_at FROM evidence WHERE {where_sql} AND seq<?3 ORDER BY seq DESC LIMIT ?4"))?;
+    let mut statement=conn.prepare_cached(&format!("SELECT seq,evidence_id,item_id,source,source_scope,observed_at FROM evidence WHERE {where_sql} AND seq<?3 ORDER BY seq DESC LIMIT ?4"))?;
     let mut rows=statement.query_map(params![source,bound,before,(limit+1) as i64],|row|Ok((row.get::<_,i64>(0)?,row.get::<_,String>(1)?,row.get::<_,String>(2)?,row.get::<_,String>(3)?,row.get::<_,String>(4)?,row.get::<_,String>(5)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;
     let has_more=rows.len()>limit;rows.truncate(limit);
     let next=if has_more { rows.last().map(|row|encode_cursor(&walk,"reading",row.0)) } else { None };
@@ -1240,9 +1274,9 @@ pub fn source_readings(conn: &Connection, source: Option<&str>, cursor: Option<&
 fn channel_progress(conn:&Connection,channel:&str)->Result<Value> {
     let source=format!("pcscope.eventlog.{}",channel.to_lowercase());
     let epochs:i64=conn.query_row("SELECT count(*) FROM checkpoints WHERE source=?",[&source],|row|row.get(0))?;
-    let mut statement=conn.prepare("SELECT epoch,value FROM checkpoints WHERE source=? ORDER BY rowid DESC LIMIT 32")?;
+    let mut statement=conn.prepare_cached("SELECT epoch,value FROM checkpoints WHERE source=? ORDER BY rowid DESC LIMIT 32")?;
     let checkpoints=statement.query_map([&source],|row|Ok((row.get::<_,String>(0)?,row.get::<_,String>(1)?)))?.collect::<rusqlite::Result<Vec<_>>>()?.into_iter().map(|(epoch,value)|json!({"epoch":epoch,"checkpoint":serde_json::from_str::<Value>(&value).unwrap_or(Value::String(value))})).collect::<Vec<_>>();
-    let mut statement=conn.prepare("SELECT reason,first_seen,last_seen,active FROM coverage_state WHERE source=? ORDER BY last_seen DESC LIMIT 32")?;
+    let mut statement=conn.prepare_cached("SELECT reason,first_seen,last_seen,active FROM coverage_state WHERE source=? ORDER BY last_seen DESC LIMIT 32")?;
     let gaps=statement.query_map([&source],|row|Ok(json!({"reason":row.get::<_,String>(0)?,"first_seen":row.get::<_,String>(1)?,"last_seen":row.get::<_,String>(2)?,"active":row.get::<_,i64>(3)?!=0})))?.collect::<rusqlite::Result<Vec<_>>>()?;
     let total_gaps:i64=conn.query_row("SELECT count(*) FROM coverage_state WHERE source=?",[&source],|row|row.get(0))?;
     Ok(json!({"source":source,"epochs":checkpoints,"total_epochs":epochs,"has_more_epochs":epochs>32,"known_gaps":gaps,"total_gaps":total_gaps,"has_more_gaps":total_gaps>32,"basis":"当前数据库已提交的读取断点；到达现存日志末尾不表示完整历史；所有代际分别保留"}))
@@ -1250,7 +1284,7 @@ fn channel_progress(conn:&Connection,channel:&str)->Result<Value> {
 
 /// How far the projection has got.
 pub fn projection(conn: &Connection) -> Result<QueryResponse> {
-    let mut statement = conn.prepare(
+    let mut statement = conn.prepare_cached(
         "SELECT projection,rule_version,schema_version,cursor,watermark,pending,failed,last_error,updated_at
          FROM projection_state ORDER BY projection",
     )?;
@@ -1270,14 +1304,19 @@ pub fn projection(conn: &Connection) -> Result<QueryResponse> {
     let mut entries = rows.collect::<rusqlite::Result<Vec<_>>>()?;
     // Objects, facts and actions are produced by one transactional worker, not three queues.
     // Read its real queue even before the worker's first pass; schema seed rows are not progress.
-    let queue = crate::evidence::queue_summary(conn, crate::evidence::OBJECT_PROJECTION)?;
+    // The dashboard needs outstanding work, not a count of every completed item retained over
+    // the lifetime of the installation. Both seeks stay in the small indexed live ranges.
+    let (pending,failed):(i64,i64)=conn.query_row(
+        "SELECT (SELECT count(*) FROM projection_queue WHERE projection=?1 AND state='pending'),
+                (SELECT count(*) FROM projection_queue WHERE projection=?1 AND state='failed')",
+        [crate::evidence::OBJECT_PROJECTION],|row|Ok((row.get(0)?,row.get(1)?)))?;
     let last_error: Option<String> = conn.query_row(
         "SELECT last_error FROM projection_queue WHERE projection=? AND state='failed' ORDER BY queue_id DESC LIMIT 1",
         [crate::evidence::OBJECT_PROJECTION], |r|r.get(0)).optional()?.flatten();
     for entry in &mut entries {
         if matches!(entry["projection"].as_str(), Some("objects" | "facts" | "actions")) {
-            entry["pending"] = json!(queue["by_state"]["pending"].as_u64().unwrap_or(0));
-            entry["failed"] = json!(queue["by_state"]["failed"].as_u64().unwrap_or(0));
+            entry["pending"] = json!(pending);
+            entry["failed"] = json!(failed);
             entry["last_error"] = json!(last_error);
         }
     }

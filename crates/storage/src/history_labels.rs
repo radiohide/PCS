@@ -4,26 +4,71 @@ use anyhow::Result;
 use pcscope_contracts::adapter::{AdapterContext, Decoding, EvidenceInput, EvidenceKind, EvidenceRef, ValueStatus};
 use rusqlite::{params, Connection};
 use serde_json::Value;
+use std::collections::{HashMap,VecDeque};
+
+#[derive(Clone)]
+struct ProcessLabel {pid:Option<u64>,started:Option<String>,name:Option<String>}
+type SnapshotLabels=HashMap<String,Option<ProcessLabel>>;
+/// One query/maintenance transaction only. Retain compact labels, never whole decoded snapshots.
+/// The limits bound both retained entries and a single source material's parsing work.
+#[derive(Default)]
+pub(crate) struct ProcessLabelCache {
+    snapshots:VecDeque<((String,String,String),Option<SnapshotLabels>)>,
+    entries:usize,
+    #[cfg(test)] loads:usize,
+}
+impl ProcessLabelCache {
+    fn get(&mut self,conn:&Connection,source:&str,scope:&str,run:&str,item:&str)->Result<Option<ProcessLabel>> {
+        let key=(source.to_owned(),scope.to_owned(),run.to_owned());
+        if let Some(index)=self.snapshots.iter().position(|(candidate,_)|candidate==&key){
+            let cached=self.snapshots.remove(index).unwrap();
+            let result=cached.1.as_ref().and_then(|labels|labels.get(item)).cloned().flatten();
+            self.snapshots.push_back(cached);return Ok(result);
+        }
+        #[cfg(test)]{self.loads+=1;}
+        use rusqlite::OptionalExtension;
+        let payload:Option<Option<String>>=conn.prepare_cached("SELECT CASE WHEN length(payload)<=2097152 THEN payload ELSE NULL END FROM snapshots WHERE source=? AND scope=? AND run_id=?")?
+            .query_row(params![source,scope,run],|r|r.get(0)).optional()?;
+        let labels=payload.flatten().and_then(|raw|serde_json::from_str::<Value>(&raw).ok()).and_then(|whole|{
+            let items=whole["items"].as_array().filter(|items|items.len()<=2048)?;
+            let mut labels=HashMap::new();
+            for item in items {
+                let id=item["id"].as_str().filter(|id|id.len()<=512)?;
+                if labels.contains_key(id){labels.insert(id.to_owned(),None);continue;}
+                let value=&item["data"];
+                let protected=[&value["name"],&value["path"]].iter().any(|v|v.is_object()||pcscope_contracts::semantics::is_mask_sentinel(v));
+                let name=if protected{None}else{value["name"].as_str().map(str::trim).filter(|s|!s.is_empty()&&s.len()<=512&&!s.contains(['\\','/','\n','\r'])).map(str::to_owned)};
+                labels.insert(id.to_owned(),Some(ProcessLabel{pid:value["pid"].as_u64(),started:value["start_time"].as_str().filter(|s|s.len()<=128).map(str::to_owned),name}));
+            }Some(labels)
+        });
+        let count=labels.as_ref().map_or(0,HashMap::len);
+        while self.snapshots.len()>=8||self.entries+count>8192 {
+            if let Some((_,old))=self.snapshots.pop_front(){self.entries-=old.as_ref().map_or(0,HashMap::len);}else{break;}
+        }
+        let result=labels.as_ref().and_then(|labels|labels.get(item)).cloned().flatten();
+        self.entries+=count;self.snapshots.push_back((key,labels));Ok(result)
+    }
+}
 
 const SOURCE: &str = "pcscope.shell.registrations";
 const MAX_SCOPES: usize = 256;
 
 /// A legacy process omitted creation time during projection. Recover only a label from its
 /// exact collected item, never from the current PID. Multiple generations remain unresolved.
-pub(super) fn legacy_process_label(conn:&Connection, instance:i64, scope:&str, pid:u64, expected_started:Option<&str>)->Result<Option<String>> {
+pub(super) fn legacy_process_label_cached(conn:&Connection, instance:i64, scope:&str, pid:u64, expected_started:Option<&str>,cache:&mut ProcessLabelCache)->Result<Option<String>> {
     let source="pcscope.execution.processes";
-    let mut statement=conn.prepare("SELECT DISTINCT item_id,native_record_id FROM source_bindings WHERE instance_id=? AND source=? AND scope=? LIMIT 3")?;
+    let mut statement=conn.prepare_cached("SELECT DISTINCT item_id,native_record_id FROM source_bindings WHERE instance_id=? AND source=? AND scope=? LIMIT 3")?;
     let bindings=statement.query_map(params![instance,source,scope],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;
     if bindings.len()!=1 || bindings[0].0!=bindings[0].1 {return Ok(None);}
     let item=&bindings[0].0;
     let Some((number,started))=item.split_once('/') else{return Ok(None);};
     if number.parse::<u64>().ok()!=Some(pid) || pcscope_contracts::semantics::canonical_time(started).is_err() {return Ok(None);}
     if expected_started.is_some_and(|expected|expected!=started) {return Ok(None);}
-    let mut statement=conn.prepare("SELECT scope FROM scopes WHERE source=? LIMIT 257")?;
+    let mut statement=conn.prepare_cached("SELECT scope FROM scopes WHERE source=? LIMIT 257")?;
     let scopes=statement.query_map([source],|r|r.get::<_,String>(0))?.collect::<rusqlite::Result<Vec<_>>>()?;
     if scopes.len()>MAX_SCOPES {return Ok(None);}
     let mut result=None;
-    let mut statement=conn.prepare("SELECT CASE WHEN length(data)<=262144 THEN data ELSE NULL END FROM objects WHERE source=? AND scope=? AND id=?")?;
+    let mut statement=conn.prepare_cached("SELECT CASE WHEN length(data)<=262144 THEN data ELSE NULL END FROM objects WHERE source=? AND scope=? AND id=?")?;
     for collected in scopes {
         if pcscope_contracts::adapters::installation_scope(&pcscope_contracts::semantics::business_scope(&collected))!=scope {continue;}
         for raw in statement.query_map(params![source,collected,item],|r|r.get::<_,Option<String>>(0))? {
@@ -41,7 +86,7 @@ pub(super) fn legacy_process_label(conn:&Connection, instance:i64, scope:&str, p
     if result.is_none() {
         // The latest inventory removes exited processes. Their immutable, exactly cited snapshot
         // can still name the old record. Read at most eight indexed references and bounded payloads.
-        let mut refs=conn.prepare("SELECT evidence_id,pruned_at FROM evidence_refs WHERE subject_kind='observation' AND subject_id=? AND evidence_kind='snapshot' ORDER BY evidence_id DESC LIMIT 8")?;
+        let mut refs=conn.prepare_cached("SELECT evidence_id,pruned_at FROM evidence_refs WHERE subject_kind='observation' AND subject_id=? AND evidence_kind='snapshot' ORDER BY evidence_id DESC LIMIT 8")?;
         let refs=refs.query_map([instance.to_string()],|r|Ok((r.get::<_,String>(0)?,r.get::<_,Option<String>>(1)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;
         use rusqlite::OptionalExtension;
         for (reference,pruned) in refs {
@@ -54,18 +99,11 @@ pub(super) fn legacy_process_label(conn:&Connection, instance:i64, scope:&str, p
             if pcscope_contracts::adapters::installation_scope(&pcscope_contracts::semantics::business_scope(&collected))!=scope {continue;}
             let parts:Vec<_>=address.strip_prefix("snapshot:").unwrap_or_default().splitn(4,'|').collect();
             if parts.len()!=4 || parts[0]!=source || parts[1]!=collected || parts[3]!=item {return Ok(None);}
-            let payload:Option<Option<String>>=conn.query_row("SELECT CASE WHEN length(payload)<=2097152 THEN payload ELSE NULL END FROM snapshots WHERE source=? AND scope=? AND run_id=?",params![source,collected,parts[2]],|r|r.get(0)).optional()?;
-            let Some(Some(raw))=payload else{return Ok(None);};
-            let Ok(whole)=serde_json::from_str::<Value>(&raw) else{return Ok(None);};
-            let Some(items)=whole["items"].as_array().filter(|items|items.len()<=2048) else{return Ok(None);};
-            let candidates:Vec<_>=items.iter().filter(|i|i["id"].as_str()==Some(item.as_str())).collect();
-            if candidates.len()!=1 {return Ok(None);}
-            let value=&candidates[0]["data"];
-            if value["pid"].as_u64()!=Some(pid) || value["start_time"].as_str()!=Some(started)
-                || [&value["name"],&value["path"]].iter().any(|v|v.is_object()||pcscope_contracts::semantics::is_mask_sentinel(v)) {return Ok(None);}
-            let Some(name)=value["name"].as_str().map(str::trim).filter(|s|!s.is_empty()&&s.len()<=512&&!s.contains(['\\','/','\n','\r'])) else{return Ok(None);};
-            if result.as_ref().is_some_and(|old|old!=name) {return Ok(None);}
-            result=Some(name.to_owned());
+            let Some(label)=cache.get(conn,source,&collected,parts[2],item)?else{return Ok(None)};
+            if label.pid!=Some(pid)||label.started.as_deref()!=Some(started){return Ok(None)}
+            let Some(name)=label.name else{return Ok(None)};
+            if result.as_ref().is_some_and(|old|old!=&name){return Ok(None)}
+            result=Some(name);
         }
     }
     Ok(result)
@@ -78,7 +116,7 @@ pub(super) fn member_label(conn:&Connection, instance:i64, scope:&str, sid:&str)
     let candidate=pcscope_contracts::adapters::identity("account.user",scope,"label",&[("sid",Some(sid.into()))]);
     let (key,missing)=pcscope_contracts::identity::normalise(&strategy,&candidate);
     if !missing.is_empty() {return Ok(None);}
-    let mut statement=conn.prepare("SELECT f.value,f.value_status FROM object_instances m JOIN object_instances u ON u.type_id='account.user' AND u.machine_id=m.machine_id AND u.installation_id=m.installation_id AND u.scope=m.scope AND u.native_key=? AND u.identity_status='confirmed' JOIN object_facts f ON f.instance_id=u.instance_id AND f.field_id='name' WHERE m.instance_id=? LIMIT 3")?;
+    let mut statement=conn.prepare_cached("SELECT f.value,f.value_status FROM object_instances m JOIN object_instances u ON u.type_id='account.user' AND u.machine_id=m.machine_id AND u.installation_id=m.installation_id AND u.scope=m.scope AND u.native_key=? AND u.identity_status='confirmed' JOIN object_facts f ON f.instance_id=u.instance_id AND f.field_id='name' WHERE m.instance_id=? LIMIT 3")?;
     let rows=statement.query_map(params![key,instance],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;
     if rows.len()!=1 || rows[0].1!="known" {return Ok(None);}
     let value:Value=serde_json::from_str(&rows[0].0)?;
@@ -108,7 +146,7 @@ pub(super) fn com_metadata(conn: &Connection, instance: i64, current: &Value) ->
         || !clsid[1..37].bytes().enumerate().all(|(index,byte)|if [8,13,18,23].contains(&index){byte==b'-'}else{byte.is_ascii_hexdigit()}) { return Ok(result); }
     let root=format!("software\\classes\\clsid\\{}",clsid.to_ascii_lowercase());
     let scope=current["scope"].as_str().unwrap_or_default();
-    let mut bindings=conn.prepare("SELECT item_id,native_record_id FROM source_bindings WHERE instance_id=? AND source=? AND scope=? LIMIT 65")?;
+    let mut bindings=conn.prepare_cached("SELECT item_id,native_record_id FROM source_bindings WHERE instance_id=? AND source=? AND scope=? LIMIT 65")?;
     let records=bindings.query_map(params![instance,SOURCE,scope],|row|Ok((row.get::<_,String>(0)?,row.get::<_,String>(1)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;
     if records.len()>64 { return Ok(result); }
     let bound=|path:&str|records.iter().any(|(item,native)|item.eq_ignore_ascii_case(path)&&native.eq_ignore_ascii_case(path));
@@ -117,12 +155,12 @@ pub(super) fn com_metadata(conn: &Connection, instance: i64, current: &Value) ->
 
     // The objects primary key is (source,scope,id). Starting at the much smaller scopes table
     // avoids scanning every shell record for a single class id. Refuse an abnormal scope count.
-    let mut scopes=conn.prepare("SELECT scope FROM scopes WHERE source=? ORDER BY scope LIMIT 257")?;
+    let mut scopes=conn.prepare_cached("SELECT scope FROM scopes WHERE source=? ORDER BY scope LIMIT 257")?;
     let scopes=scopes.query_map([SOURCE],|row|row.get::<_,String>(0))?.collect::<rusqlite::Result<Vec<_>>>()?;
     if scopes.len()>MAX_SCOPES { return Ok(result); }
     let Some(adapter)=pcscope_contracts::adapters::adapter_for(SOURCE) else {return Ok(result);};
     let Some(strategy)=pcscope_contracts::identity::TypeStrategy::for_type("shell.com_registration") else {return Ok(result);};
-    let mut statement=conn.prepare("SELECT CASE WHEN length(data)<=262144 THEN data ELSE NULL END FROM objects WHERE source=? AND scope=? AND id=?")?;
+    let mut statement=conn.prepare_cached("SELECT CASE WHEN length(data)<=262144 THEN data ELSE NULL END FROM objects WHERE source=? AND scope=? AND id=?")?;
     let mut blocked=false;
     for collected_scope in scopes {
         let business=pcscope_contracts::semantics::business_scope(&collected_scope);
@@ -210,5 +248,42 @@ mod tests {
         assert!(com_metadata(&store.conn,1,&current).unwrap().label.is_none());
         metadata(&store,"machine:M/user:A/schema:1/CurrentUser/Registry64/shard:0",json!("本账户组件"));
         assert_eq!(com_metadata(&store.conn,1,&current).unwrap().label.as_deref(),Some("本账户组件"));
+    }
+}
+
+#[cfg(test)]
+mod process_cache_tests {
+    use super::*;
+    use serde_json::json;
+    #[test]
+    fn compact_snapshot_labels_reuse_material_and_keep_protected_duplicates_unusable() {
+        let store=crate::Store::open(":memory:").unwrap();let conn=store.reader();
+        let material=json!({"items":[
+            {"id":"42/start","data":{"pid":42,"start_time":"start","name":"one.exe","path":"C:\\one.exe"}},
+            {"id":"43/start","data":{"pid":43,"start_time":"start","name":"two.exe","path":"C:\\two.exe"}},
+            {"id":"hidden","data":{"pid":44,"name":"secret.exe","path":{"sensitive":true}}},
+            {"id":"duplicate","data":{"name":"first.exe"}},{"id":"duplicate","data":{"name":"second.exe"}}
+        ]});
+        conn.execute("INSERT INTO snapshots(source,scope,run_id,payload) VALUES('source','scope','run',?)",[material.to_string()]).unwrap();
+        let mut cache=ProcessLabelCache::default();
+        assert_eq!(cache.get(conn,"source","scope","run","42/start").unwrap().unwrap().name.as_deref(),Some("one.exe"));
+        assert_eq!(cache.get(conn,"source","scope","run","43/start").unwrap().unwrap().pid,Some(43));
+        assert!(cache.get(conn,"source","scope","run","hidden").unwrap().unwrap().name.is_none());
+        assert!(cache.get(conn,"source","scope","run","duplicate").unwrap().is_none());
+        assert_eq!(cache.loads,1);
+        assert!(cache.get(conn,"source","another-scope","run","42/start").unwrap().is_none());
+        assert_eq!(cache.loads,2);
+    }
+    #[test]
+    fn compact_label_cache_evicts_old_snapshots_instead_of_growing_with_history() {
+        let store=crate::Store::open(":memory:").unwrap();let conn=store.reader();let mut cache=ProcessLabelCache::default();
+        let material=json!({"items":(0..1200).map(|id|json!({"id":id.to_string(),"data":{"pid":id,"name":"example.exe"}})).collect::<Vec<_>>()});
+        for run in 0..12 {
+            conn.execute("INSERT INTO snapshots(source,scope,run_id,payload) VALUES('source','scope',?,?)",params![run.to_string(),material.to_string()]).unwrap();
+            assert!(cache.get(conn,"source","scope",&run.to_string(),"1").unwrap().is_some());
+            assert!(cache.entries<=8192);assert!(cache.snapshots.len()<=8);
+        }
+        assert_eq!(cache.loads,12);
+        cache.get(conn,"source","scope","0","1").unwrap();assert_eq!(cache.loads,13);
     }
 }
