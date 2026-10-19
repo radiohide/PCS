@@ -12,6 +12,8 @@
         "pcscope/crates/storage/src/projection.rs",
         "pcscope/crates/storage/src/timeline_policy.rs",
         "pcscope/crates/storage/src/collection.rs",
+        "pcscope/crates/storage/src/collection_runs.rs",
+        "pcscope/crates/storage/src/collection_runs_tests.rs",
         "pcscope/crates/storage/src/coverage.rs",
         "pcscope/crates/storage/src/item_controls.rs",
         "pcscope/crates/storage/src/related.rs",
