@@ -6,10 +6,15 @@ use serde_json::{json, Value};
 use std::time::{Duration, Instant};
 
 pub(crate) fn revision() -> &'static str {
-    static REVISION: std::sync::LazyLock<String> = std::sync::LazyLock::new(|| crate::digest(&format!(
-        "display-v1:{}:{}:{}:{}:{}:{}", crate::model::catalog_fingerprint(),
-        include_str!("query.rs"), include_str!("history_labels.rs"),
-        include_str!("registration_dictionary.rs"), include_str!("timeline_policy.rs"),include_str!("display.rs"))));
+    static REVISION: std::sync::LazyLock<String> = std::sync::LazyLock::new(|| {
+        // Paging/count SQL does not change stored presentation. Its implementation and tests
+        // must not invalidate every historical view; dictionaries and selected fields must.
+        let rules=format!("display-v1:{}:{}:{}:{}:{}:{}:{}:{}",crate::model::catalog_fingerprint(),
+            include_str!("query_views.rs"),include_str!("history_labels.rs"),
+            include_str!("registration_dictionary.rs"),include_str!("timeline_policy.rs"),include_str!("display.rs"),
+            include_str!("registration_dictionary.json"),include_str!("../../../model/presentation.json"));
+        crate::digest(pcscope_contracts::model::normalise_line_endings(&rules).as_ref())
+    });
     &REVISION
 }
 

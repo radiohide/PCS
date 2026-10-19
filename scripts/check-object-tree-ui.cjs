@@ -26,7 +26,7 @@ try{
      if(qa.delay)await new Promise(r=>setTimeout(r,qa.delay));if(qa.fail){qa.fail=false;throw Error('deadline has elapsed');}
      let matched=rows.filter(x=>(!q.category||x.category===q.category)&&(!q.type_id||x.type_id===q.type_id)&&(!q.search||x.display_name.includes(q.search))&&(!q.lifecycle?['active','not_observed'].includes(x.lifecycle):q.lifecycle==='any'||x.lifecycle===q.lifecycle));
      if(q.sort==='name_desc')matched.reverse();const offset=Number(q.cursor||0),limit=q.limit||50,next=offset+limit;
-     return {status:matched.length?'loaded':'empty',data:matched.slice(offset,next),counts:{instances:matched.length},page:{has_more:next<matched.length,next_cursor:next<matched.length?String(next):null,watermark:'test'}};
+     return {status:matched.length?'loaded':'empty',data:matched.slice(offset,next),...(q.include_counts===false?{}:{counts:{instances:matched.length}}),...(q.include_instance_total?{instance_total:matched.length}:{}),page:{has_more:next<matched.length,next_cursor:next<matched.length?String(next):null,watermark:'test'}};
     }
     return samples[q.query]||{status:'empty',data:[],counts:{}};
    }finally{qa.active--;}
@@ -38,6 +38,8 @@ try{
  await page.locator('[data-tree-category="hardware"]>summary').click();await page.locator('[data-tree-type="hardware.device"]>summary').click();await page.locator('[data-tree-object]').first().waitFor();
  assert.equal(await page.locator('[data-tree-object]').count(),100);await page.locator('[data-branch-more]:visible').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelectorAll('[data-tree-object]').length===154);
  assert(await page.evaluate(()=>qa.calls.filter(q=>q.query==='instance_list').every(q=>q.limit===100)),'tree branches use 100-row requests');
+ assert(await page.evaluate(()=>qa.calls.filter(q=>q.query==='instance_list').every(q=>q.include_counts===false)),'opening branches must not count related history');
+ assert(await page.evaluate(()=>qa.calls.filter(q=>q.query==='instance_list').every(q=>q.include_instance_total===!q.cursor)),'only first branch pages request exact object totals');
  assert.equal(await page.locator('[data-tree-type="hardware.device"] [data-tree-count]').innerText(),'154 个');
  await page.locator('[data-tree-object="device-0"]').click();await page.locator('.object-tree-detail h3').waitFor();assert.equal(await page.locator('.object-tree-detail details[open]').count(),0);
  await page.locator('[data-tree-type="hardware.device"]>summary').click();const before=await page.evaluate(()=>qa.calls.length);await page.locator('[data-tree-type="hardware.device"]>summary').click();assert.equal(await page.evaluate(()=>qa.calls.length),before,'cached expansion does not requery');

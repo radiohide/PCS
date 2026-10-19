@@ -28,7 +28,7 @@ const CONSUMERS = {
 const RENDERER = 'model-view.js';
 // Response fields that must never be read outside the renderer. `status` and `page` are absent from
 // this list on purpose: one is control flow and the other is the walk.
-const FORBIDDEN = ['counts', 'data', 'warnings', 'fields', 'summary', 'actions_preview', 'bindings', 'catalog_version', 'contract_version', 'mock'];
+const FORBIDDEN = ['counts', 'instance_total', 'data', 'warnings', 'fields', 'summary', 'actions_preview', 'bindings', 'catalog_version', 'contract_version', 'mock'];
 
 // The old object-reading operations. The model replaced every one of them, and a page that went back
 // to one would be reading the old source-and-object list while the rest of the interface reads the

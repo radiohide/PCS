@@ -173,9 +173,72 @@ fn ordered_names_merge_dirty_new_and_missing_cache_rows_without_skips_or_duplica
         }
         assert!(cursor.is_none(),"name paging did not reach its end");
         assert_eq!(Value::Array(visited),expected,"{sort:?}");
-        let searched=store.query(&QueryRequest::InstanceList(InstanceFilter{sort,search:Some("AAA".into()),include_counts:false,..Default::default()})).unwrap();
+        let searched=store.query(&QueryRequest::InstanceList(InstanceFilter{sort,search:Some("AAA".into()),include_counts:false,include_instance_total:true,..Default::default()})).unwrap();
+        assert_eq!(searched.instance_total,Some(2));
         assert_eq!(searched.data.unwrap().as_array().unwrap().len(),2);
     }
+}
+
+#[test]
+fn filtered_prepared_name_pages_match_fallback_for_every_filter_and_direction() {
+    use pcscope_contracts::query::{InstanceSort,LifecycleFilter};
+    let store=material();let conn=store.reader();
+    conn.execute_batch("WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<40)
+        INSERT INTO object_instances(type_id,category,machine_id,installation_id,scope,native_key,display_name,identity_status,lifecycle,first_observed_at,last_observed_at)
+        SELECT CASE WHEN x%2=0 THEN 'startup.scheduled_task' ELSE 'runtime.process' END,
+          CASE WHEN x%2=0 THEN 'startup' ELSE 'runtime' END,'M','I',CASE WHEN x%3=0 THEN 'other' ELSE 'machine:M' END,
+          'filtered-'||x,CASE WHEN x%4=0 THEN 'same' ELSE 'search-'||x END,
+          CASE WHEN x%5=0 THEN 'provisional' ELSE 'confirmed' END,CASE WHEN x%7=0 THEN 'ended' ELSE 'active' END,'2026-10-16','2026-10-16' FROM n;
+        INSERT INTO source_bindings(instance_id,source,item_id,scope,native_record_id,valid_from)
+          SELECT instance_id,'filter-source',native_key,scope,native_key,'2026-10-16' FROM object_instances WHERE instance_id%3=0;").unwrap();
+    finish(&store);
+    conn.execute_batch("UPDATE object_instances SET display_name='search-new' WHERE native_key='filtered-10';
+        DELETE FROM display_objects WHERE instance_id=(SELECT instance_id FROM object_instances WHERE native_key='filtered-15');").unwrap();
+    let filters=vec![
+        InstanceFilter{category:Some("startup".into()),..Default::default()},
+        InstanceFilter{type_id:Some("runtime.process".into()),..Default::default()},
+        InstanceFilter{scope:Some("other".into()),..Default::default()},
+        InstanceFilter{identity_status:Some("provisional".into()),..Default::default()},
+        InstanceFilter{source:Some("filter-source".into()),..Default::default()},
+        InstanceFilter{search:Some("search".into()),lifecycle:Some(LifecycleFilter::Active),category:Some("startup".into()),..Default::default()},
+        InstanceFilter{search:Some("missing".into()),..Default::default()},
+    ];
+    for mut filter in filters {for sort in [InstanceSort::NameAsc,InstanceSort::NameDesc] {
+        filter.sort=sort;filter.limit=200;filter.include_counts=false;filter.include_instance_total=true;
+        conn.execute("UPDATE display_build SET object_cursor=0",[]).unwrap();
+        let expected=store.query(&QueryRequest::InstanceList(filter.clone())).unwrap().data.unwrap();
+        conn.execute("UPDATE display_build SET object_cursor=object_bound",[]).unwrap();
+        let mut visited=Vec::new();filter.cursor=None;filter.limit=3;
+        for _ in 0..40 {
+            let page=store.query(&QueryRequest::InstanceList(filter.clone())).unwrap();
+            assert_eq!(page.instance_total,Some((expected.as_array().unwrap().len()-visited.len()) as u64));
+            visited.extend(page.data.unwrap().as_array().unwrap().iter().cloned());
+            filter.cursor=page.page.unwrap().next_cursor;if filter.cursor.is_none(){break;}
+        }
+        assert!(filter.cursor.is_none());assert_eq!(Value::Array(visited),expected,"{filter:?}");
+    }}
+}
+
+#[test]
+fn object_total_can_be_requested_without_scanning_related_material_and_keeps_the_walk() {
+    let store=material();let conn=store.reader();
+    conn.execute_batch("INSERT INTO object_instances(type_id,category,machine_id,installation_id,scope,native_key,display_name,identity_status,lifecycle,first_observed_at,last_observed_at)
+        VALUES('startup.scheduled_task','startup','M','I','machine:M','other','Second','confirmed','active','2026-10-16','2026-10-16');").unwrap();
+    finish(&store);
+    conn.execute_batch("WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<50000)
+        INSERT INTO evidence_refs SELECT 'observation','1','snapshot','total-material-'||x,NULL FROM n;").unwrap();
+    let steps=std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));let counter=steps.clone();
+    conn.progress_handler(1000,Some(move||counter.fetch_add(1000,std::sync::atomic::Ordering::Relaxed)>50000));
+    let filter=InstanceFilter{category:Some("startup".into()),include_counts:false,include_instance_total:true,limit:1,..Default::default()};
+    let first=store.query(&QueryRequest::InstanceList(filter.clone())).unwrap();
+    assert_eq!(first.instance_total,Some(2));assert!(first.counts.is_none());
+    let cursor=first.page.unwrap().next_cursor;
+    let second=store.query(&QueryRequest::InstanceList(InstanceFilter{cursor:cursor.clone(),..filter.clone()})).unwrap();
+    assert_eq!(second.instance_total,Some(1));
+    let omitted=store.query(&QueryRequest::InstanceList(InstanceFilter{cursor,include_instance_total:false,..filter})).unwrap();
+    assert_eq!(omitted.data,second.data);assert_eq!(omitted.page,second.page);assert!(omitted.instance_total.is_none());
+    let empty=store.query(&QueryRequest::InstanceList(InstanceFilter{search:Some("no matching object".into()),include_counts:false,include_instance_total:true,..Default::default()})).unwrap();
+    assert_eq!(empty.instance_total,Some(0));assert!(empty.counts.is_none());
 }
 
 #[test]

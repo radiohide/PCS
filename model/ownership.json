@@ -59,6 +59,7 @@
       "owns": [
         "pcscope/crates/ipc/**",
         "pcscope/crates/storage/src/query.rs",
+        "pcscope/crates/storage/src/query_views.rs",
         "pcscope/crates/storage/src/history_labels.rs",
         "pcscope/scripts/audit-history-readability.cjs",
         "pcscope/apps/desktop/ui/**",

@@ -49,6 +49,10 @@ pub struct InstanceFilter {
     /// related-evidence counts without changing the identity or ordering of the page walk.
     #[serde(default = "default_true")]
     pub include_counts: bool,
+    /// Exact number of matching objects, independently of the more expensive related-material
+    /// counts. Omitted by default for existing callers; append pages normally need neither.
+    #[serde(default)]
+    pub include_instance_total: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub category: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -82,7 +86,7 @@ fn default_limit() -> usize {
 impl Default for InstanceFilter {
     fn default() -> Self {
         Self {
-            include_counts: true, category: None, type_id: None, search: None, scope: None, identity_status: None,
+            include_counts: true, include_instance_total: false, category: None, type_id: None, search: None, scope: None, identity_status: None,
             coverage: None, source: None, lifecycle: None, sort: default_sort(), cursor: None, limit: default_limit(),
         }
     }
@@ -424,13 +428,17 @@ pub struct QueryResponse {
     pub page: Option<Page>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub counts: Option<Counts>,
+    /// Exact filtered object total when requested separately. Absence means unrequested or an
+    /// older backend, never zero related records.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub instance_total: Option<u64>,
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub mock: bool,
 }
 
 impl QueryResponse {
     pub fn empty(catalog_version: &str) -> Self {
-        Self { contract_version: 1, catalog_version: catalog_version.into(), status: ResponseStatus::Empty, data: None, warnings: Vec::new(), page: None, counts: None, mock: false }
+        Self { contract_version: 1, catalog_version: catalog_version.into(), status: ResponseStatus::Empty, data: None, warnings: Vec::new(), page: None, counts: None, instance_total: None, mock: false }
     }
     /// A response that a client can tell apart from "no rows".
     pub fn rejected(status: ResponseStatus, code: &str, message: &str, catalog_version: &str) -> Self {
@@ -442,6 +450,7 @@ impl QueryResponse {
             warnings: vec![Warning { code: code.into(), message: message.into(), at: None }],
             page: None,
             counts: None,
+            instance_total: None,
             mock: false,
         }
     }
@@ -487,6 +496,7 @@ pub fn response_shape() -> Value {
         "evidence_state": ["available", "pruned"],
         "queries": ["type_catalog", "instance_list", "instance_detail", "instance_actions", "action_timeline", "evidence_detail", "source_coverage", "source_readings", "projection_status"],
         "page": {"default": DEFAULT_PAGE, "maximum": MAX_PAGE},
+        "instance_list_counts": {"include_counts_default":true,"include_instance_total_default":false,"instance_total_optional":true,"scope":"same filter and cursor window; unrelated-material counts are omitted, never zero-filled"},
         "default_visibility": "active and not_observed instances are returned by default; ended and removed require an explicit lifecycle filter; provisional instances are included and flagged",
     })
 }
@@ -501,6 +511,8 @@ mod tests {
         assert_eq!(filter.limit, DEFAULT_PAGE);
         assert_eq!(filter.sort, InstanceSort::NameAsc);
         assert!(filter.cursor.is_none());
+        assert!(filter.include_counts);
+        assert!(!filter.include_instance_total);
 
         let request: QueryRequest = serde_json::from_str(r#"{"query":"instance_list","limit":10}"#).unwrap();
         match request {
@@ -537,6 +549,20 @@ mod tests {
         for key in ["instances", "source_records", "actions", "evidence"] {
             assert!(value.get(key).is_some(), "counts must report {key} separately");
         }
+    }
+
+    #[test]
+    fn separate_object_total_is_optional_and_does_not_invent_related_counts() {
+        let mut answer=QueryResponse::empty("1.0.0");
+        assert!(serde_json::to_value(&answer).unwrap().get("instance_total").is_none());
+        answer.instance_total=Some(0);
+        let value=serde_json::to_value(&answer).unwrap();
+        assert_eq!(value["instance_total"],0);
+        assert!(value.get("counts").is_none());
+        assert_eq!(serde_json::from_value::<QueryResponse>(value).unwrap(),answer);
+        let request:QueryRequest=serde_json::from_value(json!({"query":"instance_list","include_counts":false,"include_instance_total":true})).unwrap();
+        let QueryRequest::InstanceList(filter)=request else{panic!("wrong query")};
+        assert!(!filter.include_counts);assert!(filter.include_instance_total);
     }
 
     #[test]

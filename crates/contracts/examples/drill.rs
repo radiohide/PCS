@@ -535,28 +535,28 @@ fn project(directory: &Path) -> anyhow::Result<Value> {
         contract_version: 1, catalog_version: model::catalog_version().into(),
         status: if list.is_empty() { ResponseStatus::Empty } else { ResponseStatus::Loaded },
         data: Some(serde_json::to_value(&list)?), warnings: warnings.clone(),
-        page: Some(page.clone()), counts: Some(projection.counts.clone()), mock: false,
+        page: Some(page.clone()), counts: Some(projection.counts.clone()), instance_total: None, mock: false,
     }}));
     if let Some(detail) = &detail {
         responses.push(json!({"query": "instance_detail", "response": QueryResponse {
             contract_version: 1, catalog_version: model::catalog_version().into(),
             status: ResponseStatus::Loaded,
             data: Some(serde_json::to_value(detail)?), warnings: Vec::new(),
-            page: None, counts: Some(projection.counts.clone()), mock: false,
+            page: None, counts: Some(projection.counts.clone()), instance_total: None, mock: false,
         }}));
     }
     responses.push(json!({"query": "instance_actions", "response": QueryResponse {
         contract_version: 1, catalog_version: model::catalog_version().into(),
         status: if projection.actions.is_empty() { ResponseStatus::Empty } else { ResponseStatus::Loaded },
         data: Some(serde_json::to_value(&projection.actions)?), warnings: Vec::new(),
-        page: Some(page), counts: Some(projection.counts.clone()), mock: false,
+        page: Some(page), counts: Some(projection.counts.clone()), instance_total: None, mock: false,
     }}));
     for view in projection.evidence.values() {
         responses.push(json!({"query": "evidence_detail", "response": QueryResponse {
             contract_version: 1, catalog_version: model::catalog_version().into(),
             status: if view.state == "pruned" { ResponseStatus::EvidencePruned } else { ResponseStatus::Loaded },
             data: Some(serde_json::to_value(view)?), warnings: Vec::new(),
-            page: None, counts: None, mock: false,
+            page: None, counts: None, instance_total: None, mock: false,
         }}));
     }
 

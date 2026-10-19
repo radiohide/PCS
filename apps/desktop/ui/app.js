@@ -69,7 +69,7 @@ async function renderObjects(){
     content.querySelector('#model-type').innerHTML='<option value="">全部类型</option>'+catalog.filter(t=>!modelFilters.category||t.category===modelFilters.category).map(t=>`<option value="${esc(t.type_id)}" ${t.type_id===modelFilters.type_id?'selected':''}>${esc(PCScopeObjectNames.typeName(t))}${t.supplied_by_source?'':'（尚未接入来源）'}</option>`).join('');
   };
   const request=()=>{
-    const body={query:'instance_list',sort:modelFilters.sort,limit:100,include_counts:!modelWalk.cursor};
+    const body={query:'instance_list',sort:modelFilters.sort,limit:100,include_counts:false,include_instance_total:!modelWalk.cursor};
     if(modelFilters.category)body.category=modelFilters.category;
     if(modelFilters.type_id)body.type_id=modelFilters.type_id;
     if(modelFilters.search)body.search=modelFilters.search;

@@ -1,7 +1,7 @@
 //! Bounded, local model rehearsal. Production material is attached read-only; only model tables
 //! are copied, avoiding a second copy of a large raw-history database. No collectors are started.
 use anyhow::{ensure,Context,Result};
-use pcscope_contracts::query::{ActionFilter,InstanceFilter,QueryRequest};
+use pcscope_contracts::query::{ActionFilter,InstanceFilter,InstanceSort,QueryRequest};
 use pcscope_storage::Store;
 use rusqlite::{Connection,OpenFlags};
 use serde_json::{json,Value};
@@ -69,23 +69,52 @@ fn run(directory:&Path,samples:usize,anchor_index:bool)->Result<()> {
 }
 fn measure(store:&Store,samples:usize)->Result<()> {
     ensure!((1..=1000).contains(&samples),"samples must be 1..1000");
+    let count_mode=std::env::var("PCSCOPE_PERFORMANCE_LIST_COUNTS").unwrap_or_else(|_|"full".into());
+    ensure!(matches!(count_mode.as_str(),"full"|"objects"),"list counts mode must be full or objects");
+    println!("{}",json!({"list_counts":count_mode,"includes_ipc":false}));
     let first=query(store,&QueryRequest::InstanceList(InstanceFilter{limit:100,..Default::default()}))?;
     let detail=first.data.as_ref().and_then(Value::as_array).and_then(|rows|rows.first()).and_then(|row|row["instance_id"].as_i64()).context("fixture has no objects")?.to_string();
     let first_actions=query(store,&QueryRequest::ActionTimeline(ActionFilter{limit:200,..Default::default()}))?;
-    let cases=vec![
+    let mut cases=vec![
         ("objects_first",QueryRequest::InstanceList(InstanceFilter{limit:100,..Default::default()})),
         ("objects_second",QueryRequest::InstanceList(InstanceFilter{limit:100,include_counts:false,cursor:first.page.as_ref().and_then(|p|p.next_cursor.clone()),..Default::default()})),
         ("timeline_first",QueryRequest::ActionTimeline(ActionFilter{limit:200,..Default::default()})),
         ("timeline_second",QueryRequest::ActionTimeline(ActionFilter{limit:200,cursor:first_actions.page.as_ref().and_then(|p|p.next_cursor.clone()),..Default::default()})),
         ("object_detail",QueryRequest::InstanceDetail{instance:detail}),
         ("progress",QueryRequest::ProjectionStatus),
+        ("objects_network",QueryRequest::InstanceList(InstanceFilter{category:Some("network".into()),limit:100,..Default::default()})),
+        ("objects_processes",QueryRequest::InstanceList(InstanceFilter{type_id:Some("runtime.process".into()),limit:100,..Default::default()})),
+        ("objects_recent",QueryRequest::InstanceList(InstanceFilter{sort:InstanceSort::ChangedDesc,limit:100,..Default::default()})),
+        ("objects_search",QueryRequest::InstanceList(InstanceFilter{search:Some("Windows".into()),limit:100,..Default::default()})),
+        ("timeline_routine",QueryRequest::ActionTimeline(ActionFilter{include_routine:true,limit:200,..Default::default()})),
     ];
+    if count_mode=="objects" {for (_,request) in &mut cases {
+        if let QueryRequest::InstanceList(filter)=request {
+            filter.include_counts=false;filter.include_instance_total=filter.cursor.is_none();
+        }
+    }}
+    for (name,request) in cases.clone() {
+        if let QueryRequest::InstanceList(mut filter)=request {
+            if !filter.include_counts{continue;}
+            filter.include_counts=false;
+            filter.include_instance_total=true;
+            cases.push((match name {"objects_first"=>"objects_first_without_counts","objects_network"=>"objects_network_without_counts","objects_processes"=>"objects_processes_without_counts","objects_recent"=>"objects_recent_without_counts","objects_search"=>"objects_search_without_counts",_=>continue},QueryRequest::InstanceList(filter)));
+        }
+    }
+    let selected=std::env::var("PCSCOPE_PERFORMANCE_CASES").ok();
+    let mut complete=true;let mut cases_run=0;
     for (name,request) in cases {
+        if selected.as_ref().is_some_and(|value|!value.split(',').any(|part|part==name)){continue;}
+        cases_run+=1;
         let mut elapsed=Vec::new();let mut errors=0;
-        for _ in 0..samples {let start=Instant::now();match query(store,&request){Ok(_)=>elapsed.push(start.elapsed().as_secs_f64()*1000.0),Err(error)=>{errors+=1;eprintln!("{name}: {error}");if errors>=3{break}}}}
+        for _ in 0..samples {let start=Instant::now();match query(store,&request){Ok(answer)=>{
+            if matches!(&request,QueryRequest::InstanceList(filter) if filter.include_instance_total){ensure!(answer.instance_total.is_some(),"exact object total missing for {name}");}
+            elapsed.push(start.elapsed().as_secs_f64()*1000.0)
+        },Err(error)=>{errors+=1;eprintln!("{name}: {error}");if errors>=3{break}}}}
         elapsed.sort_by(f64::total_cmp);
+        complete&=elapsed.len()==samples&&errors==0;
         println!("{}",if elapsed.is_empty(){json!({"case":name,"errors":errors})}else{json!({"case":name,"samples":elapsed.len(),"errors":errors,"p50_ms":percentile(&elapsed,0.5),"p95_ms":percentile(&elapsed,0.95),"p99_ms":percentile(&elapsed,0.99),"includes_ipc":false})});
-    }Ok(())
+    }ensure!(cases_run>0,"no performance case selected");ensure!(complete,"performance sample collection failed; inspect case errors");Ok(())
 }
 fn main()->Result<()> {
     let args=std::env::args().skip(1).collect::<Vec<_>>();

@@ -1879,6 +1879,12 @@
       "provisional",
       "ambiguous"
     ],
+    "instance_list_counts": {
+      "include_counts_default": true,
+      "include_instance_total_default": false,
+      "instance_total_optional": true,
+      "scope": "same filter and cursor window; unrelated-material counts are omitted, never zero-filled"
+    },
     "lifecycle": [
       "active",
       "not_observed",

@@ -11,7 +11,7 @@ use pcscope_contracts::query::*;
 use serde_json::{json, Value};
 
 fn response(status: ResponseStatus, data: Value) -> QueryResponse {
-    QueryResponse { contract_version: 1, catalog_version: model::catalog_version().into(), status, data: Some(data), warnings: Vec::new(), page: None, counts: None, mock: true }
+    QueryResponse { contract_version: 1, catalog_version: model::catalog_version().into(), status, data: Some(data), warnings: Vec::new(), page: None, counts: None, instance_total: None, mock: true }
 }
 fn field(field_id: &str, label: &str, kind: &str, value: Option<Value>, status: &str, observed_at: &str, evidence: Vec<EvidenceRef>) -> FieldView {
     // Compute the type before the value is moved into the struct.

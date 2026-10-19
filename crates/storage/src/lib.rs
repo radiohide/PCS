@@ -1301,9 +1301,8 @@ impl Store {
             if free == 0 {
                 break;
             }
-            self.conn.execute_batch(
-                "PRAGMA incremental_vacuum(256); PRAGMA wal_checkpoint(TRUNCATE);",
-            )?;
+            self.reclaim_page_batch()?;
+            self.conn.execute_batch("PRAGMA wal_checkpoint(TRUNCATE);")?;
             let remaining: u64 = self
                 .conn
                 .query_row("PRAGMA freelist_count", [], |r| r.get(0))?;
@@ -1319,10 +1318,33 @@ impl Store {
         }
         Ok(())
     }
+
+    fn reclaim_page_batch(&self)->Result<()> {
+        // incremental_vacuum yields once per reclaimed page. execute_batch only steps once,
+        // which turned a 256-page batch into one page followed by a disk checkpoint.
+        let mut statement=self.conn.prepare("PRAGMA incremental_vacuum(256)")?;
+        let mut rows=statement.query([])?;
+        while rows.next()?.is_some() {}
+        Ok(())
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn incremental_vacuum_finishes_a_page_batch_before_checkpointing() {
+        let store=Store::open(":memory:").unwrap();
+        store.conn.execute_batch("PRAGMA auto_vacuum=INCREMENTAL; VACUUM;
+            CREATE TABLE vacuum_fixture(bytes BLOB);
+            WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<1200)
+            INSERT INTO vacuum_fixture SELECT zeroblob(4096) FROM n;
+            DELETE FROM vacuum_fixture;").unwrap();
+        let free=||store.conn.query_row("PRAGMA freelist_count",[],|row|row.get::<_,u64>(0)).unwrap();
+        let before=free();assert!(before>512);
+        store.reclaim_page_batch().unwrap();
+        let after=free();assert!(before-after>=256,"only {} pages reclaimed",before-after);
+        assert_eq!(store.conn.query_row("SELECT count(*) FROM vacuum_fixture",[],|row|row.get::<_,i64>(0)).unwrap(),0);
+    }
     #[cfg(windows)]
     #[test]
     fn sensitive_values_do_not_create_false_changes_and_display_defaults_to_masked() {

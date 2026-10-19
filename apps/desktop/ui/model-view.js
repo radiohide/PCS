@@ -46,6 +46,7 @@ const PCScopeModelView=(()=>{
   // They are listed rather than dropped from PATHS: the renderer does read them, and a check that
   // silently skipped them would stop noticing if the contract renamed one.
   const OPTIONAL_PATHS=[
+    ['instance_total','按需请求的准确对象总数；旧后台或未请求时省略，缺失不能作为零'],
     ['data[].display_state.updating','新版后台展示资料分批准备，旧后台省略'],
     ...['data[].record_basis','data.summary.record_basis'].map(field=>[field,'新版查询区分当前采样资料与仅有日志的记录；旧后台省略时不推测来源']),
     ['data.bindings[].valid_to','契约在绑定仍然开放时省略该字段；固定响应集里没有已关闭的绑定'],
@@ -120,7 +121,7 @@ const PCScopeModelView=(()=>{
   /// The list: one row per object, with the facts that identify it and what is known about how it
   /// was collected. `lifecycle` and `identity_status` are shown as words, never as codes.
   function treePage(response){
-    return {total:response.counts?.instances??null,nodes:(response.data||[]).map(row=>({alias:row.alias,type:row.type_id,category:row.category,typeName:objectNames.typeName(row),name:objectNames.name(row),state:presentation.state(row)}))};
+    return {total:response.instance_total??response.counts?.instances??null,nodes:(response.data||[]).map(row=>({alias:row.alias,type:row.type_id,category:row.category,typeName:objectNames.typeName(row),name:objectNames.name(row),state:presentation.state(row)}))};
   }
   function list(response){
     const rows=response.data||[];
@@ -320,8 +321,8 @@ const PCScopeModelView=(()=>{
   /// is where every such read is declared and checked. A page that formatted the counts itself would
   /// be building its own view of the contract, which is the thing the checks exist to prevent.
   function listSummary(response){
-    const counts=response.counts||{};
-    return `<div class="object-count">找到 ${counts.instances||0} 个对象<details><summary>相关记录数量</summary>变化 ${counts.actions||0} 条 · 来源记录 ${counts.source_records||0} 条 · 原始材料 ${counts.evidence||0} 件</details></div>`;
+    const total=response.instance_total??response.counts?.instances;
+    return `<div class="object-count">${total==null?'对象列表':`找到 ${total} 个对象`}</div>`;
   }
 
   /// Why a response carries no rows, in the contract's own words.

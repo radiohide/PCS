@@ -29,7 +29,7 @@ const PCScopeObjectTree=(()=>{
       branches.set(type,entry);group(category).append(element);
       entry.pager=PCScopeAutoPage.mount(entry.more,{
         active:()=>!searchMode&&element.open&&alive(),
-        query:cursor=>query({...base(),type_id:type,include_counts:!cursor,...(cursor?{cursor}:{})}),
+        query:cursor=>query({...base(),type_id:type,include_counts:false,include_instance_total:!cursor,...(cursor?{cursor}:{})}),
         onStart:()=>{entry.feedback.textContent='正在读取…';},
         apply:(response,{append:adding})=>{
           if(!adding){entry.body.replaceChildren();entry.aliases.clear();}
@@ -65,7 +65,7 @@ const PCScopeObjectTree=(()=>{
     let matchesTotal=null;
     const matchesPager=PCScopeAutoPage.mount(more,{
       active:()=>alive()&&searchMode,
-      query:cursor=>query({...base(),include_counts:!cursor,...(cursor?{cursor}:{})}),
+      query:cursor=>query({...base(),include_counts:false,include_instance_total:!cursor,...(cursor?{cursor}:{})}),
       onStart:()=>{feedback.textContent='正在查找对象…';},
       apply:(response,{append:adding})=>{
         if(!adding){for(const entry of branches.values())entry.pager.dispose();tree.replaceChildren();branches.clear();groups.clear();}
