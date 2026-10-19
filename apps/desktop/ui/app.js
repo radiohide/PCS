@@ -295,6 +295,11 @@ async function render(){
     }
   }catch(error){if(state.page===page&&revision===renderRevision){content.innerHTML=head(pages.find(p=>p[0]===page)[2],'')+`<section class="panel empty">${errorHtml(error)}<br><br><button id="page-retry">重新读取</button></section>`;content.querySelector('#page-retry').onclick=()=>render();}}
 }
+function modelRefreshKey(status){
+  // Older backends have no revision: committed material and projection progress are a
+  // compatibility signal. A new backend reports actual model/display changes directly.
+  return status?.read_model_revision??JSON.stringify([status?.pid,status?.counts?.records,status?.counts?.snapshots,status?.projection_worker?.at]);
+}
 async function refreshStatus(automatic=false){
   const epoch=state.refreshEpoch;const valid=()=>!automatic||(state.autoRefresh&&epoch===state.refreshEpoch);
   const operation=document.querySelector('#operation'),progress=document.querySelector('#progress');
@@ -352,6 +357,7 @@ document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{state.page=b.
 startupDesktop().catch(e=>issues.set('startup',{title:'页面未能打开',impact:'监控界面暂时不可用。',detail:e?.message||String(e),action:'startup',actionLabel:'重新读取'}));
 document.querySelector('#auto-refresh').onclick=()=>{
   state.autoRefresh=!state.autoRefresh;state.refreshEpoch++;
+  if(state.autoRefresh){state.pendingPageRefresh=true;state.lastAutomaticPageRefresh=0;}
   const button=document.querySelector('#auto-refresh');
   document.querySelector('#auto-refresh-state').textContent=state.autoRefresh?'开':'关';
   button.setAttribute('aria-checked',String(state.autoRefresh));
@@ -362,7 +368,7 @@ document.querySelector('#load-latest').onclick=async()=>{
   state.loadingLatest=true;state.refreshEpoch++;
   const button=document.querySelector('#load-latest'),page=state.page;
   button.disabled=true;button.textContent='载入中…';
-  try{await PCScopeView.ready;if(!await refreshStatus()){await connect(true);return;}if(state.page===page){const counters=content.querySelector('.stats-legacy');if(counters)counters.outerHTML=stats();if(state.reloadPage)await state.reloadPage();else await render();}}
+  try{await PCScopeView.ready;if(!await refreshStatus()){await connect(true);return;}if(state.page===page){const counters=content.querySelector('.stats-legacy');if(counters)counters.outerHTML=stats();if(state.reloadPage)await state.reloadPage();else await render();state.pendingPageRefresh=false;state.lastAutomaticPageRefresh=Date.now();}}
   catch(e){notice(errorText(e),e);}
   finally{state.loadingLatest=false;button.disabled=false;button.textContent='载入最新';}
 };
@@ -370,14 +376,21 @@ setInterval(async()=>{
   // Pausing page refresh does not stop connection recovery. Skip permission switches so a
   // temporary handover gap never starts a competing ordinary daemon.
   if(state.refreshPolling||state.loadingLatest||connecting||PCScopeMonitoring.switching)return;
-  state.refreshPolling=true;const epoch=state.refreshEpoch,was=state.status?.collecting,previouslyConnected=Boolean(state.status);
+  state.refreshPolling=true;const epoch=state.refreshEpoch,previous=state.status,was=previous?.collecting,previouslyConnected=Boolean(previous);
   try{
     const connected=await refreshStatus();
     if(!connected){recovery.disconnected();await connect(false);return;}
     recovery.connected();connectionNotice('');
     if(!previouslyConnected||state.permissionBackendPid!==state.status?.pid){await render();if(await PCScopeMonitoring.startup(true)!==false)state.permissionBackendPid=state.status?.pid;return;}
     if(!state.autoRefresh||epoch!==state.refreshEpoch)return;
-    if(was&&!state.status?.collecting){if(['overview','timeline','health'].includes(state.page))await render();}
+    if(modelRefreshKey(previous)!==modelRefreshKey(state.status)||(was&&!state.status?.collecting))state.pendingPageRefresh=true;
+    // Projection can commit new actions during a long collection, or after collection ends.
+    // Keep a dirty flag across throttled ticks; never start overlapping page requests.
+    if(state.pendingPageRefresh&&['overview','timeline','health'].includes(state.page)
+      &&Date.now()-(state.lastAutomaticPageRefresh||0)>=15000){
+      if(state.reloadPage)await state.reloadPage();else await render();
+      state.pendingPageRefresh=false;state.lastAutomaticPageRefresh=Date.now();
+    }
   }finally{state.refreshPolling=false;}
 },3000);
 

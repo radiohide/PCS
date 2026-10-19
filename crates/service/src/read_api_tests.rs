@@ -56,6 +56,21 @@ fn shutdown_acknowledgment_does_not_wait_for_writer_or_privacy_read() {
 }
 
 #[test]
+fn model_refresh_revision_only_exposes_committed_changes() {
+    let state=fixture();
+    let before=dispatch(&state,Request::Status).unwrap()["read_model_revision"].clone();
+    let writer=state.store.lock().unwrap();
+    writer.reader().execute_batch("BEGIN IMMEDIATE;
+        INSERT INTO object_actions(unassigned_reason,action_id,result,precision,observed_at,rule_version)
+        VALUES('test','execution.process_started','unknown','observed','2026-10-19T00:00:00Z','test');").unwrap();
+    assert_eq!(dispatch(&state,Request::Status).unwrap()["read_model_revision"],before);
+    writer.reader().execute_batch("COMMIT;").unwrap();drop(writer);
+    let after=dispatch(&state,Request::Status).unwrap()["read_model_revision"].clone();
+    assert_ne!(after,before);
+    assert_eq!(dispatch(&state,Request::Status).unwrap()["read_model_revision"],after);
+}
+
+#[test]
 fn completed_monitoring_is_visible_while_history_write_remains_pending() {
     let state=fixture();let writer=state.store.lock().unwrap();
     state.checking.store(true,Ordering::SeqCst);

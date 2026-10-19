@@ -36,7 +36,7 @@ pub fn dispatch(state: &State, request: &Request) -> Result<Value> {
                 "collectors":state.collectors.iter().map(Collector::name).collect::<Vec<_>>(),
                 "event_collection":events,"usn_collection":usn,"projection_worker":projection,
                 "schedule_mode":"per-plugin-after-completion","default_event_poll_seconds":10,
-                "default_schedule_seconds":300,"counts":store.counts()?})
+                "default_schedule_seconds":300,"counts":store.counts()?,"read_model_revision":store.read_model_revision()?})
         },
         Request::MonitoringSettings => {
             let settings=store.monitoring_settings()?;

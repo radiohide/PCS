@@ -1,6 +1,6 @@
 {
-  "date": "2026-10-16",
-  "product_version": "0.2.11",
+  "date": "2026-10-19",
+  "product_version": "0.2.12",
   "basis": "current_source_review",
   "verification": "逐项源码覆盖审查；没有执行真实驱动安装/卸载等破坏性操作；未声称全部端到端实机通过。",
   "counts": {
@@ -13516,7 +13516,7 @@
     "crates/contracts/src/semantics.rs": "50f9326d75ddb309683670114bd63b25e7ac87c51b7fba02038820a1c8eaca48",
     "crates/storage/src/projection.rs": "b98c2f969df347f77970ba37cee3d574a831f3c6c1eec404999dbe71a34e4ad5",
     "crates/storage/src/identity.rs": "b523ddba74cdb1a684624d9d8cff98235578809f20bd1f33c5ef85807326e55a",
-    "crates/storage/src/evidence.rs": "5fb90aa95391d5a9a91739d7ec2321009537e01bb5861b8dd75dcde8f82406bc",
+    "crates/storage/src/evidence.rs": "9f6121a173c4dfbaf36bb7505535303d2e1a6e640ccaac8f682913677f0db1da",
     "crates/storage/src/item_controls.rs": "3b1f9be31f81949509e49d403e5d6d6f66dadd46ca77356280027643030b194d",
     "crates/contracts/src/adapters/event.rs": "4bbc9ad4b7a756dc06ba17dc25b6df316d592dc8374ace5ce1150419ba2b8370",
     "crates/contracts/src/adapters/event_state_adapter.rs": "f973f05dca25b04dbc0eb3b3e8862e5eceab0cdcc787b8cba06f8a06f6c72cb9",

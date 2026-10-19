@@ -3,7 +3,11 @@ use std::io::{self, BufRead, Read, Write};
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
     if args.len() < 3 {
-        bail!("usage: pcscope-cli <ingest|timeline|collect> <database-path> [collector-exe]");
+        bail!("usage: pcscope-cli <ingest|timeline|collect|install-read-indexes> <database-path> [collector-exe]");
+    }
+    if args[1]=="install-read-indexes" {
+        println!("{}",pcscope_storage::Store::install_read_indexes(&args[2])?);
+        return Ok(());
     }
     let mut store = if matches!(args[1].as_str(),"timeline"|"reconcile") {
         pcscope_storage::Store::open_reader(&args[2],std::time::Duration::from_secs(6))?

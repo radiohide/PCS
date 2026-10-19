@@ -36,7 +36,8 @@ pub const OBJECT_PROJECTION: &str = "object_model";
 /// These additive query indexes apply to fresh and existing schema-8 stores alike.
 pub(crate) fn ensure_query_indexes(conn: &Connection) -> Result<()> {
     conn.execute_batch("CREATE INDEX IF NOT EXISTS evidence_source_address ON evidence(source,evidence_id,item_id);
-        CREATE INDEX IF NOT EXISTS projection_queue_address_state ON projection_queue(evidence_id,item_id,state)")?;
+        CREATE INDEX IF NOT EXISTS projection_queue_address_state ON projection_queue(evidence_id,item_id,state);
+        CREATE INDEX IF NOT EXISTS projection_queue_pending ON projection_queue(queue_id) WHERE state='pending';")?;
     let objects:bool=conn.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name='objects')",[],|row|row.get(0))?;
     if objects {conn.execute_batch("CREATE INDEX IF NOT EXISTS objects_source_item_scope ON objects(source,id,scope)")?;}
     Ok(())

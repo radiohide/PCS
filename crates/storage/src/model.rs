@@ -136,7 +136,8 @@ pub fn create_schema(conn: &Connection) -> Result<()> {
 /// SQLite statement, so interruption or insufficient disk space cannot leave a partial index.
 pub(crate) fn ensure_query_indexes(conn: &Connection) -> Result<()> {
     conn.execute_batch(&format!(
-        "CREATE INDEX IF NOT EXISTS {OBSERVATION_ADDRESS_INDEX} ON evidence_refs(evidence_id,subject_id) WHERE subject_kind='observation';"
+        "CREATE INDEX IF NOT EXISTS {OBSERVATION_ADDRESS_INDEX} ON evidence_refs(evidence_id,subject_id) WHERE subject_kind='observation';
+         CREATE INDEX IF NOT EXISTS evidence_refs_action_address ON evidence_refs(evidence_id,subject_id) WHERE subject_kind='action';"
     ))?;
     Ok(())
 }

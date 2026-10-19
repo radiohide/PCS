@@ -2,6 +2,7 @@ mod self_activity;
 mod timeline_policy;
 mod display;
 mod display_counts;
+#[cfg(test)] mod read_index_tests;
 mod registration_dictionary;
 mod item_controls;
 mod related;
@@ -78,6 +79,22 @@ const DEFAULT_QUOTA: u64 = 5_000_000_000;
 const MIN_QUOTA: u64 = 32 * 1024 * 1024;
 
 impl Store {
+    /// Online additive maintenance for an existing native database. Does not migrate, ingest,
+    /// reset display cursors or rewrite history. SQLite maintains these indexes for old writers.
+    pub fn install_read_indexes(path: impl AsRef<Path>) -> Result<Value> {
+        let mut conn=Connection::open_with_flags(path,rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE)?;
+        conn.busy_timeout(std::time::Duration::from_secs(5))?;
+        let version:i64=conn.query_row("PRAGMA user_version",[],|r|r.get(0))?;
+        anyhow::ensure!(version==10,"online index maintenance requires schema 10");
+        let marker:Option<String>=conn.query_row("SELECT value FROM settings WHERE key='native_program_identity'",[],|r|r.get(0)).optional()?;
+        anyhow::ensure!(marker.as_deref()==Some("pcscope-native-v1"),"refusing to modify an unknown database");
+        let tx=conn.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)?;
+        evidence::ensure_query_indexes(&tx)?;
+        model::ensure_query_indexes(&tx)?;
+        tx.commit()?;
+        Ok(json!({"schema_version":version,"indexes_ready":true,"history_preserved":true,"display_progress_preserved":true}))
+    }
+
     /// Production entry: a pre-existing unmarked database is never migrated or written.
     /// Store::open remains available to isolated legacy fixtures and explicit diagnostic tools.
     pub fn open_program(path:impl AsRef<Path>)->Result<Self> {
@@ -714,6 +731,15 @@ impl Store {
         let installation = tx.query_row("SELECT value FROM settings WHERE key='projection_installation'", [], |r| r.get(0))?;
         tx.commit()?;
         Ok(installation)
+    }
+
+    /// Cheap committed change token for page refresh; no raw history scan or writer lock.
+    pub fn read_model_revision(&self) -> Result<String> {
+        let action:i64=self.conn.query_row("SELECT coalesce(max(action_row),0) FROM object_actions",[],|r|r.get(0))?;
+        let (generation,published):(i64,i64)=if display::available(&self.conn)? {
+            self.conn.query_row("SELECT generation,published FROM display_build WHERE id=1",[],|r|Ok((r.get(0)?,r.get(1)?)))?
+        }else{(0,0)};
+        Ok(format!("{action}:{generation}:{published}"))
     }
 
     /// Drains pending projection work into facts, history and actions.

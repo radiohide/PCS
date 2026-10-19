@@ -21,6 +21,7 @@
         "pcscope/crates/storage/src/display.rs",
         "pcscope/crates/storage/src/display_counts.rs",
         "pcscope/crates/storage/src/display_tests.rs",
+        "pcscope/crates/storage/src/read_index_tests.rs",
         "pcscope/crates/storage/src/self_activity.rs",
         "pcscope/crates/storage/src/flow.rs",
         "pcscope/crates/storage/Cargo.toml",

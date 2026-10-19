@@ -29,7 +29,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
    const empty={status:'empty',data:[],page:{has_more:false},counts:{source_records:0}};
    window.__TAURI__={core:{invoke:async(command,args)=>{
     const r=args?.request||{},q=r.request||{};window.__qa.calls.push({operation:r.operation,...q});
-    if(r.operation==='status')return {collecting:window.__qa.collecting,counts:{records:4,objects:4,snapshots:1}};
+    if(r.operation==='status')return {collecting:window.__qa.collecting,read_model_revision:String(window.__qa.modelRevision||0),counts:{records:4,objects:4,snapshots:1}};
     if(r.operation==='monitoring_settings')return {elevated:false,settings:{configured:true,mode:'low',repair:false},report:{audits:[],logs:[]}};
     if(r.operation!=='query')throw Error('Unexpected operation: '+r.operation);
     if(q.query==='type_catalog')return samples.type_catalog;
@@ -205,6 +205,29 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   assert.equal(await page.locator('.timeline-category-count').textContent(),'2');
   assert.deepEqual(await page.locator('.timeline-branch').evaluateAll(rows=>rows.map(row=>JSON.parse(row.dataset.timelineMoment).start)),pointTimes);
   checks.push('production logon and privilege timestamps differing by microseconds share one time card and retain both original times');
+  await page.evaluate(async data=>{
+    window.__qa.originalNow=Date.now;window.__qa.now=Date.now()+60000;Date.now=()=>window.__qa.now;
+    window.__qa.collecting=true;window.__qa.modelRevision=1;window.__qa.timeline=data.slice(0,1);
+    for(const timer of window.__qa.intervals.filter(t=>t.delay===3000))await timer.callback();
+  },pointRows);await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===1);
+  await page.evaluate(async data=>{window.__qa.timeline=data;window.__qa.modelRevision=2;window.__qa.now+=15000;for(const timer of window.__qa.intervals.filter(t=>t.delay===3000))await timer.callback();},pointRows);
+  await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===2);
+  checks.push('new timeline actions become visible during an ongoing collection');
+  const quietRefreshCalls=await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').length);
+  await page.evaluate(async()=>{window.__qa.now+=15000;for(const timer of window.__qa.intervals.filter(t=>t.delay===3000))await timer.callback();});
+  assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').length),quietRefreshCalls);
+  await page.evaluate(async data=>{window.__qa.timeline=data.slice(0,1);window.__qa.modelRevision=3;window.__qa.now+=3000;for(const timer of window.__qa.intervals.filter(t=>t.delay===3000))await timer.callback();},pointRows);
+  // Last actual reload was over 15 seconds ago, so establish another recent refresh first.
+  await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===1);
+  const recentRefreshCalls=await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').length);
+  await page.evaluate(async data=>{window.__qa.timeline=data;window.__qa.modelRevision=4;window.__qa.now+=3000;for(const timer of window.__qa.intervals.filter(t=>t.delay===3000))await timer.callback();},pointRows);
+  assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').length),recentRefreshCalls);
+  await page.evaluate(async()=>{window.__qa.now+=12000;for(const timer of window.__qa.intervals.filter(t=>t.delay===3000))await timer.callback();});
+  await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===2);
+  checks.push('unchanged model stays quiet and throttled timeline changes are eventually refreshed');
+  await page.evaluate(async data=>{window.__qa.collecting=false;window.__qa.modelRevision=5;window.__qa.timeline=data.slice(0,1);window.__qa.now+=15000;for(const timer of window.__qa.intervals.filter(t=>t.delay===3000))await timer.callback();Date.now=window.__qa.originalNow;},pointRows);
+  await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===1);
+  checks.push('completed collection and later projection remain refreshable without another collection');
   const grouped79=Array.from({length:79},(_,index)=>({...timelineRows[0],instance_id:index+1,context:{type_id:index<50?'runtime.process':index<68?'startup.service':index<76?'network.adapter':'file.watched_file',subject_label:'分组示例 '+(index+1),attribution_status:'stored'}}));
   await page.evaluate(data=>{window.__qa.timeline=data;},grouped79);
   await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===79);
