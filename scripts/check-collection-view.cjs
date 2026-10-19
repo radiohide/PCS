@@ -21,8 +21,8 @@ assert.equal(v.objectName({source:'pcscope.software.user-inventory',data:{values
 assert.equal(v.objectName({data:{after:{display_name:'当前服务'},before:{display_name:'旧服务'}}}),'当前服务');
 assert(v.summary({kind:'object.changed',data:{before:{enabled:false},after:{enabled:true}}}).includes('否 → 是'));
 assert(v.summary({kind:'object.changed',data:{before:{value:{redacted:true,sha256:'old'}},after:{value:{redacted:true,sha256:'new'}}}}).includes('原值未保存'));
-assert(v.summary({kind:'object.first_seen',data:{after:{DisplayName:'Demo'}}}).startsWith('新发现'));
-assert(v.summary({kind:'object.no_longer_observed',data:{}}).includes('未找到该对象'));
+assert(v.summary({kind:'object.first_seen',data:{after:{DisplayName:'Demo'}}}).startsWith('当时首次记录到此项'));
+assert(v.summary({kind:'object.no_longer_observed',data:{}}).includes('检查时，清单中已无此前记录的项目'));
 assert.equal(new Set(catalog.map(r=>r.id)).size,catalog.length);
 const pluginSources=require(path.join(root,'apps/desktop/ui/plugin-sources.js'));
 for(const row of pluginSources.eventlog){const item=catalog.find(d=>d.id===row.id);assert.equal(item.name,row.name);assert.equal(item.category,'eventlog');assert.equal(item.group,row.group);}
@@ -40,7 +40,7 @@ assert.equal(v.action({kind:'coverage.recovered'}),'采集恢复');
 // sent would be a filter that does nothing, and the page would look like it was narrowing results
 // when it was not.
 const nodes=new Map();let pending,lastQuery;
-const content={querySelector(selector){if(!nodes.has(selector))nodes.set(selector,{isConnected:true,dataset:{},value:'',innerHTML:'',textContent:'',setAttribute(){},insertAdjacentHTML(){},querySelectorAll(){return [];}});return nodes.get(selector);}};
+const content={addEventListener(){},querySelector(selector){if(!nodes.has(selector))nodes.set(selector,{isConnected:true,dataset:{},value:'',innerHTML:'',textContent:'',addEventListener(){},setAttribute(){},insertAdjacentHTML(){},querySelector(){return null;},querySelectorAll(){return [];}});return nodes.get(selector);}};
 Object.assign(context,{
   content,state:{page:'timeline',reloadPage:null},categoryNames:{startup:'启动项'},
   PCScopeModelView:require(path.join(root,'apps/desktop/ui/model-view.js')),
@@ -49,6 +49,10 @@ Object.assign(context,{
   head:()=>'',esc:String,errorText:String,notice:()=>{},collect:()=>{throw Error('filter must not collect');},
   mountModuleFileHistory:()=>{}, // Separate lazy history panel; this fixture isolates action filters.
   clearTimeout:()=>{},setTimeout:fn=>{pending=fn;return 1;},
+  localStorage:{getItem:()=>null,setItem(){}},
+  AbortController,
+  PCScopeTimelineGroups:{mount:()=>({append(){},sync(){},markBoundary(){},dispose(){},setAllCollapsed(){}})},
+  PCScopeAutoPage:{mount:(_node,options)=>({pause(){},reset:async()=>options.apply(await options.query(null),{append:false})})},
   api:async(operation,args)=>{
     const request=args&&args.request?args.request:{};
     // The page loads the type catalog once to build its two dropdowns.
@@ -64,7 +68,7 @@ await context.renderTimeline();
 // action nobody could attribute is still something that happened.
 assert.equal(lastQuery.query,'action_timeline');
 assert.equal(lastQuery.include_unassigned,true,'未归属动作必须默认包含');
-assert.equal(lastQuery.limit,80);
+assert.equal(lastQuery.limit,200);
 
 content.querySelector('#timeline-category').onchange({target:{value:'startup'}});await pending();
 assert.equal(lastQuery.category,'startup');

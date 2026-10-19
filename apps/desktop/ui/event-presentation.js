@@ -18,7 +18,7 @@ const PCScopePresentation=(()=>{
  }
  function get(o,...keys){for(const k of keys){const e=Object.entries(o||{}).find(([n,v])=>norm(n)===norm(k)&&present(v));if(e)return e[1];}}
  function definition(row){return catalog.find(c=>{const r=c.event_rule;if(c.source!==row.source||!r)return false;if(r.status)return row.kind?.startsWith('coverage.')&&row.kind!=='coverage.security_log_cleared';return (!r.provider||r.provider===row.data?.provider)&&(!r.event_ids||r.event_ids.includes(row.data?.event_id));});}
- const snapshots={'baseline.observed':'初始状态','object.first_seen':'新发现','object.changed':'属性变化','object.no_longer_observed':'不再发现'};
+ const snapshots={'baseline.observed':'初始采集记录','object.first_seen':'首次记录到此项','object.changed':'属性变化','object.no_longer_observed':'检查时已不在清单中'};
  const help={密钥类型:'用户密钥归属于用户；计算机密钥归属于本机。',密钥文件:'Windows 密码服务用于保存密钥的文件。',登录类型:'Windows 对交互登录、网络登录、服务登录等方式的分类。',登录会话:'用于关联同一登录会话的日志标识。',主访问令牌:'进程执行时使用的账户身份及权限信息。',观察时间:'PCScope 采集到该状态的时间。'};
  // Labels and source aliases stay together so selected fields keep their meaning.
  const templates={

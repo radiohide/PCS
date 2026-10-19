@@ -40,7 +40,7 @@ const PCScopeView=(()=>{
     usable.sort((a,b)=>{const rank=k=>{const n=important.findIndex(v=>normalize(v)===normalize(k));return n<0?999:n;};return rank(a[0])-rank(b[0]);});
     return usable.slice(0,3).map(([k,v])=>`${PCScopeDetails.label(k)}：${compact(k,v)}`).join(' · ')||'已保存记录，可展开查看详情';
   }
-  const actions={'baseline.observed':'初始状态','object.first_seen':'新发现','object.changed':'属性变化','object.no_longer_observed':'不再发现','windows.event':'系统事件','files.usn_changed':'文件变更日志','identity.logon':'登录事件','identity.logon_failed':'登录失败','identity.logoff':'注销事件','identity.logoff_requested':'请求注销','identity.account_created':'账户建立','identity.account_enabled':'账户启用','identity.account_disabled':'账户禁用','identity.account_deleted':'账户删除','identity.account_changed':'账户变更','identity.account_locked':'账户锁定','identity.account_unlocked':'账户解锁','identity.account_renamed':'账户重命名','identity.group_member_added':'组成员加入','identity.group_member_removed':'组成员移除','identity.special_privileges':'特殊权限分配事件','identity.session_locked':'会话锁定','identity.session_unlocked':'会话解锁','identity.session_reconnected':'会话重连','identity.session_disconnected':'会话断开','execution.process_started':'进程启动事件','execution.process_stopped':'进程结束事件','software.installer_event':'安装程序事件','startup.service_event':'服务事件','startup.task_event':'计划任务事件','security.defender_event':'Defender 事件','execution.powershell_event':'PowerShell 事件','system.update_event':'系统更新事件','execution.sysmon_event':'Sysmon 事件','system.lifecycle_event':'系统启动与电源事件'};
+  const actions={'baseline.observed':'初始采集记录','object.first_seen':'首次记录到此项','object.changed':'属性变化','object.no_longer_observed':'检查时已不在清单中','windows.event':'系统事件','files.usn_changed':'文件变更日志','identity.logon':'登录事件','identity.logon_failed':'登录失败','identity.logoff':'注销事件','identity.logoff_requested':'请求注销','identity.account_created':'账户建立','identity.account_enabled':'账户启用','identity.account_disabled':'账户禁用','identity.account_deleted':'账户删除','identity.account_changed':'账户变更','identity.account_locked':'账户锁定','identity.account_unlocked':'账户解锁','identity.account_renamed':'账户重命名','identity.group_member_added':'组成员加入','identity.group_member_removed':'组成员移除','identity.special_privileges':'特殊权限分配事件','identity.session_locked':'会话锁定','identity.session_unlocked':'会话解锁','identity.session_reconnected':'会话重连','identity.session_disconnected':'会话断开','execution.process_started':'进程启动事件','execution.process_stopped':'进程结束事件','software.installer_event':'安装程序事件','startup.service_event':'服务事件','startup.task_event':'计划任务事件','security.defender_event':'Defender 事件','execution.powershell_event':'PowerShell 事件','system.update_event':'系统更新事件','execution.sysmon_event':'Sysmon 事件','system.lifecycle_event':'系统启动与电源事件'};
   function actionName(id){
     if(id==='coverage.recovered')return '采集恢复';
     if(id==='coverage.gap')return '部分变化未能记录';
@@ -64,11 +64,11 @@ const PCScopeView=(()=>{
   }
   function summary(row){
     if(row.kind==='object.changed'){const list=changes(row.data?.before,row.data?.after);return list.length?list.slice(0,2).join('；')+(list.length>2?`；另有 ${list.length-2} 项变化`:''):'采样或其他属性发生变化，展开查看前后值';}
-    if(row.kind==='object.no_longer_observed')return '本次检查清单中没有此前记录的项目';
+    if(row.kind==='object.no_longer_observed')return '检查时，清单中已无此前记录的项目';
     if(row.kind==='coverage.recovered')return '已恢复读取。';
     if(row.kind?.startsWith('coverage.'))return '采集状态发生变化，可展开查看当时的记录。';
     if(row.kind==='baseline.observed')return '首次采集时已存在 · '+attributes(row);
-    if(row.kind==='object.first_seen')return '新发现 · '+attributes(row);
+    if(row.kind==='object.first_seen')return '当时首次记录到此项 · '+attributes(row);
     const model=presentation?.model(row);if(model)return model.summary;
     if(row.source?.startsWith('pcscope.eventlog.')&&typeof PCScopeEvidence!=='undefined'){const text=PCScopeEvidence.eventSummary(row);if(text)return text;}
     if(row.source?.startsWith('pcscope.eventlog.'))return '已保留系统日志，可展开查看活动内容。';

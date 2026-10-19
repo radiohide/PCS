@@ -12,7 +12,7 @@ const pages=[['overview','◫','系统总览'],['timeline','≡','时间线'],['
 const state={page:'timeline',status:null,permissionBackendPid:null,events:[],selected:null,search:'',theme:localStorage.getItem('pcscope.theme')||'dark',objectOffset:0,autoRefresh:true,refreshEpoch:0,refreshPolling:false,loadingLatest:false,reloadPage:null};
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const localTime=value=>{const date=new Date(value);return Number.isNaN(date.getTime())?String(value??''):date.toLocaleString('sv-SE',{hour12:false});};
-const names={'baseline.observed':'初始状态','object.changed':'属性变化','object.first_seen':'新发现','object.no_longer_observed':'不再发现','coverage.gap':'采集缺口','coverage.recovered':'采集恢复','coverage.log_reset':'日志断点失效','coverage.unclean_shutdown':'后台异常中断','collector.started':'后台启动','collector.stopped':'后台停止','windows.event':'系统事件'};
+const names={'baseline.observed':'初始采集记录','object.changed':'属性变化','object.first_seen':'首次记录到此项','object.no_longer_observed':'检查时已不在清单中','coverage.gap':'采集缺口','coverage.recovered':'采集恢复','coverage.log_reset':'日志断点失效','coverage.unclean_shutdown':'后台异常中断','collector.started':'后台启动','collector.stopped':'后台停止','windows.event':'系统事件'};
 const issues=window.PCScopeIssues=PCScopeStatusIssues.mount({button:document.querySelector('#issues-toggle'),panel:document.querySelector('#issues-panel'),onAction:async action=>{
   if(action==='connect')return connect(true);
   if(action==='startup'){await startupDesktop();issues.remove('startup');return;}

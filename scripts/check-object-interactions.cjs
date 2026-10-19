@@ -53,6 +53,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
      return {status:'loaded',data,page:{has_more:!q.cursor&&!q.search,next_cursor:!q.cursor?'page-two':null,watermark:'fixed'},counts:{instances:4}};
     }
     if(q.query==='instance_detail'){
+     if(window.__qa.detailFixture)return window.__qa.detailFixture;
      if(window.__qa.pending)await new Promise(resolve=>{window.__qa.resolve=resolve;});
      if(window.__qa.failNext){window.__qa.failNext=false;throw Error('interaction fixture failed <script>bad()</script>');}
      const summary=rows.find(row=>row.alias===q.instance);if(!summary)throw Error('Wrong alias '+q.instance);
@@ -174,9 +175,28 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   checks.push('real timeline distinguishes process, file, service, task, module, queue, connection and certificate with visible types and collapsed raw details');
   const arrivalRows=['Established','Listen',null].map((connectionState,index)=>({...timelineRows[0],action_id:'observed.first_seen',instance_id:index+1,source_record:{snapshot_presence:{source:index===2?'pcscope.network.udp':'pcscope.network.tcp',protocol:index===2?null:'TCP',state:connectionState}},context:{type_id:'network.endpoint',subject_label:'本机端口 '+(61981+index),attribution_status:'stored',key_facts:[{field_id:'state',status:'known',value:'Closed'}]}}));
   await page.evaluate(data=>window.__qa.timeline=data,arrivalRows);await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-entry').first().waitFor();
-  assert.deepEqual(await page.locator('.timeline-event-label').allTextContents(),['新增连接','新增监听端口','新增 UDP 端口']);
+  assert.deepEqual(await page.locator('.timeline-event-label').allTextContents(),['首次记录到此连接','首次记录到此监听端口','首次记录到此 UDP 端口']);
   assert.doesNotMatch(await page.locator('#timeline-results').innerText(),/已不在连接与监听列表|Closed/);
   checks.push('new TCP connections, listening ports and UDP ports have distinct arrival cards based on the original snapshot rather than later state');
+  const moduleFirst={...timelineRows[0],instance_id:73579,action_id:'observed.first_seen',interval_from:'2026-10-16T08:34:29Z',interval_until:'2026-10-19T05:16:21Z',observed_at:'2026-10-19T05:16:21Z',source_record:{snapshot_presence:{source:'pcscope.execution.modules'}},context:{type_id:'runtime.module_instance',subject_label:'pdh.dll',attribution_status:'stored'}};
+  const moduleGone={...moduleFirst,action_id:'observed.no_longer_observed',interval_from:'2026-10-19T05:25:19Z',interval_until:'2026-10-19T05:26:20Z',observed_at:'2026-10-19T05:26:20Z'};
+  const moduleDetail={status:'loaded',data:{summary:{...base,type_id:'runtime.module_instance',type_name:'模块加载实例',category:'runtime',instance_id:73579,alias:'module-pdh',display_name:'pdh.dll',lifecycle:'not_observed',record_basis:'observation',seen_at:'2026-10-19T05:25:19Z'},fields:[{field_id:'process_name',status:'known',value:'sihost'},{field_id:'module_origin',status:'known',value:'unknown'},{field_id:'signature_status',status:'known',value:'pending'}],actions_preview:[moduleGone,moduleFirst],bindings:[]}};
+  await page.evaluate(({first,detail})=>{window.__qa.timeline=[first];window.__qa.detailFixture=detail;},{first:moduleFirst,detail:moduleDetail});
+  await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-event-label').waitFor();
+  assert.equal(await page.locator('.timeline-event-label').textContent(),'首次记录到进程加载此模块');
+  assert.match(await page.locator('.timeline-object').innerText(),/查看当前状态/);
+  await page.locator('.timeline-object').click();await page.locator('.model-detail .object-current-state').waitFor();
+  assert.equal(await page.locator('.object-current-state').innerText(),'未加载');
+  const moduleText=await page.locator('.model-detail').innerText();assert.match(moduleText,/最后加载时的信息.*历史变化/s);assert.match(moduleText,/尚未取得签名结果/);assert.doesNotMatch(moduleText,/\bunknown\b|\bpending\b|新发现/);
+  await page.screenshot({path:path.join(output,'timeline-history-current-preview.png'),fullPage:false});
+  checks.push('a historical module arrival opens the latest unloaded state, with historical fields and readable signature placeholders');
+  await page.locator('.timeline-object').click();await page.evaluate(()=>{window.__qa.detailFixture.data.summary.lifecycle='active';});await page.locator('.timeline-object').click();await page.locator('.object-current-state').waitFor();
+  assert.equal(await page.locator('.object-current-state').innerText(),'已加载');assert.equal(await page.locator('.timeline-event-label').textContent(),'首次记录到进程加载此模块');
+  checks.push('reopening queries the current object state without rewriting the historical first observation');
+  await page.locator('.timeline-object').click();await page.evaluate(()=>{window.__qa.detailFixture.data.summary.record_basis='event_only';});await page.locator('.timeline-object').click();await page.locator('.object-current-state').waitFor();
+  assert.equal(await page.locator('.object-current-state').innerText(),'未取得当前状态');
+  checks.push('a historical log alone does not claim a currently loaded module');
+  await page.evaluate(()=>{delete window.__qa.detailFixture;});
   const readableUpdates={main:[
     {...timelineRows[0],field_id:'module_base',action_id:'observed.state_changed',before:4096,after:8192,context:{type_id:'runtime.module_instance',subject_label:'示例组件',attribution_status:'stored'}},
     {...timelineRows[0],field_id:'signature_version',action_id:'observed.state_changed',before:'1.0',after:'1.1',source_record:{protection_update:{engine_changed:true,signature_changed:true}},context:{type_id:'security.protection',subject_label:'系统防护',attribution_status:'stored'}},

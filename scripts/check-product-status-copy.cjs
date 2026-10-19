@@ -9,7 +9,7 @@ assert.doesNotMatch(readableEvents.impact({action_id:'startup.task_ended',result
 assert.equal(readableEvents.title({action_id:'identity.logon',context:{logon_type:5}}),'系统服务登录');
 assert.match(readableEvents.impact({field_id:'module_base'}),/模块加载位置已变化/);
 const missing=type_id=>({action_id:'observed.no_longer_observed',result:'observed',instance_id:1,precision:'interval',interval_from:'2026-10-15T02:24:07Z',interval_until:'2026-10-15T02:29:32Z',context:{type_id,subject_label:'conhost.exe',attribution_status:'stored'}});
-function visible(html){return html.split('<details>')[0].replace(/<[^>]*>/g,'');}
+function visible(html){let depth=0,result='';for(const part of html.split(/(<\/?details\b[^>]*>)/i)){if(/^<details\b/i.test(part)){depth++;continue;}if(/^<\/details/i.test(part)){depth--;continue;}if(!depth)result+=part;}return result.replace(/<[^>]*>/g,'');}
 const processMissing=missing('runtime.process'),fileMissing=missing('file.watched_file');
 assert.match(readableEvents.title(processMissing),/进程.*运行列表/);
 assert.match(readableEvents.impact(processMissing),/进程已不在运行列表/);
@@ -20,19 +20,25 @@ assert.match(readableEvents.impact(missing('startup.service')),/服务清单.*�
 assert.match(readableEvents.impact(missing('startup.scheduled_task')),/计划任务清单.*登记/);
 assert.match(readableEvents.impact(missing('runtime.module_instance')),/加载列表/);
 assert.match(readableEvents.impact(missing('desktop.print_job')),/完成或被取消.*未提供打印结果/);
-assert.match(readableEvents.impact(missing('software.appx_package')),/当前账户.*已无此包/);
+assert.match(readableEvents.impact(missing('software.appx_package')),/账户.*已无此包/);
 assert.match(readableEvents.impact(missing('software.provisioned_package')),/新账户.*预装应用清单/);
 assert.match(readableEvents.impact(missing('network.endpoint')),/连接.*列表/);
 const arrival=(source,state)=>({action_id:'observed.first_seen',instance_id:1,result:'observed',context:{type_id:'network.endpoint',attribution_status:'stored',key_facts:[{field_id:'state',status:'known',value:'Closed'}]},source_record:{snapshot_presence:{source,protocol:'TCP',state}}});
-assert.equal(readableEvents.card(arrival('pcscope.network.tcp','Established')).label,'新增连接');
-assert.equal(readableEvents.card(arrival('pcscope.network.tcp','Listen')).label,'新增监听端口');
-assert.equal(readableEvents.card(arrival('pcscope.network.udp',null)).label,'新增 UDP 端口');
-assert.equal(readableEvents.card(arrival('pcscope.network.tcp','SynSent')).label,'新增网络项');
-assert.equal(readableEvents.card({action_id:'observed.first_seen',context:{type_id:'network.endpoint'}}).label,'首次采集到','an old first observation must not imply connection creation');
+assert.equal(readableEvents.card(arrival('pcscope.network.tcp','Established')).label,'首次记录到此连接');
+assert.equal(readableEvents.card(arrival('pcscope.network.tcp','Listen')).label,'首次记录到此监听端口');
+assert.equal(readableEvents.card(arrival('pcscope.network.udp',null)).label,'首次记录到此 UDP 端口');
+assert.equal(readableEvents.card(arrival('pcscope.network.tcp','SynSent')).label,'首次记录到此网络项');
+assert.equal(readableEvents.card({action_id:'observed.first_seen',context:{type_id:'network.endpoint'}}).label,'首次记录到此网络项','an old first observation must not imply connection creation');
 assert.match(readableEvents.impact(missing('account.group_membership')),/成员关系/);
 assert.match(readableEvents.impact(missing('security.certificate_registration')),/证书存储区.*登记/);
 assert.match(readableEvents.impact(missing('virtualization.disk_attachment')),/磁盘连接/);
 for(const type of require('../model/catalog.json').types){
+ const first={...missing(type.id),action_id:'observed.first_seen',context:{type_id:type.id,attribution_status:'stored',key_facts:[{field_id:'state',status:'known',value:'Closed'}]},source_record:{snapshot_presence:{source:'fixture',state:null}}};
+ const original=JSON.stringify(first),firstText=visible(view.timeline({data:[first]}));
+ assert.match(readableEvents.card(first).label,/^首次(?:记录到|检测到)/,type.id+' first observation is a historical finding');
+ assert.equal(readableEvents.title(first),readableEvents.card(first).label,type.id+' previews and timeline use the same historical finding');
+ assert.doesNotMatch(firstText,/新发现|新增列表项|首次.*(?:已安装|已创建|已启用)/,type.id+' observation must not claim an installation or creation');
+ assert.equal(JSON.stringify(first),original,'display formatting preserves the original record');
  const action=missing(type.id),text=visible(view.timeline({data:[action]}));
  assert.match(readableEvents.typeLabel(action),/[\u4e00-\u9fff]/,type.id+' requires a readable type');
  assert(text.includes('类型：'+readableEvents.typeLabel(action)),type.id+' timeline must show the type');
@@ -40,15 +46,24 @@ for(const type of require('../model/catalog.json').types){
  assert.doesNotMatch(readableEvents.impact(action),/不表示|不代表|不等于|不等同|不能据此|尚不能据此确认已被删除/,'absence copy must not universally suggest deletion');
  const absent={type_id:type.id,display_name:'示例对象',alias:'example',lifecycle:'not_observed',identity_status:'confirmed',record_basis:'observation',key_facts:[{field_id:'state',status:'known',value:'Running'}]};
  const conclusion=objectNames.presentation.state(absent);
- assert.equal(conclusion,readableEvents.card(action).label,type.id+' uses one absence conclusion everywhere');
+ assert.equal(readableEvents.card(action).label,objectNames.presentation.absence(absent).title,type.id+' dated absence describes the historical change');
  assert.doesNotMatch(conclusion,/最近未发现|已删除|已移除|已退出|运行中/,type.id+' absence cannot assert deletion or reuse an old running state');
  assert(visible(view.list({data:[absent]})).includes(conclusion));
  assert.equal(view.treePage({data:[absent]}).nodes[0].state,conclusion);
  assert(view.instanceOptions({data:[absent]}).includes(conclusion));
  const absentDetail=view.detail({data:{summary:absent,fields:absent.key_facts,actions_preview:[],bindings:[]}});
- assert(visible(absentDetail).includes(conclusion));assert(visible(absentDetail).includes('上次采集的信息'));
+ assert(visible(absentDetail).includes(conclusion));assert(visible(absentDetail).includes(objectNames.presentation.historicalFactsTitle(absent)));
  assert(view.comparison({summary:absent,fields:[]},{data:[]}).includes(conclusion));
 }
+const pdhFirst={...missing('runtime.module_instance'),action_id:'observed.first_seen',context:{type_id:'runtime.module_instance',subject_label:'pdh.dll',attribution_status:'stored'},source_record:{snapshot_presence:{source:'pcscope.execution.modules'}}};
+const pdhSummary={type_id:'runtime.module_instance',display_name:'pdh.dll',alias:'module-pdh',lifecycle:'not_observed',identity_status:'confirmed',record_basis:'observation',seen_at:'2026-10-19T05:25:19Z',key_facts:[]};
+const pdhDetail=visible(view.detail({data:{summary:pdhSummary,fields:[{field_id:'process_name',status:'known',value:'sihost'},{field_id:'module_origin',status:'known',value:'unknown'},{field_id:'signature_status',status:'known',value:'pending'}],actions_preview:[missing('runtime.module_instance'),pdhFirst],bindings:[]}}));
+assert.match(pdhDetail,/当前状态.*未加载.*最后加载时的信息.*最后采集到.*历史变化.*首次记录到进程加载此模块/s);
+assert.doesNotMatch(pdhDetail,/\bunknown\b|\bpending\b|新发现/);
+assert.equal(objectNames.presentation.state({...pdhSummary,lifecycle:'active'}),'已加载');
+assert.match(visible(view.detail({data:{summary:{...pdhSummary,lifecycle:'active',record_basis:'event_only'},fields:[],actions_preview:[pdhFirst],bindings:[]}})),/当前状态.*未取得当前状态/s,'historical log evidence alone cannot establish a current loading state');
+assert.equal(readableEvents.card(pdhFirst).label,'首次记录到进程加载此模块','the latest object state must not rewrite an earlier event');
+assert.match(visible(view.timeline({data:[{...pdhFirst,action_id:'observed.state_changed',field_id:'version',before:'long version before with /path/',after:'long version after with /path/'}]})),/变化前.*变化后/s);
 const exited={type_id:'runtime.process',lifecycle:'ended',key_facts:[{field_id:'state',status:'known',value:'Running'}]};
 assert.equal(objectNames.presentation.state(exited),'进程已退出');
 assert.equal(objectNames.presentation.state({...exited,type_id:'runtime.logon_session'}),'登录会话已结束');
@@ -104,7 +119,7 @@ const serviceCard=readableEvents.card(serviceEvent);
 const routineCard=(type_id,field_id,before,after,extra={})=>readableEvents.card({action_id:'observed.state_changed',field_id,before,after,context:{type_id,attribution_status:'stored'},...extra});
 assert.equal(routineCard('account.user_profile','last_use','2026-10-15T08:08:26Z','2026-10-15T08:14:27Z').kind,'value');
 assert.equal(routineCard('account.user_profile','last_use','2026-10-15T08:08:26Z','2026-10-15T08:14:27Z').field,'最近使用时间已更新');
-assert.equal(routineCard('startup.scheduled_task','last_run','2026-10-15T08:08:26Z','2026-10-15T08:14:27Z').field,'最近执行');
+assert.equal(routineCard('startup.scheduled_task','last_run','2026-10-15T08:08:26Z','2026-10-15T08:14:27Z').field,'最近执行时间已更新');
 assert.equal(routineCard('security.protection','signature_version','1.0','1.1').label,'病毒库已更新');
 assert.equal(routineCard('security.protection','signature_version','1.0','1.1',{source_record:{protection_update:{engine_changed:true,signature_changed:true}}}).label,'防护程序和病毒库已更新');
 assert.match(routineCard('hardware.battery','charge',21,20).label,/电量偏低/);
@@ -132,7 +147,7 @@ assert.doesNotMatch(uncertainTimeline,/data-object-alias=/,'unverified historica
 const uncertainDetail=view.detail({data:{summary:{type_id:'startup.scheduled_task',display_name:'旧占位对象',key_facts:[]},actions_preview:[uncertainTask],fields:[],bindings:[]}});
 assert.match(uncertainDetail,/<details><summary>1 条历史日志未能对应到此对象/,'unverified history is retained separately from confirmed object activity');
 const taskDetail=view.detail({data:{summary:{type_id:'startup.scheduled_task',display_name:'示例任务',identity_status:'confirmed',key_facts:[]},actions_preview:[{action_id:'observed.state_changed',field_id:'last_run',before:'2026-10-15T08:08:26Z',after:'2026-10-15T08:14:27Z',context:{type_id:'startup.scheduled_task',attribution_status:'stored'}},{action_id:'startup.task_ended',result:'failed',context:{type_id:'startup.scheduled_task',attribution_status:'stored'}}],fields:[],bindings:[]}});
-assert.match(taskDetail,/<h4>执行记录<\/h4>/);assert.match(taskDetail.split('<h4>执行记录</h4>')[1],/最近执行/);assert.match(taskDetail.split('<h4>执行记录</h4>')[1],/本次任务未成功完成/);
+assert.match(taskDetail,/<h4>历史执行记录<\/h4>/);assert.match(taskDetail.split('<h4>历史执行记录</h4>')[1],/最近执行/);assert.match(taskDetail.split('<h4>历史执行记录</h4>')[1],/本次任务未成功完成/);
 const assess=check=>view.moduleFileAssessment({check});
 assert.match(assess({status:'missing',pe_status:'basic_headers_valid'}),/下次.*可能失败/,'an earlier good result cannot hide a missing file');
 assert.match(assess({status:'unavailable',pe_status:'basic_headers_valid'}),/本次文件检查失败/,'unreadable is unknown, not healthy');

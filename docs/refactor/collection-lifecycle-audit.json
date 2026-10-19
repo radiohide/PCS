@@ -1,6 +1,6 @@
 {
   "date": "2026-10-19",
-  "product_version": "0.2.12",
+  "product_version": "0.2.13",
   "basis": "current_source_review",
   "verification": "逐项源码覆盖审查；没有执行真实驱动安装/卸载等破坏性操作；未声称全部端到端实机通过。",
   "counts": {

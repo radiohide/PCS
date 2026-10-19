@@ -6,10 +6,10 @@ const PCScopeTypePresentation=(()=>{
   const statuses={masked:'已隐藏',unreadable:'无法读取',conflicting:'信息存在冲突',evidence_pruned:'原始依据已清理',not_applicable:'不适用',not_provided:'来源未提供',unknown:'状态未知'};
   const hidden=value=>value==='******'||Boolean(value&&typeof value==='object'&&(value.redacted||value.sensitive||value.display==='******'));
   const profile=row=>data.types[typeof row==='string'?row:row?.type_id];
-  // The same collection outcome must read the same way in cards, trees and object details.
+  // Current object state and a dated change share type semantics, but have different tense.
   const absenceGroups=[
     [['runtime.process'],'已不在运行列表','进程已不在运行列表','此前的进程已不在运行列表中。'],
-    [['runtime.module_instance'],'已不在加载列表','模块已不在加载列表','该模块已不在进程的加载列表中。'],
+    [['runtime.module_instance'],'未加载','模块已不在加载列表','该模块已不在进程的加载列表中。'],
     [['runtime.logon_session','runtime.terminal_session'],'已不在登录会话列表','登录会话已不在列表','此前的登录会话已不在当前列表中。'],
     [['desktop.print_job'],'已离开打印队列','打印任务已离开队列','作业可能已完成或被取消，日志未提供打印结果。'],
     [['network.endpoint'],'已不在连接与监听列表','连接或监听项已不在列表','此前的连接或监听项已不在当前列表中。'],
@@ -38,6 +38,31 @@ const PCScopeTypePresentation=(()=>{
     if(entry)return {label:entry[1],title:entry[2],impact:entry[3]};
     const name=profile(row)?.name;
     return {label:name?name+'未再列出':'本次清单未再列出',title:name?name+'未再列出':'本次清单未再列出此项',impact:'本次检查清单中没有此前记录的项目。'};
+  }
+  function firstSeen(row,presence={}){
+    const id=row?.type_id;
+    const labels={
+      'runtime.process':'首次记录到此进程运行',
+      'runtime.module_instance':'首次记录到进程加载此模块',
+      'runtime.logon_session':'首次记录到此登录会话','runtime.terminal_session':'首次记录到此登录会话',
+      'desktop.print_job':'首次记录到此打印作业进入队列',
+      'startup.service':'首次记录到此服务登记','hardware.driver_service':'首次记录到此驱动服务登记',
+      'startup.scheduled_task':'首次记录到此计划任务登记',
+      'software.installation_registration':'首次记录到此软件安装登记','software.portable_registration':'首次记录到此便携程序登记',
+      'software.appx_package':'首次记录到此应用包','software.provisioned_package':'首次记录到此预装应用登记',
+      'file.watched_file':'首次记录到此文件','file.watched_directory':'首次记录到此文件夹',
+      'account.group_membership':'首次记录到此成员关系','account.right_assignment':'首次记录到此权限分配'
+    };
+    if(id==='network.endpoint'){
+      // Only the action's own snapshot may describe the historical connection state.
+      const state=String(presence.state||'').toLowerCase();
+      return presence.source==='pcscope.network.udp'?'首次记录到此 UDP 端口':['listen','listening'].includes(state)?'首次记录到此监听端口':state==='established'?'首次记录到此连接':'首次记录到此网络项';
+    }
+    if(['network.adapter','hardware.device','hardware.disk','hardware.battery','hardware.tpm','desktop.printer'].includes(id))return '首次检测到此设备';
+    return labels[id]||(profile(row)?.name?'首次记录到此'+profile(row).name:'首次记录到此项');
+  }
+  function historicalFactsTitle(row){
+    return ({'runtime.module_instance':'最后加载时的信息','runtime.process':'最后运行时的信息','desktop.print_job':'最后在队列中的信息'})[row?.type_id]||'最后记录的信息';
   }
   function lifecycle(row){
     if(row.lifecycle==='not_observed')return absence(row).label;
@@ -127,6 +152,10 @@ const PCScopeTypePresentation=(()=>{
     if(row.presentation?.record_status==='legacy_mixed_process')return '旧记录需整理';
     if(['legacy_snapshot','snapshot_named'].includes(row.presentation?.record_status))return '有程序记录';
     if(row.record_basis==='event_only')return row.presentation?.record_status==='legacy_misclassified'?'旧记录需复核':'有日志记录';
+    if(row.lifecycle==='active'&&(row.record_basis==='observation'||(row.coverage||[]).some(entry=>entry.last_result==='success'&&entry.source===({'runtime.process':'pcscope.execution.processes','runtime.module_instance':'pcscope.execution.modules'})[row.type_id]))){
+      if(row.type_id==='runtime.process')return '运行中';
+      if(row.type_id==='runtime.module_instance')return '已加载';
+    }
     const p=profile(row),known=entries(row,full,{states:true});
     if(known.length)return known.slice(0,2).map(e=>(p.state_fields.length>1?e.label+'：':'')+e.text).join(' · ');
     if(['account.user','account.right_assignment'].includes(row.type_id)&&row.record_basis!=='observation')return '最近有记录';
@@ -146,6 +175,6 @@ const PCScopeTypePresentation=(()=>{
     }
     return '';
   }
-  return {data,profile,facts,format,label,entries,state,displayName,defenderKind,hidden,absence,lifecycle};
+  return {data,profile,facts,format,label,entries,state,displayName,defenderKind,hidden,absence,lifecycle,firstSeen,historicalFactsTitle};
 })();
 if(typeof module!=='undefined'&&module.exports)module.exports=PCScopeTypePresentation;

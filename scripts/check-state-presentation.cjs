@@ -74,8 +74,9 @@ const timeline={action_id:'observed.state_changed',field_id:'active',before:fals
 assert.match(events.change(timeline),/使用状态：未在使用 → 正在使用/);
 assert.match(visible(view.timeline({data:[timeline]})),/使用状态.*未在使用.*正在使用/);
 assert.match(events.change({...timeline,before_status:'masked'}),/已隐藏 → 正在使用/);
-for(const status of ['masked','unreadable','conflicting','evidence_pruned','unknown'])assert.doesNotMatch(events.impact({...timeline,after_status:status}),/已被选为|不再使用/,'protected state must not leak through impact wording');
-assert.doesNotMatch(events.impact({...timeline,after:{redacted:true,value:true}}),/已被选为|不再使用/);
+assert.match(events.impact(timeline),/当时切换为此电源方案/);
+for(const status of ['masked','unreadable','conflicting','evidence_pruned','unknown'])assert.doesNotMatch(events.impact({...timeline,after_status:status}),/切换为|不再使用/,'protected state must not leak through impact wording');
+assert.doesNotMatch(events.impact({...timeline,after:{redacted:true,value:true}}),/切换为|不再使用/);
 for(const [after,readable,impact] of [['Running','运行中','服务已开始运行'],['Stopped','已停止','依赖它的功能可能暂不可用']]){
  const action={action_id:'startup.service_state_changed',field_id:'state',before:null,after,result:'observed',context:service};
  assert.equal(events.title(action),'服务运行状态变化');assert(events.options().some(option=>option.id===action.action_id&&option.label==='服务运行状态变化'));

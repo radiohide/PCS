@@ -530,12 +530,12 @@
         "process_name": "进程名称",
         "session": "会话",
         "user_sid": "账户 SID",
-        "module_path": "模块路径",
+        "module_path": "模块文件",
         "module_base": "观察基址",
         "size": "映像大小",
         "version": "磁盘版本",
-        "signature_status": "磁盘签名检查状态",
-        "module_origin": "发布者类别"
+        "signature_status": "文件签名",
+        "module_origin": "文件来源"
       },
       "formats": {
         "process": {
@@ -566,10 +566,25 @@
           "kind": "text"
         },
         "signature_status": {
-          "kind": "text"
+          "kind": "enum",
+          "values": {
+            "pending": "尚未取得签名结果",
+            "valid_offline": "本地签名验证通过",
+            "not_signed": "未发现签名",
+            "verification_failed": "签名验证失败",
+            "unavailable": "无法检查",
+            "not_requested": "本次未检查签名",
+            "skipped_size_limit": "文件过大，本次未检查"
+          }
         },
         "module_origin": {
-          "kind": "text"
+          "kind": "enum",
+          "values": {
+            "microsoft_signed": "微软签名",
+            "other_publisher_signed": "其他发布者签名",
+            "unsigned": "未签名",
+            "unknown": "未识别"
+          }
         }
       },
       "fallback": "有运行记录"

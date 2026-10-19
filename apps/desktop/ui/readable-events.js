@@ -16,7 +16,7 @@ const PCScopeReadableEvents=(()=>{
   });
   const readable=value=>typeof value==='string'&&value.trim()&&!/[|]|(?:machine:|S-1-\d-|pcscope\.)/i.test(value)&&value.length<180;
   const historicalMappingIssue=row=>row.context?.history_quality?.status==='legacy_mapping_ambiguous';
-  function title(row){if(historicalMappingIssue(row))return '旧版采集记录需复核';if(row.action_id==='observed.no_longer_observed')return absence(row).title;if(['identity.logon','identity.logoff'].includes(row.action_id)&&Number(row.context?.logon_type)===5)return row.action_id==='identity.logon'?'系统服务登录':'系统服务结束登录';if(row.field_id==='module_base')return '模块加载位置发生变化';return titles[row.action_id]||actions[row.action_id]?.name||(readable(row.title)&&/[\u4e00-\u9fff]/.test(row.title)?row.title:'记录到系统活动');}
+  function title(row){if(historicalMappingIssue(row))return '旧版采集记录需复核';if(row.action_id==='observed.first_seen')return firstSeen(row);if(row.action_id==='observed.no_longer_observed')return absence(row).title;if(['identity.logon','identity.logoff'].includes(row.action_id)&&Number(row.context?.logon_type)===5)return row.action_id==='identity.logon'?'系统服务登录':'系统服务结束登录';if(row.field_id==='module_base')return '模块加载位置发生变化';return titles[row.action_id]||actions[row.action_id]?.name||(readable(row.title)&&/[\u4e00-\u9fff]/.test(row.title)?row.title:'记录到系统活动');}
   function type(row){return row.context?.type_id||actions[row.action_id]?.type_id||'';}
   function typeLabel(row){
     if(historicalMappingIssue(row))return '历史采集记录';
@@ -29,8 +29,10 @@ const PCScopeReadableEvents=(()=>{
     return readable(row.context?.type_name)&&/[\u4e00-\u9fff]/.test(row.context.type_name)&&!/[<>]/.test(row.context.type_name)?row.context.type_name:'系统事件';
   }
   function absence(row){
-    return objects.presentation.absence({type_id:uncertainAssociation(row)?'':type(row)});
+    const result=objects.presentation.absence({type_id:uncertainAssociation(row)?'':type(row)});
+    return {...result,impact:'检查时，'+result.impact.replace(/当前/g,'').replace(/^本次检查/,'')};
   }
+  function firstSeen(row){return objects.presentation.firstSeen({type_id:uncertainAssociation(row)?'':type(row)},row.source_record?.snapshot_presence||{});}
   function subject(row){
     if(readable(row.context?.subject_label)){
       const c=row.context;
@@ -54,7 +56,7 @@ const PCScopeReadableEvents=(()=>{
   function impact(row){
     if(historicalMappingIssue(row))return '旧版混用了组件说明和文件路径，这条比较暂不能用于判断系统变化。';
     if(row.field_id&&(row.after_status&&row.after_status!=='known'||objects.presentation.hidden(row.after)))return '本次未取得变化后的属性值。';
-    if(!uncertainAssociation(row)&&type(row)==='policy.power_plan'&&row.field_id==='active'&&typeof row.after==='boolean')return row.after?'此计划已被选为当前电源方案。':'此计划已不再使用。';
+    if(!uncertainAssociation(row)&&type(row)==='policy.power_plan'&&row.field_id==='active'&&typeof row.after==='boolean')return row.after?'当时切换为此电源方案。':'当时已不再使用此电源方案。';
     if((!uncertainAssociation(row)||row.action_id==='startup.service_state_changed'&&row.context?.classification_status!=='unverified')&&type(row)==='startup.service'&&row.field_id==='state'&&typeof row.after==='string'){
       if(row.after.toLowerCase()==='stopped')return '服务已停止，依赖它的功能可能暂不可用。';
       if(row.after.toLowerCase()==='running')return '服务已开始运行。';
@@ -97,7 +99,7 @@ const PCScopeReadableEvents=(()=>{
       if(afterStatus!=='known')return {...result,label:({unreadable:'本次读取失败',conflicting:'信息存在冲突',evidence_pruned:'原始依据已清理',not_applicable:'不适用',not_provided:'本次未提供'})[afterStatus]||'本次状态未知',tone:afterStatus==='unreadable'?'attention':'neutral'};
       if(!uncertainAssociation(row)&&id==='startup.service'&&field==='state'){
         if(String(row.after).toLowerCase()==='running')result.tone='positive';
-        if(String(row.after).toLowerCase()==='stopped')result.note='依赖此服务的功能可能暂不可用。';
+        if(String(row.after).toLowerCase()==='stopped')result.note='当时依赖此服务的功能可能暂不可用。';
       }
       if(field==='exists'&&row.after===false&&['file.watched_file','file.watched_directory'].includes(id))result.note='依赖此路径的功能可能受影响。';
       const after=format(row.after,afterStatus),before=format(row.before,beforeStatus);
@@ -109,9 +111,9 @@ const PCScopeReadableEvents=(()=>{
           if(old!==null&&now!==null&&old!==now)return {...result,field:'',label:(now===0?'电量很低':now===1?'电量偏低':'电量已恢复')+' · '+after,tone:now<2?'attention':'positive'};
         }
         if(id==='account.user_profile'&&field==='last_use')return {...result,kind:'value',field:'最近使用时间已更新',after};
-        if(id==='startup.scheduled_task'&&field==='last_run')return {...result,kind:'value',field:'最近执行',after};
-        if(id==='startup.scheduled_task'&&field==='next_run')return {...result,kind:'value',field:'下次执行',after};
-        if(id==='network.adapter'&&field==='speed')return {...result,kind:'value',field:'当前连接速率',after};
+        if(id==='startup.scheduled_task'&&field==='last_run')return {...result,kind:'value',field:'最近执行时间已更新',after};
+        if(id==='startup.scheduled_task'&&field==='next_run')return {...result,kind:'value',field:'下次执行时间已调整',after};
+        if(id==='network.adapter'&&field==='speed')return {...result,kind:'value',field:'连接速率已变化',after};
       }
       if(field==='sha256'||field==='module_base')return {...result,label:beforeStatus==='known'?(field==='sha256'?'文件内容已变化':'模块加载位置已变化'):after};
       if(beforeStatus!=='known')return {...result,kind:'value',after};
@@ -122,16 +124,10 @@ const PCScopeReadableEvents=(()=>{
       result.long=before.length+after.length>64||/[\\/;\n]/.test(before+after);
       return result;
     }
-    const labels={'observed.first_seen':'首次采集到','execution.process_started':'开始运行','execution.process_stopped':'已退出','execution.module_loaded':'已加载','files.deleted':'已删除','files.deleted_archived':'已删除并归档','startup.task_started':'开始运行','network.connection_allowed':'已允许','network.connection_blocked':'已阻止','identity.logon_failed':'登录失败'};
+    const labels={'execution.process_started':'开始运行','execution.process_stopped':'已退出','execution.module_loaded':'已加载','files.deleted':'已删除','files.deleted_archived':'已删除并归档','startup.task_started':'开始运行','network.connection_allowed':'已允许','network.connection_blocked':'已阻止','identity.logon_failed':'登录失败'};
     result.label=labels[row.action_id]||result.label;
-    if(row.action_id==='observed.first_seen'&&row.source_record?.snapshot_presence){
-      const presence=row.source_record.snapshot_presence,state=String(presence.state||'').toLowerCase();
-      result.label='新发现';
-      if(!uncertainAssociation(row)&&id==='network.endpoint'){
-        result.label=presence.source==='pcscope.network.udp'?'新增 UDP 端口':['listen','listening'].includes(state)?'新增监听端口':state==='established'?'新增连接':'新增网络项';
-      }
-    }
-    if(row.action_id==='observed.no_longer_observed')result.label=absence(row).label;
+    if(row.action_id==='observed.first_seen')result.label=firstSeen(row);
+    if(row.action_id==='observed.no_longer_observed')result.label=absence(row).title;
     if(row.action_id==='startup.task_ended'){
       result.label=['succeeded','success'].includes(row.result)?'运行成功':['failed','failure'].includes(row.result)?'运行失败':row.result==='cancelled'?'本次运行已取消':'本次运行已结束';
       if(!['succeeded','success','failed','failure','cancelled'].includes(row.result))result.note='日志未提供运行结果。';

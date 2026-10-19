@@ -32,7 +32,7 @@ const PCScopeDetails=(()=>{
     return String(value);
   }
   function explanation(row){
-    const names={'object.changed':'属性变化','object.first_seen':'新发现','baseline.observed':'初始状态','object.no_longer_observed':'不再发现','coverage.gap':'采集缺口','coverage.recovered':'采集恢复'};
+    const names={'object.changed':'属性变化','object.first_seen':'首次记录到此项','baseline.observed':'初始采集记录','object.no_longer_observed':'检查时已不在清单中','coverage.gap':'采集缺口','coverage.recovered':'采集恢复'};
     return names[row.kind]||'';
   }
   function fields(document,data){
