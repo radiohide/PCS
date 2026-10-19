@@ -187,7 +187,15 @@
         },
         "role": {
           "kind": "enum",
-          "values": {}
+          "values": {
+            "0": "独立工作站",
+            "1": "域成员工作站",
+            "2": "独立服务器",
+            "3": "域成员服务器",
+            "4": "备用域控制器",
+            "5": "主域控制器"
+          },
+          "source_contract": "Win32_ComputerSystem.DomainRole"
         },
         "manufacturer": {
           "kind": "text"
@@ -2757,7 +2765,14 @@
         },
         "type": {
           "kind": "enum",
-          "values": {}
+          "values": {
+            "0": "安装应用",
+            "1": "卸载应用",
+            "10": "安装驱动",
+            "12": "修改系统设置",
+            "13": "取消的操作"
+          },
+          "source_contract": "SystemRestore.RestorePointType"
         }
       },
       "fallback": "有配置记录"
@@ -2857,7 +2872,15 @@
         },
         "family": {
           "kind": "enum",
-          "values": {}
+          "values": {
+            "2": "IPv4",
+            "23": "IPv6",
+            "IPv4": "IPv4",
+            "IPv6": "IPv6",
+            "InterNetwork": "IPv4",
+            "InterNetworkV6": "IPv6"
+          },
+          "source_contract": "MSFT_NetIPAddress.AddressFamily"
         }
       },
       "fallback": "有地址配置"
@@ -3047,7 +3070,15 @@
         },
         "tunnel_type": {
           "kind": "enum",
-          "values": {}
+          "values": {
+            "Automatic": "自动选择",
+            "Pptp": "PPTP",
+            "L2tp": "L2TP",
+            "Sstp": "SSTP",
+            "Ikev2": "IKEv2",
+            "Unknown": "未提供隧道类型"
+          },
+          "source_contract": "VPN provider TunnelType symbolic values"
         }
       },
       "fallback": "有连接配置"
@@ -3245,7 +3276,13 @@
         },
         "security_mode": {
           "kind": "enum",
-          "values": {}
+          "values": {
+            "1": "传输模式",
+            "2": "隧道模式",
+            "Transport": "传输模式",
+            "Tunnel": "隧道模式"
+          },
+          "source_contract": "MSFT_NetConSecRule.Mode (Transport=1, Tunnel=2)"
         },
         "policy_source": {
           "kind": "text"
@@ -3295,7 +3332,11 @@
         },
         "protocol": {
           "kind": "enum",
-          "values": {}
+          "values": {
+            "TCP": "TCP",
+            "UDP": "UDP"
+          },
+          "source_contract": "Declared TCP/UDP collection or event protocol"
         },
         "local_address": {
           "kind": "text"
@@ -3400,7 +3441,7 @@
         "user": "用户",
         "server": "服务器",
         "open_count": "打开数",
-        "protocol": "协议",
+        "protocol": "协议版本",
         "encrypted": "是否加密"
       },
       "formats": {
@@ -3422,8 +3463,8 @@
           "kind": "text"
         },
         "protocol": {
-          "kind": "enum",
-          "values": {}
+          "kind": "protocol_version",
+          "source_contract": "MSFT_SmbSession.Dialect"
         }
       },
       "fallback": "有文件共享会话记录"
@@ -3572,7 +3613,12 @@
         },
         "legacy_key_spec": {
           "kind": "enum",
-          "values": {}
+          "values": {
+            "0": "未指定旧式密钥用途",
+            "1": "密钥交换",
+            "2": "数字签名"
+          },
+          "source_contract": "NCryptKeyName.dwLegacyKeySpec"
         }
       },
       "fallback": "有密钥登记"
@@ -3661,8 +3707,7 @@
     "security.security_product": {
       "name": "安全软件",
       "summary_fields": [
-        "name",
-        "product_state"
+        "name"
       ],
       "state_fields": [],
       "labels": {
@@ -3678,11 +3723,12 @@
           "kind": "text"
         },
         "product_state": {
-          "kind": "enum",
-          "values": {}
+          "kind": "code",
+          "summary": "产品状态代码已记录",
+          "source_contract": "SecurityCenter productState; no unsupported health inference"
         }
       },
-      "fallback": "有安全软件登记"
+      "fallback": "已在安全中心登记"
     },
     "security.bitlocker_configuration": {
       "name": "磁盘加密",
@@ -3738,7 +3784,26 @@
         },
         "encryption_method": {
           "kind": "enum",
-          "values": {}
+          "values": {
+            "0": "未加密",
+            "1": "AES 128 位（带扩散器）",
+            "2": "AES 256 位（带扩散器）",
+            "3": "AES 128 位",
+            "4": "AES 256 位",
+            "5": "硬件加密",
+            "6": "XTS-AES 128 位",
+            "7": "XTS-AES 256 位",
+            "None": "未加密",
+            "Aes128Diffuser": "AES 128 位（带扩散器）",
+            "Aes256Diffuser": "AES 256 位（带扩散器）",
+            "Aes128": "AES 128 位",
+            "Aes256": "AES 256 位",
+            "Hardware": "硬件加密",
+            "XtsAes128": "XTS-AES 128 位",
+            "XtsAes256": "XTS-AES 256 位",
+            "Unknown": "未报告加密方式"
+          },
+          "source_contract": "Win32_EncryptableVolume.GetEncryptionMethod; platform-native EncryptionNames"
         },
         "protector_types": {
           "kind": "count",
@@ -4072,11 +4137,39 @@
         },
         "bus_type": {
           "kind": "enum",
-          "values": {}
+          "values": {
+            "1394": "IEEE 1394",
+            "Unknown": "未报告总线类型",
+            "SCSI": "SCSI",
+            "ATAPI": "ATAPI",
+            "ATA": "ATA",
+            "SSA": "SSA",
+            "Fibre Channel": "光纤通道",
+            "USB": "USB",
+            "RAID": "RAID",
+            "iSCSI": "iSCSI",
+            "SAS": "SAS",
+            "SATA": "SATA",
+            "SD": "SD",
+            "MMC": "MMC",
+            "Virtual": "虚拟磁盘",
+            "File Backed Virtual": "虚拟磁盘文件",
+            "Spaces": "存储空间",
+            "NVMe": "NVMe",
+            "SCM": "存储级内存",
+            "UFS": "UFS"
+          },
+          "source_contract": "platform-native Providers.StorageBus symbolic output"
         },
         "partition_style": {
           "kind": "enum",
-          "values": {}
+          "values": {
+            "RAW": "未初始化",
+            "MBR": "MBR",
+            "GPT": "GPT",
+            "Unknown": "未报告分区方式"
+          },
+          "source_contract": "platform-native Providers.PartitionStyle symbolic output"
         },
         "size": {
           "kind": "bytes"
@@ -4162,7 +4255,16 @@
         },
         "volume_type": {
           "kind": "enum",
-          "values": {}
+          "values": {
+            "0": "未报告类型",
+            "1": "无根目录",
+            "2": "可移动磁盘",
+            "3": "本地磁盘",
+            "4": "网络驱动器",
+            "5": "光盘",
+            "6": "内存磁盘"
+          },
+          "source_contract": "Win32_Volume.DriveType"
         }
       },
       "fallback": "有存储卷资料"
@@ -4323,7 +4425,17 @@
         },
         "chemistry": {
           "kind": "enum",
-          "values": {}
+          "values": {
+            "1": "其他类型",
+            "2": "未报告类型",
+            "3": "铅酸电池",
+            "4": "镍镉电池",
+            "5": "镍氢电池",
+            "6": "锂离子电池",
+            "7": "锌空气电池",
+            "8": "锂聚合物电池"
+          },
+          "source_contract": "Win32_Battery.Chemistry"
         }
       },
       "fallback": "有电池资料"
@@ -4480,7 +4592,12 @@
         },
         "type": {
           "kind": "enum",
-          "values": {}
+          "values": {
+            "Standard": "标准检查点",
+            "Production": "生产检查点",
+            "Recovery": "恢复检查点"
+          },
+          "source_contract": "Hyper-V SnapshotType symbolic values; physical environment acceptance pending"
         },
         "parent": {
           "kind": "text"
@@ -4559,8 +4676,8 @@
           "kind": "path"
         },
         "status": {
-          "kind": "enum",
-          "values": {}
+          "kind": "container_status",
+          "source_contract": "Docker status description; state remains separate"
         }
       },
       "fallback": "有容器记录"
@@ -4762,7 +4879,13 @@
         },
         "protocol": {
           "kind": "enum",
-          "values": {}
+          "values": {
+            "1": "RAW 打印协议",
+            "2": "LPR 打印协议",
+            "Raw": "RAW 打印协议",
+            "Lpr": "LPR 打印协议"
+          },
+          "source_contract": "Win32_TCPIPPrinterPort.Protocol"
         },
         "port_number": {
           "kind": "text"

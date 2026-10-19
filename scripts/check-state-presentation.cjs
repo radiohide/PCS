@@ -77,10 +77,10 @@ assert.match(events.change({...timeline,before_status:'masked'}),/已隐藏 → 
 assert.match(events.impact(timeline),/当时切换为此电源方案/);
 for(const status of ['masked','unreadable','conflicting','evidence_pruned','unknown'])assert.doesNotMatch(events.impact({...timeline,after_status:status}),/切换为|不再使用/,'protected state must not leak through impact wording');
 assert.doesNotMatch(events.impact({...timeline,after:{redacted:true,value:true}}),/切换为|不再使用/);
-for(const [after,readable,impact] of [['Running','运行中','服务已开始运行'],['Stopped','已停止','依赖它的功能可能暂不可用']]){
+for(const [after,readable,impact] of [['Running','运行中','服务已开始运行'],['Stopped','已停止','服务已停止']]){
  const action={action_id:'startup.service_state_changed',field_id:'state',before:null,after,result:'observed',context:service};
  assert.equal(events.title(action),'服务运行状态变化');assert(events.options().some(option=>option.id===action.action_id&&option.label==='服务运行状态变化'));
- const rendered=visible(view.timeline({data:[action]}));assert(rendered.includes(readable));if(after==='Stopped')assert.match(rendered,/功能可能暂不可用/);else assert(!rendered.includes('服务已开始运行'),'current state does not need a duplicate sentence');assert(!rendered.includes(action.action_id));
+ const rendered=visible(view.timeline({data:[action]}));assert(rendered.includes(readable));assert.doesNotMatch(rendered,/功能可能|依赖.*不可用/);assert(!rendered.includes('服务已开始运行'),'current state does not need a duplicate sentence');assert(!rendered.includes(action.action_id));
  assert(!events.change(action).includes('→'),'an explicit resulting state does not invent a previous value');
  assert(events.impact({...action,context:{...service,attribution_status:'unassigned'}}).includes(impact),'known event meaning survives an unresolved object link');
 }
@@ -156,4 +156,21 @@ if(at>=0){assert(args[at+1],'--live requires a path');const samples=read(args[at
     live++;
   }assert.equal(live,8,'all eight real regression types must be checked');
 }
-console.log(JSON.stringify({profiles:Object.keys(config.types).length,live_samples:live,typed_states:'passed',protection:'passed',timeline_and_comparison:'passed'}));
+for(const [type,id,value,expected] of [
+ ['account.machine_identity','role',1,'域成员工作站'],['network.address_configuration','family',23,'IPv6'],
+ ['hardware.disk','partition_style','GPT','GPT'],['hardware.disk','bus_type','NVMe','NVMe'],
+ ['hardware.volume','volume_type',3,'本地磁盘'],['hardware.battery','chemistry',6,'锂离子电池'],
+ ['security.bitlocker_configuration','encryption_method',7,'XTS-AES 256 位'],['desktop.printer_port','protocol',1,'RAW 打印协议'],
+ ['security.bitlocker_configuration','encryption_method','XtsAes256','XTS-AES 256 位'],['network.ipsec_rule','security_mode',2,'隧道模式'],
+ ['network.smb_session','protocol','3.1.1','SMB 3.1.1'],['virtualization.container','status','Up 2 hours (healthy)','运行中 · 健康检查通过'],
+ ['security.security_product','product_state',266240,'产品状态代码已记录']
+])assert.equal(p.format(row(type),id,value),expected,`${type}.${id}`);
+assert.equal(p.format(row('hardware.disk'),'partition_style','999'),'值尚未识别');
+assert.equal(p.state(row('security.security_product')),'已在安全中心登记');
+const moduleRow=row('runtime.module_instance',[fact('module_path','C:\\Windows\\System32\\pdh.dll'),fact('process_name','sihost')]);
+assert.equal(names.name(moduleRow),'pdh.dll · sihost');
+assert.doesNotMatch(names.name(row('runtime.module_instance',[fact('module_path','C:\\Windows\\System32\\pdh.dll'),fact('process_name','secret','masked')])),/secret/);
+const returned={action_id:'observed.reappeared',context:{type_id:'runtime.module_instance',attribution_status:'stored'}};
+assert.equal(events.title(returned),'再次记录加载');assert.equal(events.card(returned).label,events.title(returned));
+assert.equal(require('../apps/desktop/ui/action-presentation-data.js').catalog_version,catalog.version);
+console.log(JSON.stringify({profiles:Object.keys(config.types).length,live_samples:live,typed_states:'passed',protection:'passed',timeline_and_comparison:'passed',readability:'passed'}));

@@ -372,6 +372,8 @@ pub enum LifecycleTransition {
     /// The first time PCScope saw this instance. This is **not** a creation event.
     FirstObserved { at: String, basis: String },
     StillObserved,
+    /// A previously absent instance is present again, without inventing a creation operation.
+    ObservedAgain { at: String },
     /// Absent from a complete observation. Absence is not deletion, so the instance keeps its
     /// previous state and gains a "not observed since" time.
     NotObserved { since: String, basis: String },
@@ -402,14 +404,18 @@ pub fn lifecycle(
             at: observed_at.to_owned(),
             basis: "first observation by PCScope; the source provides no creation time".into(),
         },
-        (Some((LifecycleState::Active | LifecycleState::NotObserved, incarnation)), ObservationFacts::Present) => {
+        (Some((LifecycleState::Active, _)), ObservationFacts::Present) => {
             if hints.states_object_ended {
                 return LifecycleTransition::EndedStated { at: observed_at.to_owned(), basis: "the source stated the object ended".into() };
             }
-            if incarnation > 1 {
-                return LifecycleTransition::Reincarnated { incarnation, basis: "the native key reappeared as a new generation".into() };
-            }
             LifecycleTransition::StillObserved
+        }
+        (Some((LifecycleState::NotObserved, _)), ObservationFacts::Present) => {
+            if hints.states_object_ended {
+                LifecycleTransition::EndedStated { at: observed_at.to_owned(), basis: "the source stated the object ended".into() }
+            } else {
+                LifecycleTransition::ObservedAgain { at: observed_at.to_owned() }
+            }
         }
         // The key reappeared after being ended or removed: a new generation, never a continuation.
         (Some((LifecycleState::Ended | LifecycleState::Removed, incarnation)), ObservationFacts::Present) => LifecycleTransition::Reincarnated {

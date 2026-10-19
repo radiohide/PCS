@@ -165,6 +165,35 @@ fn finish(tx: &Connection, queue_id: i64, state: &str, error: Option<&str>) -> R
 fn valid_snapshot_appearance(input:&EvidenceInput)->bool {
     input.payload["basis"]=="snapshot"&&input.payload.get("before")==Some(&Value::Null)&&input.payload["after"].is_object()&&input.payload["scope"].as_str()==Some(input.source_scope.as_str())
 }
+fn record_presence_action(tx:&Connection,instance:u64,input:&EvidenceInput,context:&AdapterContext,action:&str,from:Option<&str>)->Result<bool> {
+    let type_id:String=tx.query_row("SELECT type_id FROM object_instances WHERE instance_id=?",[instance],|row|row.get(0))?;
+    let until=pcscope_contracts::semantics::canonical_time(&input.observed_at).map_err(anyhow::Error::msg)?;
+    let from=from.and_then(|at|pcscope_contracts::semantics::canonical_time(at).ok()).filter(|at|at<&until);
+    let existing:Option<i64>=tx.query_row("SELECT action_row FROM object_actions WHERE instance_id=? AND action_id=? AND observed_at=? LIMIT 1",params![instance,action,input.observed_at],|row|row.get(0)).optional()?;
+    let row=if let Some(row)=existing{row}else{
+        let summary=json!({"snapshot_presence":{"source":input.source,"protocol":input.payload.get("protocol").or_else(||input.payload.get("Protocol")),"state":input.payload.get("State").or_else(||input.payload.get("state"))}});
+        tx.execute("INSERT INTO object_actions(instance_id,action_id,target_type,title,result,precision,interval_from,interval_until,observed_at,rule_version,source_record) VALUES(?,?,?,?,?,?,?,?,?,?,?)",params![instance,action,type_id,title_of(action),"observed",if from.is_some(){"interval"}else{"observation_only"},from,if from.is_some(){Some(input.observed_at.as_str())}else{None},input.observed_at,context.rule_version,summary.to_string()])?;
+        tx.last_insert_rowid()
+    };
+    tx.execute("INSERT OR IGNORE INTO evidence_refs(subject_kind,subject_id,evidence_kind,evidence_id) VALUES('action',?,?,?)",params![row.to_string(),kind_name(&input.evidence),input.evidence.id])?;
+    Ok(existing.is_none())
+}
+/// Explicitly complete child collections. Missing/malformed collections are never an empty set.
+fn complete_child_types(input:&EvidenceInput)->Vec<&'static str>{
+    if !input.decoding.available||!input.decoding.problems.is_empty(){return vec![]}
+    let readable=|key:&str|!input.decoding.unreadable_fields.iter().chain(&input.decoding.masked_fields).any(|field|field==key);
+    let strings=|key:&str|readable(key)&&input.payload[key].as_array().is_some_and(|values|values.iter().all(|v|v.as_str().is_some_and(|s|!s.trim().is_empty()&&!pcscope_contracts::semantics::is_mask_sentinel(v))));
+    let registry=readable("values")&&input.payload["values"].is_object()&&input.payload["path"].is_string()&&input.payload["hive"].is_string()&&input.payload["view"].is_string();
+    match input.source.as_str(){
+        "pcscope.apps.browser-policies" if registry=>vec!["policy.browser_policy"],
+        "pcscope.environment.configuration" if registry&&!input.payload["path"].as_str().unwrap_or_default().split('\\').any(|s|s.eq_ignore_ascii_case("FileExts")||s.eq_ignore_ascii_case("UrlAssociations"))=>vec!["policy.environment_variable"],
+        "pcscope.policy.configuration" if registry=>vec!["policy.software_restriction_policy","policy.uac_policy"],
+        "pcscope.startup.logon" if readable("values")&&input.payload["values"].is_object()&&input.payload["registry_path"].as_str().is_some_and(|s|!s.trim().is_empty())=>vec!["startup.logon_startup_entry"],
+        "pcscope.security.protection-policy" if ["ExclusionPath","ExclusionProcess","ExclusionExtension"].iter().all(|key|strings(key))=>vec!["security.exclusion"],
+        "pcscope.files.metadata-security" if readable("streams")&&input.payload["exists"]==true&&input.payload["streams"].as_array().is_some_and(|values|values.iter().all(|v|v["name"].as_str().is_some_and(|s|!s.is_empty())))=>vec!["file.alternate_data_stream"],
+        _=>vec![],
+    }
+}
 fn apply_snapshot_appearance(tx:&Connection,input:&EvidenceInput,context:&AdapterContext,disabled:&std::collections::BTreeSet<String>)->Result<bool> {
     if disabled.contains(&crate::item_controls::classify(&input.source,&input.item_id,"",&input.payload["after"])){return Ok(false)}
     let Some(adapter)=adapter_for(&input.source)else{return Ok(false)};
@@ -219,24 +248,8 @@ fn apply_snapshot_absence(tx:&Connection,input:&EvidenceInput,context:&AdapterCo
         };
         // The missing record may only update a uniquely identified, already bound object.
         if matches.len()!=1 {continue}let (instance,from)=&matches[0];if !seen.insert(*instance){continue}
-        // Registry roles and similar records can describe the same object. A missing role cannot
-        // retire an object still represented by another retained record in this source.
-        let aliases:Vec<(String,String,Value)>= {
-            let mut query=tx.prepare("SELECT DISTINCT o.id,o.scope,o.data FROM source_bindings b CROSS JOIN objects o WHERE b.instance_id=? AND b.source=? AND b.item_id<>? AND o.source=b.source AND o.id=b.item_id LIMIT 129")?;
-            let rows=query.query_map(params![instance,input.source,input.item_id],|row|Ok((row.get(0)?,row.get(1)?,row.get::<_,String>(2)?)))?;
-            rows.map(|row|{let (id,scope,data)=row?;Ok((id,scope,serde_json::from_str(&data).unwrap_or(Value::Null)))}).collect::<rusqlite::Result<_>>()?
-        };
-        if aliases.len()>128 {continue}
-        let retained=aliases.iter().any(|(id,scope,data)|{
-            if data.is_null(){return true}
-            let mut alias=prior.clone();alias.item_id=id.clone();alias.native_record_id=id.clone();alias.source_scope=scope.clone();alias.payload=data.clone();
-            let mut alias_context=context.clone();alias_context.collected_scope=business_scope(scope);
-            adapter.adapt(&alias,&alias_context).observations.into_iter().any(|other|{
-                if other.identity.type_id!=candidate.type_id||other.identity.scope!=candidate.scope{return false}
-                let (other_key,missing)=pcscope_contracts::identity::normalise(&strategy,&other.identity);missing.is_empty()&&other_key==key
-            })
-        });
-        if retained {continue}
+        // Another source or registration role can still describe this same object.
+        if identity::has_retained_observation(tx,*instance,&input.observed_at,&input.source,&input.item_id)? {continue}
         tx.execute("UPDATE object_instances SET lifecycle='not_observed',last_absent_at=? WHERE instance_id=?",params![input.observed_at,instance])?;
         tx.execute("INSERT INTO object_actions(instance_id,unassigned_reason,action_id,target_type,title,result,occurred_at,precision,interval_from,interval_until,observed_at,actor,program,rule_version) VALUES(?,NULL,'observed.no_longer_observed',?,'本次检查未找到此对象','observed',NULL,'interval',?,?,?,NULL,NULL,?)",params![instance,candidate.type_id,from,input.observed_at,input.observed_at,context.rule_version])?;
         let action=tx.last_insert_rowid();
@@ -258,6 +271,7 @@ fn apply(tx: &Connection, input: &EvidenceInput, context: &AdapterContext, resul
         "pcscope.identity.groups" => Some(("members","account.group_membership")),
         _ => None,
     };
+    let complete_children=complete_child_types(input);
     // A parent can contain only one child in a later round; never infer this from row count.
     // Absence remains restricted to the independently validated complete-list rules below.
     let expanded = matches!(input.source.as_str(),
@@ -270,18 +284,16 @@ fn apply(tx: &Connection, input: &EvidenceInput, context: &AdapterContext, resul
     // One bounded key lookup per parent, not per candidate and not a scan of evidence history.
     // Keep an explicit complete-list watermark even for an empty list with no child bindings.
     // The internal namespace is not returned by the settings APIs, which read named settings.
-    let parent_watermark = if children.is_some() && input.evidence.kind == pcscope_contracts::adapter::EvidenceKind::Snapshot {
+    let parent_watermark = if (children.is_some()||!complete_children.is_empty()) && input.evidence.kind == pcscope_contracts::adapter::EvidenceKind::Snapshot {
         Some(format!("projection.expanded_complete_at.v1/{}",crate::digest(&serde_json::to_string(&(
             &input.source,&context.machine_id,&context.installation_id,&scope,&input.item_id,&input.native_record_id,
         ))?)))
     } else {None};
-    if let Some(key)=&parent_watermark {
-        let latest:Option<String>=tx.query_row("SELECT value FROM settings WHERE key=?",[key],|row|row.get(0)).optional()?;
-        if latest.is_some_and(|at|at>input.observed_at) {
+    let previous_parent=parent_watermark.as_ref().map(|key|tx.query_row("SELECT value FROM settings WHERE key=?",[key],|row|row.get::<_,String>(0)).optional()).transpose()?.flatten();
+    if previous_parent.as_ref().is_some_and(|at|at>&input.observed_at) {
             // The raw evidence and queue entry remain auditable; an older complete parent list
             // cannot introduce a previously unseen historical child as a current assignment.
             return Ok(false);
-        }
     }
     let configured = !disabled.contains(&crate::item_controls::classify(&input.source, &input.item_id, "", &Value::Null));
     for observation in &result.observations {
@@ -330,6 +342,26 @@ fn apply(tx: &Connection, input: &EvidenceInput, context: &AdapterContext, resul
         if !first_application {
             continue;
         }
+        if configured && observation.complete && context.complete && input.evidence.kind==pcscope_contracts::adapter::EvidenceKind::Snapshot {
+            if observation.identity.type_id=="hardware.driver_binding" {
+                let retired=identity::retire_replaced_binding(tx,&request,instance_id)?;
+                let mut previous_binding=None;
+                for old in &retired {
+                    let seen:String=tx.query_row("SELECT last_observed_at FROM object_instances WHERE instance_id=?",[old],|row|row.get(0))?;
+                    record_presence_action(tx,*old,input,context,"observed.no_longer_observed",Some(&seen))?;
+                    previous_binding=Some(seen);
+                }
+                if outcome.created && !retired.is_empty() {
+                    record_presence_action(tx,instance_id,input,context,"observed.first_seen",previous_binding.as_deref())?;
+                }
+            }
+            if matches!(outcome.transition,pcscope_contracts::identity::LifecycleTransition::ObservedAgain {..}) {
+                let absent:Option<String>=tx.query_row("SELECT last_absent_at FROM object_instances WHERE instance_id=?",[instance_id],|row|row.get(0))?;
+                record_presence_action(tx,instance_id,input,context,"observed.reappeared",absent.as_deref())?;
+            } else if outcome.created && (children.is_some_and(|(_,typ)|typ==observation.identity.type_id)||complete_children.contains(&observation.identity.type_id.as_str())) && previous_parent.is_some() {
+                record_presence_action(tx,instance_id,input,context,"observed.first_seen",previous_parent.as_deref())?;
+            }
+        }
         for field in &observation.fields {
             record_fact(tx, instance_id, input, context, field, &observation.observed_at, &observation.evidence)?;
         }
@@ -356,11 +388,32 @@ fn apply(tx: &Connection, input: &EvidenceInput, context: &AdapterContext, resul
             };
             for id in identity::conclude_record_absence(tx,&binding,&context.machine_id,&context.installation_id,&scope,child_type,&hints,&input.observed_at)? {
                 wrote |= claim(tx,"observation",&id.to_string(),std::slice::from_ref(&input.evidence))?;
+                let seen:String=tx.query_row("SELECT last_observed_at FROM object_instances WHERE instance_id=?",[id],|row|row.get(0))?;
+                wrote|=record_presence_action(tx,id,input,context,"observed.no_longer_observed",Some(&seen))?;
             }
             if let Some(key)=&parent_watermark {
                 tx.execute("INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value WHERE settings.value<excluded.value",params![key,input.observed_at])?;
             }
         }
+    }
+    if configured&&context.complete&&result.problems.is_empty()&&result.observations.iter().all(|o|o.complete)&&input.evidence.kind==pcscope_contracts::adapter::EvidenceKind::Snapshot {
+        for typ in &complete_children {
+            let scopes:Vec<String>={
+                let mut q=tx.prepare("SELECT DISTINCT b.scope FROM source_bindings b JOIN object_instances i ON i.instance_id=b.instance_id JOIN object_collection_scopes c ON c.instance_id=i.instance_id AND c.source=b.source WHERE b.source=? AND b.item_id=? AND b.native_record_id=? AND i.machine_id=? AND i.installation_id=? AND i.type_id=? AND c.scope=? LIMIT 129")?;
+                let rows=q.query_map(params![input.source,input.item_id,input.native_record_id,context.machine_id,context.installation_id,typ,input.source_scope],|r|r.get(0))?;rows.collect::<rusqlite::Result<_>>()?
+            };
+            if scopes.len()>128{continue}
+            for child_scope in scopes {
+                let hints=pcscope_contracts::identity::LifecycleHints{complete_observation:true,collected_scope:child_scope.clone(),configured,history_retained_from:None,states_object_ended:false,boot_id:context.boot_id.clone()};
+                let binding=pcscope_contracts::identity::SourceRecordRef{source:input.source.clone(),item_id:input.item_id.clone(),native_record_id:input.native_record_id.clone()};
+                for id in identity::conclude_record_absence(tx,&binding,&context.machine_id,&context.installation_id,&child_scope,typ,&hints,&input.observed_at)? {
+                    claim(tx,"observation",&id.to_string(),std::slice::from_ref(&input.evidence))?;
+                    let seen:String=tx.query_row("SELECT last_observed_at FROM object_instances WHERE instance_id=?",[id],|r|r.get(0))?;
+                    wrote|=record_presence_action(tx,id,input,context,"observed.no_longer_observed",Some(&seen))?;
+                }
+            }
+        }
+        if !complete_children.is_empty(){if let Some(key)=&parent_watermark {tx.execute("INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value WHERE settings.value<excluded.value",params![key,input.observed_at])?;}}
     }
     for action in &result.actions {
         if record_action(tx, input, context, action)? {
@@ -400,6 +453,12 @@ fn as_fact_observation(input: &EvidenceInput, field: &FieldCandidate, observed_a
         evidence: evidence.to_vec(),
     }
 }
+fn normalise_members(input:&EvidenceInput,field:&FieldCandidate,value:&mut Option<Value>){
+    if input.source!="pcscope.identity.groups"||field.field_id!="members"{return}
+    let Some(values)=value.as_ref().and_then(Value::as_array)else{return};
+    let Some(mut members)=values.iter().map(|v|v.as_str().filter(|s|s.to_ascii_lowercase().starts_with("s-")).map(str::to_ascii_lowercase)).collect::<Option<Vec<_>>>()else{return};
+    members.sort();members.dedup();*value=Some(json!(members));
+}
 
 /// Writes one field's current value, its history and any change action. Returns whether anything
 /// moved.
@@ -412,7 +471,8 @@ fn record_fact(
     observed_at: &str,
     evidence: &[pcscope_contracts::adapter::EvidenceRef],
 ) -> Result<()> {
-    let now = as_fact_observation(input, field, observed_at, evidence);
+    let mut now = as_fact_observation(input, field, observed_at, evidence);
+    normalise_members(input,field,&mut now.value);
     let stored: Option<(Option<String>, String, Option<String>, String, String)> = tx
         .query_row(
             "SELECT value,value_status,source_time,observed_at,rule_version FROM object_facts WHERE instance_id=? AND field_id=?",
@@ -428,7 +488,7 @@ fn record_fact(
 
     // The stored row is read back as a fact observation and the same selection rule that decides
     // the current value decides what this new observation does to it.
-    let previous = FactObservation {
+    let mut previous = FactObservation {
         source: String::new(),
         value: value.clone().map(|text| serde_json::from_str(&text).unwrap_or(Value::String(text))),
         value_type: String::new(),
@@ -437,6 +497,7 @@ fn record_fact(
         observed_at: stored_observed.clone(),
         evidence: Vec::new(),
     };
+    normalise_members(input,field,&mut previous.value);
     // Repeating either side of an unresolved tie is not new evidence that resolves the tie.
     // Only a strictly later, stated value can replace an existing conflict.
     if previous.status == pcscope_contracts::adapter::ValueStatus::Conflicting
@@ -746,7 +807,7 @@ fn record_action(tx: &Connection, input: &EvidenceInput, context: &AdapterContex
                     collected_scope: context.collected_scope.clone(),
                     configured: true,
                     history_retained_from: None,
-                    states_object_ended: matches!(action.action_id.as_str(), "startup.task_deleted" | "identity.account_deleted" | "files.deleted"),
+                    states_object_ended: matches!(action.action_id.as_str(), "startup.task_deleted" | "identity.account_deleted" | "files.deleted" | "files.deleted_archived" | "execution.process_stopped"),
                     boot_id: context.boot_id.clone(),
                 },
                 rule_version: context.rule_version.clone(),
@@ -948,6 +1009,130 @@ mod tests {
         assert!(rows.iter().all(|row|row["interval_from"]=="2026-10-15T01:00:00.000Z"&&row["interval_until"]=="2026-10-15T01:00:03Z"));
         store.ingest(&network_snapshot(tcp,"gone","2026-10-15T01:00:05Z",json!([tcp_item(50000,"Listen")]))).unwrap();drain(&store);
         assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.no_longer_observed'"),2,"arrivals and disappearances both exist");
+    }
+    #[test]
+    fn snapshot_reappearance_is_a_distinct_idempotent_change_not_a_second_first_sighting() {
+        let mut store=Store::open(":memory:").unwrap();let source="pcscope.network.tcp";
+        for (run,time,items) in [
+            ("base","2026-10-19T01:00:00Z",json!([])),
+            ("first","2026-10-19T01:00:01Z",json!([tcp_item(55000,"Listen")])),
+            ("gone","2026-10-19T01:00:02Z",json!([])),
+            ("again","2026-10-19T01:00:03Z",json!([tcp_item(55000,"Listen")])),
+            ("gone-again","2026-10-19T01:00:04Z",json!([])),
+        ] {let snapshot=network_snapshot(source,run,time,items);store.ingest(&snapshot).unwrap();drain(&store);store.ingest(&snapshot).unwrap();drain(&store);}
+        assert_eq!(count(&store,"SELECT count(*) FROM object_instances"),1);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.first_seen'"),1);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.reappeared'"),1);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.no_longer_observed'"),2);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.reappeared' AND precision='interval' AND occurred_at IS NULL AND interval_from='2026-10-19T01:00:02.000Z'"),1);
+        store.conn.execute("UPDATE projection_queue SET state='pending'",[]).unwrap();drain(&store);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions"),4,"historical replay must not manufacture another return");
+        assert_eq!(count(&store,"SELECT count(*) FROM object_instances WHERE lifecycle='not_observed'"),1);
+    }
+
+    #[test]
+    fn parent_membership_changes_have_both_ends_without_parent_arrival_noise() {
+        let mut store=Store::open(":memory:").unwrap();let source="pcscope.identity.groups";
+        for (index,members) in [json!(["S-1-5-21-100","S-1-5-21-200"]),json!(["S-1-5-21-200","S-1-5-21-300"]),json!([])].into_iter().enumerate() {
+            store.ingest(&account_snapshot(source,&format!("members-{index}"),&format!("2026-10-19T01:00:0{index}Z"),json!([{"id":"S-1-5-32-544","data":{"name":"Group","members":members}}]))).unwrap();drain(&store);
+        }
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.first_seen' AND target_type='account.group_membership'"),1);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.no_longer_observed' AND target_type='account.group_membership'"),3);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_instances WHERE type_id='account.group' AND lifecycle='active'"),1);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE target_type='account.group'"),0);
+        store.conn.execute("UPDATE projection_queue SET state='pending'",[]).unwrap();drain(&store);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id IN ('observed.first_seen','observed.no_longer_observed','observed.reappeared')"),4);
+    }
+    #[test]
+    fn stable_device_row_rebinds_driver_a_b_a_without_merging_versions() {
+        let mut store=Store::open(":memory:").unwrap();let source="pcscope.hardware.driver-bindings";
+        for (index,version) in ["1.0","2.0","1.0"].into_iter().enumerate(){
+            store.ingest(&network_snapshot(source,&format!("driver-{index}"),&format!("2026-10-19T01:00:0{index}Z"),json!([{"id":"device-1","data":{"DeviceID":"device-1","DeviceName":"Example device","DriverVersion":version}}]))).unwrap();drain(&store);
+        }
+        assert_eq!(count(&store,"SELECT count(*) FROM object_instances WHERE type_id='hardware.driver_binding'"),2);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_instances WHERE type_id='hardware.driver_binding' AND lifecycle='active'"),1);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.no_longer_observed'"),2);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.first_seen'"),1);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.reappeared'"),1);
+        assert_eq!(count(&store,"SELECT count(*) FROM source_bindings WHERE valid_to IS NULL"),1);
+    }
+    #[test]
+    fn registry_value_children_have_arrivals_absences_and_reject_unreadable_tables() {
+        let mut store=Store::open(":memory:").unwrap();let source="pcscope.environment.configuration";
+        let values=[json!({"A":{"kind":"String","value":"one"},"B":{"kind":"String","value":"two"}}),
+            json!({"B":{"kind":"String","value":"two"},"C":{"kind":"String","value":"three"}}),json!("unreadable"),json!({})];
+        for (index,values) in values.into_iter().enumerate(){
+            store.ingest(&network_snapshot(source,&format!("env-{index}"),&format!("2026-10-19T01:00:0{index}Z"),json!([{"id":"machine-env","data":{"hive":"LocalMachine","view":"Registry64","path":"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment","values":values}}]))).unwrap();drain(&store);
+            if index==2{assert_eq!(count(&store,"SELECT count(*) FROM object_instances WHERE lifecycle='active'"),2,"invalid table cannot mean empty");}
+        }
+        assert_eq!(count(&store,"SELECT count(*) FROM object_instances WHERE type_id='policy.environment_variable'"),3);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_instances WHERE type_id='policy.environment_variable' AND lifecycle='not_observed'"),3);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.first_seen'"),1);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.no_longer_observed'"),3);
+    }
+    #[test]
+    fn complete_registry_key_sets_reconcile_browser_uac_and_logon_entries() {
+        for (source,path,typ) in [
+            ("pcscope.apps.browser-policies",r"Software\Policies\Google\Chrome","policy.browser_policy"),
+            ("pcscope.policy.configuration",r"Software\Microsoft\Windows\CurrentVersion\Policies\System","policy.uac_policy"),
+            ("pcscope.startup.logon",r"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run","startup.logon_startup_entry"),
+        ]{
+            let mut store=Store::open(":memory:").unwrap();
+            for (index,values) in [json!({"A":{"kind":"String","value":"one"},"B":{"kind":"String","value":"two"}}),json!({"B":{"kind":"String","value":"two"},"C":{"kind":"String","value":"three"}}),json!({})].into_iter().enumerate(){
+                let item=if source=="pcscope.startup.logon"{json!({"id":"LocalMachine/Registry64/registry-key","data":{"registry_path":path,"values":values}})}
+                    else{json!({"id":"registry-key","data":{"hive":"LocalMachine","view":"Registry64","path":path,"values":values}})};
+                store.ingest(&network_snapshot(source,&format!("key-{index}"),&format!("2026-10-19T01:00:0{index}Z"),json!([item]))).unwrap();drain(&store);
+            }
+            assert_eq!(store.conn.query_row("SELECT count(*) FROM object_instances WHERE type_id=? AND lifecycle='not_observed'",[typ],|r|r.get::<_,i64>(0)).unwrap(),3,"{source}");
+            assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.first_seen'"),1,"{source}");
+            assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.no_longer_observed'"),3,"{source}");
+        }
+    }
+    #[test]
+    fn exclusion_and_file_stream_sets_require_explicit_complete_arrays() {
+        for (source,typ) in [("pcscope.security.protection-policy","security.exclusion"),("pcscope.files.metadata-security","file.alternate_data_stream")]{
+            let mut store=Store::open(":memory:").unwrap();
+            for (index,members) in [json!(["A","B"]),json!(["B","C"]),Value::Null,json!([])].into_iter().enumerate(){
+                let payload=if typ=="security.exclusion"{json!({"ExclusionPath":members,"ExclusionProcess":[],"ExclusionExtension":[],"DisableRealtimeMonitoring":false})}
+                    else{json!({"exists":true,"volume_identity":"volume-1","file_id":"file-1","path":r"C:\Example\file.txt","streams":members.as_array().map(|values|values.iter().map(|v|json!({"name":format!(":{}",v.as_str().unwrap()),"size":1})).collect::<Vec<_>>())})};
+                store.ingest(&network_snapshot(source,&format!("array-{index}"),&format!("2026-10-19T01:00:0{index}Z"),json!([{"id":"parent","data":payload}]))).unwrap();drain(&store);
+                if index==2{assert_eq!(store.conn.query_row("SELECT count(*) FROM object_instances WHERE type_id=? AND lifecycle='active'",[typ],|r|r.get::<_,i64>(0)).unwrap(),2,"unreadable list cannot clear {typ}");}
+            }
+            assert_eq!(store.conn.query_row("SELECT count(*) FROM object_actions WHERE target_type=? AND action_id='observed.first_seen'",[typ],|r|r.get::<_,i64>(0)).unwrap(),1,"{typ}");
+            assert_eq!(store.conn.query_row("SELECT count(*) FROM object_actions WHERE target_type=? AND action_id='observed.no_longer_observed'",[typ],|r|r.get::<_,i64>(0)).unwrap(),3,"{typ}");
+        }
+    }
+    #[test]
+    fn removing_one_source_does_not_retire_an_object_still_reported_by_another() {
+        let mut store=Store::open(":memory:").unwrap();let source="pcscope.storage.disks";let health="pcscope.hardware.disk-health";
+        let item=json!([{"id":"disk-1","data":{"ObjectId":"disk-1","FriendlyName":"Example disk","HealthStatus":"Healthy"}}]);
+        for (src,run) in [(source,"disk-base"),(health,"health-base")] {store.ingest(&network_snapshot(src,run,"2026-10-19T01:00:00Z",item.clone())).unwrap();drain(&store);}
+        assert_eq!(count(&store,"SELECT count(*) FROM object_instances"),1);
+        store.ingest(&network_snapshot(source,"disk-gone","2026-10-19T01:00:01Z",json!([]))).unwrap();drain(&store);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_instances WHERE lifecycle='active'"),1);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.no_longer_observed'"),0);
+        store.ingest(&network_snapshot(health,"health-gone","2026-10-19T01:00:02Z",json!([]))).unwrap();drain(&store);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_instances WHERE lifecycle='not_observed'"),1);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.no_longer_observed'"),1);
+    }
+
+    #[test]
+    fn native_sysmon_family_reaches_stored_actions_and_readable_query_subjects() {
+        use pcscope_contracts::query::{ActionFilter,QueryRequest};
+        let mut store=Store::open(":memory:").unwrap();let source="pcscope.eventlog.microsoft-windows-sysmon/operational";
+        let events:Vec<Value>=[(1,5),(5,3),(6,4),(7,3),(3,5),(11,2),(23,5),(26,5)].into_iter().map(|(id,version)|json!({
+            "id":id.to_string(),"kind":"execution.sysmon_event","object_id":format!("Microsoft-Windows-Sysmon/Operational/Microsoft-Windows-Sysmon/{id}"),"occurred_at":format!("2026-10-19T01:00:{id:02}Z"),
+            "data":{"channel":"Microsoft-Windows-Sysmon/Operational","provider":"Microsoft-Windows-Sysmon","event_id":id,"record_id":id,"system":{"Version":{"value":version.to_string()}},"source_time_available":true,
+                "fields":{"ProcessGuid":"{01234567-1234-1234-1234-123456789abc}","ProcessId":"42","Image":"C:\\Example\\example.exe","ImageLoaded":"C:\\Example\\module.dll","TargetFilename":"C:\\Example\\file.txt","Protocol":"tcp","SourceIp":"127.0.0.1","SourcePort":"55000","DestinationIp":"127.0.0.1","DestinationPort":"443"}}})).collect();
+        let batch=envelope(json!({"protocol_version":1,"request_id":"sysmon-native","type":"event_batch","source":source,"epoch":"first","batch_seq":1,"checkpoint":"26","events":events}));
+        store.ingest(&batch).unwrap();drain(&store);store.ingest(&batch).unwrap();drain(&store);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions"),8);
+        assert_eq!(count(&store,"SELECT count(*) FROM projection_queue WHERE state='failed'"),0);
+        let rows=store.query(&QueryRequest::ActionTimeline(ActionFilter{..Default::default()})).unwrap().data.unwrap();
+        for row in rows.as_array().unwrap(){assert_ne!(row["context"]["classification_status"],"unverified");
+            if row["action_id"]=="files.created" {assert_eq!(row["context"]["subject_label"],"file.txt");}
+            if row["action_id"]=="execution.driver_loaded" {assert_eq!(row["context"]["subject_label"],"module.dll");assert!(row["instance_id"].is_null(),"image path is not a service identity");}
+        }
     }
     #[test]
     fn retained_addition_recovery_is_bounded_idempotent_and_preserves_raw_material() {
@@ -1265,6 +1450,7 @@ mod tests {
         drain(&store);
         assert_eq!(count(&store,"SELECT count(*) FROM object_instances"),5);
         assert_eq!(fact(&store,group,"name").unwrap().0,json!("Renamed group").to_string());
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE field_id='members'"),0,"member order alone cannot be a change");
         store.ingest(&account_snapshot(source,"groups-3","2026-10-13T03:00:00Z",items("Renamed group",json!(["S-1-5-21-200"])))).unwrap();
         drain(&store);
         assert_eq!(store.instance_summary(first).unwrap().unwrap()["lifecycle"],"not_observed");

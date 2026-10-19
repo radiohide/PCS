@@ -223,6 +223,7 @@ const actions=[
   'observed.configuration_changed|观察到配置变化|snapshot_change|observed|-',
   'observed.state_changed|观察到状态变化|state_change|observed|-',
   'observed.first_seen|首次观察到|snapshot_change|observed|-',
+  'observed.reappeared|再次记录到此对象|snapshot_change|observed|-',
   'observed.no_longer_observed|本次未发现|snapshot_change|observed|-',
   // 采集状态：不是被监控对象的动作
   'coverage.gap|采集缺口|internal|failed|-',
@@ -244,4 +245,4 @@ const result_semantics=[
   ['unknown','未知','来源未提供结果'],
 ];
 
-module.exports={version:'1.2.6',categories,field_kinds,value_status,derivations,time_precisions,identity_strategies,name_key_terms,scope_only_keys,forbidden_identity_terms,actions,result_semantics};
+module.exports={version:'1.2.7',categories,field_kinds,value_status,derivations,time_precisions,identity_strategies,name_key_terms,scope_only_keys,forbidden_identity_terms,actions,result_semantics};

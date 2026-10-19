@@ -272,6 +272,7 @@ fn transition_name(transition: &LifecycleTransition) -> &'static str {
     match transition {
         LifecycleTransition::FirstObserved { .. } => "first_observed",
         LifecycleTransition::StillObserved => "still_observed",
+        LifecycleTransition::ObservedAgain { .. } => "observed_again",
         LifecycleTransition::NotObserved { .. } => "not_observed",
         LifecycleTransition::EndedStated { .. } => "ended_stated",
         LifecycleTransition::RemovedStated { .. } => "removed_stated",

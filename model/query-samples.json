@@ -5,7 +5,7 @@
     {
       "name": "type_catalog",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "data": [
           {
@@ -622,7 +622,7 @@
     {
       "name": "instance_list",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "counts": {
           "actions": 7,
@@ -814,7 +814,7 @@
     {
       "name": "instance_detail",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "counts": {
           "actions": 7,
@@ -1114,7 +1114,7 @@
     {
       "name": "instance_actions",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "counts": {
           "actions": 3,
@@ -1190,7 +1190,7 @@
     {
       "name": "evidence_available",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "data": {
           "decoding": "available",
@@ -1211,7 +1211,7 @@
     {
       "name": "evidence_pruned",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "data": {
           "decoding": "available",
@@ -1244,7 +1244,7 @@
     {
       "name": "source_coverage",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "data": [
           {
@@ -1333,7 +1333,7 @@
     {
       "name": "projection_status",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "data": [
           {
@@ -1341,7 +1341,7 @@
             "failed": 0,
             "pending": 0,
             "projection": "objects",
-            "rule_version": "e947e462e9728ab3535487ce5679368b7b4ced889b1c0097e3a2374cdbf333b9",
+            "rule_version": "764c1371fe3d6b5452024c7f8b706b3b29c0e9eae21a8e00e9bad438c26dd6f7",
             "schema_version": 6,
             "updated_at": "2026-09-12T09:00:05.000Z",
             "watermark": "wm-1"
@@ -1352,7 +1352,7 @@
             "last_error": "示例解析问题：来源结构版本不受支持",
             "pending": 128,
             "projection": "facts",
-            "rule_version": "e947e462e9728ab3535487ce5679368b7b4ced889b1c0097e3a2374cdbf333b9",
+            "rule_version": "764c1371fe3d6b5452024c7f8b706b3b29c0e9eae21a8e00e9bad438c26dd6f7",
             "schema_version": 6,
             "updated_at": "2026-09-12T09:00:05.000Z",
             "watermark": "wm-1"
@@ -1365,7 +1365,7 @@
     {
       "name": "action_timeline",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "counts": {
           "actions": 210,
@@ -1440,7 +1440,7 @@
     {
       "name": "source_readings",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "data": [
           {
@@ -1468,7 +1468,7 @@
     {
       "name": "update_operation",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "data": [
           {
@@ -1498,7 +1498,7 @@
     {
       "name": "instance_list_empty",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "counts": {
           "actions": 0,
@@ -1519,7 +1519,7 @@
     {
       "name": "unsupported",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "mock": true,
         "status": "unsupported",
@@ -1534,7 +1534,7 @@
     {
       "name": "permission_denied",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "mock": true,
         "status": "permission_denied",
@@ -1564,7 +1564,7 @@
     {
       "name": "instance_list_presentation",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "data": [
           {
@@ -1735,7 +1735,7 @@
     {
       "name": "action_timeline_context",
       "response": {
-        "catalog_version": "1.2.6",
+        "catalog_version": "1.2.7",
         "contract_version": 1,
         "data": [
           {
@@ -1840,7 +1840,7 @@
       "observed",
       "unknown"
     ],
-    "catalog_version": "1.2.6",
+    "catalog_version": "1.2.7",
     "contract_version": 1,
     "coverage_history": [
       "catching_up",

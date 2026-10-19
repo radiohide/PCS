@@ -9,7 +9,7 @@ const migration=read('model/native-migration.json');
 const typeRows=`
 account.user|创建 ↔ 删除；启用 ↔ 停用；锁定 ↔ 解锁；改名|Security 有对应分类；原生账户表提供当前状态|账户 SID；名称变化保持身份|G01,G02,G07
 account.group|建立 ↔ 删除；改名|组清单可差分；当前 Security 专项仅成员加入/移除，未分类组创建/删除|组 SID；组本身与成员登记分开|G01,G02,G07
-account.group_membership|加入组 ↔ 移出组|Security 4732/4733 两端；原生组成员子表更新当前状态|组 SID＋成员 SID；子表移除更新对象但未生成对应快照行动|G03,G07
+account.group_membership|加入组 ↔ 移出组|Security 4732/4733 两端；原生组成员子表更新当前状态|组 SID＋成员 SID；完整子表增减已补行动，旧材料重放另行验收|G03,G07
 account.user_profile|登记加入 ↔ 移除；加载 ↔ 卸载|原生配置文件清单和 loaded 字段|账户 SID；清单移除和配置目录删除分开|G01,G02
 account.right_assignment|授予 ↔ 撤销|原生 LSA 权限子表可更新当前分配；4672 是登录令牌权限|账户 SID＋权限；尚无长期分配事件配对|G03,G07
 account.machine_identity|名称、域/工作组、角色变化|原生单机配置字段对比|同一安装作用域；无新增/删除过程要求|G06
@@ -22,7 +22,7 @@ software.portable_registration|文件登记加入 ↔ 移除；版本变化|仅�
 software.system_update|安装 ↔ 卸载；开始 → 成功/失败/中止|原生 WUA 历史保留 operation/result；QFE 是当前清单子集|更新 ID＋修订；历史操作不并入当前安装清单|G07,G09
 software.language_package|包加入 ↔ 移除；版本替换|标准全局 npm 目录原生读取清单|管理器＋包名＋版本；自定义 prefix 不覆盖|G01,G02,G09
 runtime.process|启动 ↔ 退出|原生进程清单；Security 4688/4689 和 Sysmon 1/5 两端|PID＋创建时间/可靠 ProcessGuid；短进程需日志|G01,G04,G07
-runtime.module_instance|加载 ↔ 卸载；所属进程退出|指定进程原生模块清单；Sysmon 7 只有加载分类|进程实例＋模块路径；同一进程卸载后重载缺再次出现行动|G01,G02,G04,G07
+runtime.module_instance|加载 ↔ 卸载；所属进程退出|指定进程原生模块清单；Sysmon 7 只有加载分类|进程实例＋模块路径；同一进程卸载后重载已有再现行动，Sysmon 跨来源关联待补|G01,G02,G04,G07
 runtime.logon_session|登录 ↔ 注销；注销请求 → 完成|原生 LSA 会话；Security 4624/4634 两端，4647 是请求|登录 ID＋启动周期；缺启动周期不能跨重启配对|G01,G04,G07
 runtime.terminal_session|登录 ↔ 注销；连接 ↔ 断开；锁定 ↔ 解锁|原生 WTS 状态；Security 与 LSM 的明确状态规则|会话 ID＋范围/代际；断开后会话可能继续存在|G01,G02,G07
 startup.service|服务登记加入 ↔ 移除；运行 ↔ 停止；启动失败|原生服务清单/配置；Security 4697 安装；SCM 7036 可解码状态|稳定服务名；显示名仅唯一匹配；未建服务卸载事件行动|G01,G02,G07
@@ -111,18 +111,18 @@ desktop.sync_account|同步账户登记加入 ↔ 移除；配置变化|原生 O
 `.trim().split('\n').map(line=>{const [id,pairs,current,identity,gaps]=line.split('|');return {id,pairs,current,identity,gaps:gaps.split(',')};});
 const issues=[
  ['G01','P0','首次出现端曾缺失','0.2.4 已补原始 object.first_seen → 新增时间线，首轮基线不报新增；不能据此宣布所有对象的加入/移除完整。','独立源行新增 → 消失各一条；重发不重复；首轮基线零新增。'],
- ['G02','P0','同身份再次出现','当前新增行动要求 first_observed_at 等于本条时间；旧对象离开后回来不会补“重新出现”。','同键 A→空→A→空，四阶段齐全；确认删除后新建须按代际规则。'],
- ['G03','P0','父记录中的子项增减','只有组成员/账户权限有专门子项缺席状态处理，仍未生成对应快照行动；其他展开来源须逐一补子集合差分。','父项 ID 不变，子项 [A,B]→[B,C]→[]：A/C/B 各自有增减，无父对象串联。'],
+ ['G02','P0','同身份再次出现','0.2.14 已按生命周期转换补 observed.reappeared；首次基线保持安静，重复回放不增加行动。旧材料定向补算仍待后续重放工具。','同键 A→空→A→空，四阶段齐全；确认删除后新建须按代际规则。'],
+ ['G03','P0','父记录中的子项增减','0.2.14 已补组成员、权限、浏览器策略、环境变量、系统策略、StartupApproved、排除项和 ADS 的完整子集合行动；ACL、目录子项和其他展开来源继续开放。','父项 ID 不变，子项 [A,B]→[B,C]→[]：A/C/B 各自有增减，无父对象串联。'],
  ['G04','P1','短生命周期或不完整身份','快照可漏掉两轮之间完成的活动；UDP 等暂定身份新增可唯一绑定，缺席分支却要求完整键，存在两端不对称。','TCP/监听/UDP/短进程/打印作业分别验证；无可靠身份只保留来源记录，不套当前对象。'],
  ['G05','P1','路径、文件身份与监控名单变化','文件不存在、无法读取、路径改名、文件被替换、从监控名单移除须分别处理；USN 只覆盖名单与可读 NTFS 卷。','原文件改名、同路径换文件、拒绝读取、移除监控名单四类互不误报。'],
  ['G06','P1','状态对与清单对混用','已有字段变化并不等于存在可读的启停/恢复过程；单例配置不需要虚构新增/删除。','同对象字段 A→B→A 完整；错误/不支持/未知不转换成关闭或移除。'],
  ['G07','P1','原始日志不等于过程已建模','通道读入、前端事件解释、对象行动、同一次操作的开始/结果关联是不同层。多数扩展通道仅原始日志，不能记作成对过程已完成。','按 provider/channel/version/ID/操作字段解码；按 TaskInstanceId/ActivityId 等可靠键关联；无终点不补成功。'],
- ['G08','P0','稳定源行中的对象身份更换','设备 ID 不变而 DriverVersion 改变，原始记录是 object.changed；只处理 object.first_seen/removed 无法保证旧绑定退出与新绑定加入。','驱动 A→B→A：两次旧绑定离开、两次新绑定加入，设备仍是同一个。'],
+ ['G08','P0','稳定源行中的对象身份更换','0.2.14 已按设备＋版本重新绑定并关闭旧绑定，A→B→A 隔离回放通过；旧混合身份修复和实机驱动操作验收继续开放。','驱动 A→B→A：两次旧绑定离开、两次新绑定加入，设备仍是同一个。'],
  ['G09','P1','版本替换与操作结果','版本对象身份可改变；安装/升级/卸载应按产品/包/设备锚点归并，不能把独立行硬配成一次成功操作。','并存版本、升级失败回滚、只移除登记、下载但未安装分别验收。'],
  ['G10','P1','多来源、多登记角色及作用范围','单个来源/COM 角色离开不意味着整个对象消失；同来源多项绑定和机器/用户、32/64 位范围须保留。','A 来源离开但 B 仍在；COM 一个角色移除；禁用采集不产生移除。'],
  ['G11','P2','Hyper-V 环境缺口','四项 Hyper-V 来源仍为 PowerShell 兼容，用户暂未提供测试环境；不列为原生迁移或实机配对验收通过。','有环境后验证虚拟机、检查点、交换机、磁盘连接全流程；现阶段不启用系统功能。'],
- ['G12','P0','Sysmon 生产分类未接到对象行动','原生 Kind() 对全部 Sysmon 事件输出 execution.sysmon_event；它不是已注册对象动作，EventAdapter 回退表又只支持 Security/TaskScheduler。collection-catalog 的 actions 用于分类/解释，未被该链路用于改写事件 kind。因此 1/5、6/7、3、11/23/26 等当前只能留原始事件，不能按已有分类宣称对象行动已接通。','将真实生产信封 1/5、6/7、3、11/23/26 贯穿存储与同用查询；校验 provider/channel、时间、身份和文件名单；不能仅传预分类的 fixture kind 验收。'],
-].map(([id,priority,name,current,acceptance])=>({id,priority,status:id==='G01'?'implemented_with_stated_limits':'open',name,current,acceptance}));
+ ['G12','P0','Sysmon 分类和跨来源实例关联','0.2.14 后端已从 execution.sysmon_event 解码 1/5、6/7、3、11/23/26 的指定版本，并离线贯通入库与查询。其他 Sysmon 分类、与原生进程／文件的可靠身份关联及实机环境验收仍开放。','将真实生产信封 1/5、6/7、3、11/23/26 贯穿存储与同用查询；校验 provider/channel、时间、身份和文件名单；不能仅传预分类的 fixture kind 验收。'],
+].map(([id,priority,name,current,acceptance])=>({id,priority,status:['G01','G02'].includes(id)?'implemented_with_stated_limits':'open',name,current,acceptance}));
 const types=new Map(typeRows.map(t=>[t.id,t]));
 assert.equal(types.size,typeRows.length,'duplicate type review');
 assert.deepEqual([...types.keys()].sort(),catalog.types.map(t=>t.id).sort(),'type review drift');
@@ -148,7 +148,7 @@ const eventNotes={
  'pcscope.eventlog.system':'SCM 7036 明确运行状态可唯一显示名匹配服务；其余服务/系统事件可读原始记录。缺服务卸载专门动作和统一启动失败关联。',
  'pcscope.eventlog.application':'MSI、错误、无响应、WER 等原始日志与可读解释；未实现通用安装/卸载开始与结果的过程关联。',
  'pcscope.eventlog.microsoft-windows-taskscheduler/operational':'100/102 开始/结束可分类，100 携带实例；未按同一次运行组织开始、动作返回、结束及失败。',
- 'pcscope.eventlog.microsoft-windows-sysmon/operational':'前端/目录有进程 1/5、文件 11/23/26 等分类，但生产原生 Kind() 统一给 execution.sysmon_event，未接入对象行动（G12）。6/7 本身也只有加载，3 只有连接观察，没有卸载/关闭另一端。',
+ 'pcscope.eventlog.microsoft-windows-sysmon/operational':'0.2.14 已接 1/5、6/7、3、11/23/26 指定版本的原生通用 kind；其余类别和跨来源身份继续开放。6/7 只有加载、3 只有连接观察，没有卸载/关闭另一端。',
  'pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational':'603 开始、404 失败、613 性能摘要已有文案；939–942 是部署服务状态；未构成应用包安装/卸载的统一结果过程。',
  'pcscope.eventlog.microsoft-windows-grouppolicy/operational':'已有服务启停、400x/800x 处理开始/完成等事件说明；未按处理活动关联到一次过程。',
  'pcscope.eventlog.microsoft-windows-windowsupdateclient/operational':'日志可读安装/检查阶段；原生 WUA 历史另有安装/卸载和结果，尚未跨来源关联一次更新操作。',
@@ -172,12 +172,12 @@ const expandedSources=new Set(['pcscope.identity.groups','pcscope.identity.assig
 // A catalog action and a fixture carrying that action are not proof the native emitter uses it.
 for(const id of catalog.sources.filter(s=>s.source==='pcscope.eventlog.microsoft-windows-sysmon/operational').flatMap(s=>s.types))types.get(id).gaps.push('G12');
 const replaceCurrent=(id,text)=>{types.get(id).current=text;};
-replaceCurrent('runtime.process','原生进程清单；Security 4688/4689 有两端；Sysmon 1/5 仅目录分类，生产对象行动链路未接通（G12）');
-replaceCurrent('runtime.module_instance','指定进程原生模块清单；Sysmon 7 有加载日志，但生产对象行动链路未接通（G12），且无卸载对应分类');
-replaceCurrent('hardware.driver_service','原生 Win32_SystemDriver 状态；Sysmon 6 有加载日志，生产对象行动链路未接通（G12）');
-replaceCurrent('file.watched_file','指定文件原生读取、模块文件自动名单；USN 有通用文件变更行动；Sysmon 创建/删除分类尚未接到生产对象行动（G12）');
+replaceCurrent('runtime.process','原生进程清单；Security 4688/4689 有两端；0.2.14 已接 Sysmon 1/5 指定版本，原生实例关联仍待补（G12）');
+replaceCurrent('runtime.module_instance','指定进程原生模块清单已有再现行动；0.2.14 已接 Sysmon 7 指定版本，无卸载对应分类，跨来源实例关联待补（G12）');
+replaceCurrent('hardware.driver_service','原生 Win32_SystemDriver 状态；0.2.14 已接 Sysmon 6 驱动文件加载，不能由文件名猜服务 Name（G12）');
+replaceCurrent('file.watched_file','指定文件原生读取、模块文件自动名单；USN 有通用文件变更行动；0.2.14 已接 Sysmon 11/23/26 指定版本的操作历史，缺 FileId 时不关联当前文件（G12）');
 replaceCurrent('file.alternate_data_stream','指定文件内 ADS 清单；Sysmon 15 有创建日志，未接生产对象行动，且无删除对应分类');
-replaceCurrent('network.endpoint','原生 TCP/UDP 表；Security 5156/5157 是允许/阻止；Sysmon 3 原始连接日志尚未接到对象行动（G12）');
+replaceCurrent('network.endpoint','原生 TCP/UDP 表；Security 5156/5157 是允许/阻止；0.2.14 已接 Sysmon 3 指定版本，完整连接身份和关闭端继续开放（G12）');
 reading['pcscope.usn.{drive}']='原生已有 USN 日志增量，已有 files.usn_changed 通用行动；名单内 reason_mask 保留创建/删除/重命名依据，尚未按 reason 拆为逐类行动/关联重命名前后。';
 const sourceRows=inventory.sources.map(s=>{
  const maps=catalog.sources.filter(x=>x.source===s.source),typeIds=unique(maps.flatMap(x=>x.types));
@@ -250,13 +250,13 @@ microsoft-windows-grouppolicy/operational.applicability|4126/5126 获取开始�
 microsoft-windows-grouppolicy/operational.diagnostics|环回模式、内部状态、实例诊断是诊断字段，无通用开始结束要求。
 microsoft-windows-appxdeploymentserver/operational.deployment|603 开始、404 失败，613 是性能摘要不能直接标成功；缺包级安装/卸载完整结果关联。
 microsoft-windows-appxdeploymentserver/operational.service|939/940 正在启动/运行，941/942 正在停止/停止；描述部署服务，不表示应用包安装卸载成功。
-microsoft-windows-sysmon/operational.processes|1/5 是启退对应分类；原生统一 kind 未接到对象动作（G12），PID/ProcessGuid 仍须可靠关联。
+microsoft-windows-sysmon/operational.processes|1/5 指定版本已从原生通用 kind 接入启退行动；与原生 PID＋创建时间实例的关联待补（G12）。
 microsoft-windows-sysmon/operational.process-access|8/10/25 是远程线程、访问和映像异常行为；无天然反向端；生产动作链路仍缺 G12。
-microsoft-windows-sysmon/operational.network|3 只有连接观察，无关闭事件分类；生产对象行动链路还缺 G12。
+microsoft-windows-sysmon/operational.network|3 指定版本已接连接观察，无关闭事件分类，完整身份关联继续开放（G12）。
 microsoft-windows-sysmon/operational.dns|22 是查询行为和结果，不是缓存加入/删除的一对；生产动作链路仍缺 G12。
-microsoft-windows-sysmon/operational.files|11 创建/覆盖、23/26 删除等已有分类，须名单内文件身份；15 流创建缺移除，生产行动仍缺 G12。
+microsoft-windows-sysmon/operational.files|11/23/26 指定版本已接操作历史，缺 FileId 时不关联当前文件；15 等其他分类继续开放（G12）。
 microsoft-windows-sysmon/operational.registry|12 须读 EventType 才区分创建/删除，13 设置、14 改名；当前只有事件分类，生产行动仍缺 G12。
-microsoft-windows-sysmon/operational.modules|6 驱动加载、7 模块加载是两类对象的同一侧，不是加载卸载一对；生产行动仍缺 G12。
+microsoft-windows-sysmon/operational.modules|6/7 指定版本已接加载历史；没有卸载对应端，服务和原生进程实例关联继续开放（G12）。
 microsoft-windows-sysmon/operational.wmi|19/20/21 是筛选器、消费者、绑定三类记录，须读 Operation 区分增删；生产行动仍缺 G12。
 microsoft-windows-sysmon/operational.pipes|17 创建和18连接不是创建删除一对；无关闭另一端，生产行动仍缺 G12。
 microsoft-windows-sysmon/operational.raw-disk|9 是读取行为，无自然反向端；不能当作磁盘出现或消失，生产行动仍缺 G12。
@@ -278,10 +278,10 @@ for(const c of controls)assert(itemRows.some(i=>i.id===c.id),`uncovered control 
 assert.deepEqual(sourceRows.flatMap(s=>s.control_ids).sort(),controls.map(c=>c.id).sort(),'source/control association drift');
 assert.deepEqual(sourceRows.flatMap(s=>s.definition_ids).sort(),definitions.map(d=>d.id).sort(),'source/definition association drift');
 for(const t of catalog.types){const r=types.get(t.id);r.name=t.name;r.category=t.category;r.source_ids=unique(catalog.sources.filter(s=>s.types.includes(t.id)).map(s=>s.source));assert(r.source_ids.length,`uncovered type ${t.id}`);for(const s of r.source_ids)assert(sources.has(s),`unknown type source ${s}`);}
-const inputPaths=['model/sources.json','model/catalog.json','model/native-migration.json','apps/desktop/ui/collection-catalog.json','apps/desktop/ui/collection-controls.json','crates/storage/src/timeline_policy.rs','crates/storage/src/query.rs','crates/contracts/src/semantics.rs','crates/storage/src/projection.rs','crates/storage/src/identity.rs','crates/storage/src/evidence.rs','crates/storage/src/item_controls.rs','crates/contracts/src/adapters/event.rs','crates/contracts/src/adapters/event_state_adapter.rs','crates/contracts/src/adapters/source_gaps.rs','crates/contracts/src/reference.rs','plugins/eventlog-native/Program.cs','plugins/eventlog/src/main.rs','plugins/usn/src/main.rs','plugins/eventlog/channels.json'];
+const inputPaths=['model/sources.json','model/catalog.json','model/native-migration.json','apps/desktop/ui/collection-catalog.json','apps/desktop/ui/collection-controls.json','crates/storage/src/timeline_policy.rs','crates/storage/src/query.rs','crates/contracts/src/semantics.rs','crates/storage/src/projection.rs','crates/storage/src/identity.rs','crates/storage/src/evidence.rs','crates/storage/src/item_controls.rs','crates/contracts/src/adapters/event.rs','crates/contracts/src/adapters/sysmon.rs','crates/contracts/src/adapters/event_state_adapter.rs','crates/contracts/src/adapters/source_gaps.rs','crates/contracts/src/reference.rs','plugins/eventlog-native/Program.cs','plugins/eventlog/src/main.rs','plugins/usn/src/main.rs','plugins/eventlog/channels.json'];
 const hashes=Object.fromEntries(inputPaths.map(p=>[p,crypto.createHash('sha256').update(fs.readFileSync(path.join(root,p))).digest('hex')]));
 const runtimeObservations={basis_version:'0.2.4',date:'2026-10-15',network_recent_200:{first_seen:112,no_longer_observed:88},writer_contention:{sample_shell_registration_pending:42302,recovery_state:'stopped_due_to_writer_contention',persisted_recovery_cursor:3584,latest_record_seq_at_check:88252,normal_collection_running:true,acceptance:'历史未全部回补；需要先评估投影吞吐和公平写入窗口，不提高重试频率。'}};
-const report={date:'2026-10-19',product_version:'0.2.13',basis:'current_source_review',verification:'逐项源码覆盖审查；没有执行真实驱动安装/卸载等破坏性操作；未声称全部端到端实机通过。',counts:{definitions:definitions.length,controls:controls.length,sources:sourceRows.length,types:typeRows.length,event_channels:Object.keys(eventNotes).length,event_rules:definitions.filter(d=>d.event_rule).length,native_sources:sourceRows.filter(s=>s.backend==='native').length,compatibility_sources:sourceRows.filter(s=>s.backend==='powershell_compatibility').length,virtual_sources:sourceRows.filter(s=>s.virtual).length,uncovered_definitions:0,uncovered_controls:0,uncovered_sources:0,uncovered_types:0},issues,runtime_observations:runtimeObservations,sources:sourceRows,items:itemRows,types:typeRows,input_sha256:hashes};
+const report={date:'2026-10-19',product_version:'0.2.14',basis:'current_source_review',verification:'逐项源码覆盖审查；没有执行真实驱动安装/卸载等破坏性操作；未声称全部端到端实机通过。',counts:{definitions:definitions.length,controls:controls.length,sources:sourceRows.length,types:typeRows.length,event_channels:Object.keys(eventNotes).length,event_rules:definitions.filter(d=>d.event_rule).length,native_sources:sourceRows.filter(s=>s.backend==='native').length,compatibility_sources:sourceRows.filter(s=>s.backend==='powershell_compatibility').length,virtual_sources:sourceRows.filter(s=>s.virtual).length,uncovered_definitions:0,uncovered_controls:0,uncovered_sources:0,uncovered_types:0},issues,runtime_observations:runtimeObservations,sources:sourceRows,items:itemRows,types:typeRows,input_sha256:hashes};
 assert.equal(report.counts.event_channels,read('plugins/eventlog/channels.json').length,'event channel coverage drift');
 const esc=x=>String(x??'').replace(/\|/g,'\\|').replace(/\r?\n/g,'<br>');
 const list=a=>a.map(esc).join('<br>')||'—';
@@ -293,31 +293,31 @@ let sourceDoc='# 全部来源的成对变化审查\n\n'+nav+'\n\n'+banner+'后�
 for(const s of sourceRows)sourceDoc+=`| ${esc(s.name)}<br>\`${s.source}\` | ${esc(s.backend)}<br>${list(s.material)} | ${list(s.type_ids)}<br>${s.definition_ids.length} 个定义 / ${s.control_ids.length} 个开关 | ${esc(s.current)}<br>${s.gaps.join(', ')} | ${list(s.environment)} |\n`;
 let itemDoc='# 全部采集定义与开关的审查\n\n'+nav+'\n\n'+banner+'225 个定义逐行列出；其中 222 个有单独开关。状态/其他事件分类也计入，避免只检查有明确事件编号的规则。事件标题列出编号与来源名称；动作在模型中注册仍不代表已完成跨记录关联。\n\n| 采集定义 | 性质/开关 | 事件范围或对象 | 审查结果 |\n|---|---|---|---|\n';
 for(const i of itemRows){const rule=i.rule;const range=rule?`提供程序：${rule.provider||'通道范围'}；编号：${(rule.event_ids||[]).join(', ')||'按分类/兜底读取'}${i.declared_event_actions.length?'<br>'+i.declared_event_actions.map(a=>`${a.event_id} ${a.name}${a.catalog_action?'〔模型动作〕':'〔事件解释〕'}`).join('<br>'):''}`:list(i.type_ids);itemDoc+=`| ${esc(i.name)}<br>\`${i.id}\` | ${i.kind}<br>${i.configurable?'有开关':'无独立开关（汇总/诊断范围）'} | ${range} | ${esc(i.review)}<br>${i.gaps.join(', ')} |\n`;}
-let main='# 采集全过程与成对变化审查（0.2.11）\n\n'+nav+'\n\n';
+let main='# 采集全过程与成对变化审查（0.2.14）\n\n'+nav+'\n\n';
 main+='结论：原生采集已覆盖大部分当前状态，但“读取了清单”和“用户能看到完整的来去过程”之间仍有共性缺口。不能因为两种原始日志都被读入，就宣布安装/卸载、启停或开始/结果已经闭环。\n\n';
 main+=`本次逐项覆盖 **${definitions.length} 个定义、${controls.length} 个开关、${sourceRows.length} 个来源、${typeRows.length} 类对象、23 个日志通道、109 个日志分类**，未覆盖项为 **0**。当前来源归属为 127 原生、4 Hyper-V 兼容、2 汇总/导入。验证口径为源码审查与覆盖校验，不是 225 项真实操作验收。\n\n`;
 main+='0.2.6 已调整日常时间/读数的主时间线显示，防护更新合并摘要，修正随机密文导致的假变化；模块加载地址变化按用户要求保留。详见[验收记录](acceptance/routine-updates.md)。这只解决 G06 的部分可读性问题，其他过程缺口保留。旧运行观察以 0.2.4 为依据，不视为本版重新验收。\n\n';
-main+='## 当前必须先补的四处\n\n';
-main+='1. **首次出现**：此前只记入原始差异，没进入对象时间线；0.2.4 已补，首轮基线保持安静。\n2. **再次出现**：同一个对象离开后回来，不能继续只认第一次看到。\n3. **子项增减**：组成员、权限、浏览器策略、排除项、环境变量、ACL、文件流等，需要对子集合逐项差分。\n4. **身份替换**：驱动版本等改变身份时，同一源行的 `object.changed` 要拆出旧绑定离开和新绑定加入，不能只等源行新增/删除。\n\n';
+main+='## 首批实现与后续缺口\n\n';
+main+='1. **首次出现**：此前只记入原始差异，没进入对象时间线；0.2.4 已补，首轮基线保持安静。\n2. **再次出现**：0.2.14 已补同一对象离开后回来的再现行动，旧材料回补继续开放。\n3. **子项增减**：0.2.14 已补组成员、权限、浏览器策略、排除项、环境变量、系统策略、StartupApproved 和 ADS；ACL 等展开来源继续开放。\n4. **身份替换**：0.2.14 已补同一设备行中版本 A→B→A 的绑定退出与加入，旧混合身份修复及实机验收继续开放。\n\n';
 main+='这四项解决后，再做运行启停、操作结果和多来源关联。单例配置、采样、能力诊断没有自然的安装/删除对，应保留状态变化，不制造事件。\n\n';
-main+='**另有已确认的 P0 生产断点 G12**：Sysmon 所有事件在原生采集器中统一为 `execution.sysmon_event`，后端回退映射不支持该提供程序，目录里的事件动作没有参与改写。于是进程启退、驱动/模块加载、连接、文件创建/删除虽有界面分类，当前不能据此认定已进入对象行动。验收必须用原生实际信封，不能只用手工填写精确 action kind 的测试材料。\n\n';
+main+='**G12 首批链路已接通**：0.2.14 从原生 `execution.sysmon_event` 解码 1/5、6/7、3、11/23/26 的指定版本，离线贯通存储与查询；其他类别、跨来源实例关联和实机环境验收继续开放。详见[首批实现记录](acceptance/robustness-readability-first-batch.md)。\n\n';
 main+='## 驱动应拆成五层\n\n| 层次 | 加入端 | 移除/结束端 | 当前状态 |\n|---|---|---|---|\n';
 main+='| 驱动仓库包 | 仓库中新增包 | 仓库不再列出该包 | 原生 DISM 已有全清单；0.2.4 接通首次出现；重复加入、安装过程仍缺。身份为 INF＋仓库路径。 |\n';
 main+='| 驱动服务登记 | 服务登记加入 | 服务登记移除 | 原生 Win32_SystemDriver；清单对不等于驱动包安装/卸载。 |\n';
 main+='| 设备驱动绑定 | 设备绑定到版本 B | 旧版本 A 绑定解除 | 设备 ID 不变时原始行是 changed；A→B→A 必须专项补齐，列为 P0。 |\n';
-main+='| 运行状态/加载 | 驱动开始运行；Sysmon 6 加载日志 | 驱动停止运行；真正卸载事件 | 原生 State 可作字段对比；Sysmon 加载事件还存在 G12 生产断点，也未接对应卸载事件。 |\n';
+main+='| 运行状态/加载 | 驱动开始运行；Sysmon 6 加载日志 | 驱动停止运行；真正卸载事件 | 原生 State 可作字段对比；Sysmon 6 指定版本已接驱动文件加载历史；服务身份关联和对应卸载事件仍缺。 |\n';
 main+='| 安装操作 | 开始安装/更新/卸载 | 成功、失败、回滚、需要重启 | 当前没有 SetupAPI 安装过程解析；UMDF 通道已读原始日志，尚未实现包级结果关联。 |\n\n';
 main+='用户时间线建议分别显示“新增驱动包”“仓库中已无此驱动包”“设备驱动：A → B”“驱动已开始运行／已停止”“驱动安装失败（原因）”。只有明确操作结果才写安装/卸载成功。多个包共享 INF、包存在但未绑定设备、设备已移除但包仍保留、安装失败回滚都要单独验证。\n\n';
 main+='## 成对过程的统一判定\n\n';
 main+='- **清单增减**：以前完整清单无该对象、这次有，显示首次记录到此项；同范围完整清单从有到无，按类型显示离开/移除。首次基线不当新增操作。\n- **状态变化**：运行/停止、启用/停用、健康/故障、连接/断开，记录同对象的前后值；未知和读取失败不参与开关判定。\n- **操作过程**：开始、成功、失败、取消、回滚按来源分别记录。同次操作用明确的 ActivityId/TaskInstanceId/包或设备身份关联，不按“时间差不多”硬配。\n- **重现与版本**：再次出现要记录重现；确认终结后按代际建新实例。A→B 是替换还是并存由实际身份/产品锚点判定。\n- **来源关系**：同一对象多个来源可以互补。一个来源读失败/禁用、一个 COM 角色移除，不使整个对象消失。\n- **时间**：快照仅给出两次完整检查之间的区间；有明确日志时间才用精确时间。界面的 30 秒时间分组只影响排版，不合并成同一次操作。\n- **模块文件**：sihost 等目标仍融入进程/模块/文件体系；成功观察模块后跟踪磁盘文件变化，校验失败/缺失/恢复是文件状态，不能直接认定进程启动失败原因。\n\n';
 main+='## 整改与验收队列\n\n| 编号 | 优先级 | 问题与当前结论 | 验收门槛 |\n|---|---|---|---|\n';
 for(const i of issues)main+=`| ${i.id} | ${i.priority} | **${i.name}**：${esc(i.current)} | ${esc(i.acceptance)} |\n`;
-main+='\n顺序：G02/G03/G08 共性投影与 G12 生产事件分类 → G04 暂定身份/短生命周期 → G06 各类型状态文案 → G07/G09 日志过程与版本归并 → G10 多来源专项 → G11 环境验收。G01 是本次已实现项，其余不标完成。\n\n';
+main+='\n顺序：G02/G03/G08 共性投影与 G12 生产事件分类 → G04 暂定身份/短生命周期 → G06 各类型状态文案 → G07/G09 日志过程与版本归并 → G10 多来源专项 → G11 环境验收。G01/G02 已有实现；G03/G08/G12 已完成首批指定范围，其余范围和实机验收不标完成。\n\n';
 main+='## 环境与性能约束\n\n';
 main+='继续采用原生后端采集；127 个原生来源失败后不回退 PowerShell。四项 Hyper-V 等有环境再迁移。普通/增强权限、当前用户/机器范围、已启用日志与可读保留历史分别记录。CNG 某提供程序失败只阻断该提供程序/范围，不能移除其旧密钥；无 Docker、无电池、无 Hyper-V 等按环境能力处理。\n\n';
 main+='状态差分只比较同范围、完整、成功且开关启用的相邻集合；绑定与水位持久保存，重发/重启可去重。优先使用变化通知唤醒有界复核，单个来源上轮完成再安排下轮；文件抖动合并、稳定后复核，排除历史数据库/WAL/SHM 和程序自身产物。不得为配对逐对象启动 PowerShell，不通过高频全盘/全注册表轮询补另一端。所有新事件流需有每轮预算、队列上限、背压与断点。\n\n';
-main+='本轮部署后的只读运行观察还发现**投影吞吐与维护写入调度缺口**：一次来源统计中，Shell/COM 登记有 42,302 条待处理，多个来源同时积压；失败数为零，但分批历史新增恢复多次因后台写入忙退避。尚不能把此现象认定为循环采集，需专项测量每轮完整观察的入队量、处理吞吐与稳定收敛，并评估无变化观察的批处理和公平写入窗口。现阶段不能将旧历史回补标为全部完成，也不应靠缩短重试间隔掩盖问题。\n\n';
-main+='本次额外恢复客户端已停止，持久游标保留在 3,584，检查时最新原始记录序号为 88,252；这是恢复进度标记，不是成功恢复条数。正常增强采集与界面继续运行。此运行限制单列保留，先解决吞吐/写入调度后再完成剩余回补。\n\n';
+main+='0.2.4 部署时的历史只读观察曾发现**投影吞吐与维护写入调度缺口**：一次来源统计中，Shell/COM 登记有 42,302 条待处理，多个来源同时积压；失败数为零，但分批历史新增恢复多次因后台写入忙退避。尚不能把此现象认定为循环采集，需专项测量每轮完整观察的入队量、处理吞吐与稳定收敛，并评估无变化观察的批处理和公平写入窗口。现阶段不能将旧历史回补标为全部完成，也不应靠缩短重试间隔掩盖问题。\n\n';
+main+='0.2.4 当时的额外恢复客户端已停止，持久游标保留在 3,584，检查时最新原始记录序号为 88,252；这是恢复进度标记，不是成功恢复条数。正常增强采集与界面继续运行。此运行限制单列保留，先解决吞吐/写入调度后再完成剩余回补。\n\n';
 main+='## 核对依据与复核命令\n\n';
 main+='采集定义/开关来自 `collection-catalog.json` / `collection-controls.json`；来源和对象来自 `model/sources.json` / `model/catalog.json`；原生归属来自 `native-migration.json` 和实际 emitters。通用新增/缺席、子对象、日志动作分别检查 `crates/storage/src/projection.rs`、`identity.rs`、`evidence.rs`、`crates/contracts/src/adapters/event*.rs`、`source_gaps.rs`、`reference.rs`。前端事件标题和当前状态文案分别检查 `event-semantics.js`、`type-presentation.js`，不将已有标题计作后端配对完成。\n\n';
 main+='运行 `node scripts/build-lifecycle-audit.cjs --check` 核对输入摘要、133/225/222/101 的完整覆盖和全部生成表；输入改变时需重新审查并运行不带 `--check` 的生成命令。该命令仅检查清单一致性，不替代驱动安装、会话、文件或虚拟化实际流程验收。\n';

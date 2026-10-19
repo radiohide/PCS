@@ -9,7 +9,7 @@ use std::sync::LazyLock;
 
 /// Version of the catalog this build understands. `scripts/check-model-catalog.cjs` fails when this
 /// and the catalog disagree, so a consumer cannot silently run against a different model.
-pub const MODEL_CATALOG_VERSION: &str = "1.2.6";
+pub const MODEL_CATALOG_VERSION: &str = "1.2.7";
 const CATALOG_JSON: &str = include_str!("../../../model/catalog.json");
 const PRESENTATION_JSON: &str = include_str!("../../../model/presentation.json");
 static PRESENTATION: LazyLock<Value> = LazyLock::new(||

@@ -116,7 +116,8 @@ pub fn apply(tx: &Connection, request: &IdentityRequest) -> Result<Outcome> {
     // historical object when the corrected adapter supplies one particular process generation.
     let require_native_key = (request.candidate.type_id == "startup.scheduled_task"
         && matches!(request.binding.source.as_str(), "pcscope.startup.tasks" | "pcscope.startup.task-details"))
-        || (request.candidate.type_id == "runtime.process" && request.binding.source == "pcscope.execution.processes");
+        || (request.candidate.type_id == "runtime.process" && request.binding.source == "pcscope.execution.processes")
+        || request.candidate.type_id == "hardware.driver_binding";
     let lookup = DbLookup { conn: tx, request, require_native_key };
     apply_using(tx, request, &lookup, false)
 }
@@ -190,7 +191,7 @@ pub(crate) fn apply_event(tx: &Connection, request: &IdentityRequest) -> Result<
     Ok(Outcome { resolution, instance_id: Some(instance_id), transition, created })
 }
 
-fn apply_using(tx: &Connection, request: &IdentityRequest, lookup: &dyn InstanceLookup, expanded: bool) -> Result<Outcome> {
+fn apply_using(tx: &Connection, request: &IdentityRequest, lookup: &dyn InstanceLookup, _expanded: bool) -> Result<Outcome> {
     let resolution = resolve(request, lookup);
     let observed_at = request.evidence_time.observed_at.clone();
 
@@ -220,12 +221,17 @@ fn apply_using(tx: &Connection, request: &IdentityRequest, lookup: &dyn Instance
     };
 
     let previous = candidate_instance.and_then(|id| previous_state(tx, id).transpose()).transpose()?;
-    let stale = if expanded {
-        candidate_instance.map(|id|tx.query_row(
+    let now=pcscope_contracts::semantics::canonical_time(&observed_at).ok();
+    let stale = candidate_instance.map(|id|tx.query_row(
             "SELECT last_observed_at,last_absent_at FROM object_instances WHERE instance_id=?",
             [id], |row|Ok((row.get::<_,String>(0)?,row.get::<_,Option<String>>(1)?)),
-        )).transpose()?.is_some_and(|(last_seen,last_absent)|last_seen>observed_at || last_absent.is_some_and(|at|at>=observed_at))
-    } else { false };
+        )).transpose()?.is_some_and(|(last_seen,last_absent)|{
+            let seen=pcscope_contracts::semantics::canonical_time(&last_seen).ok();
+            match (&now,seen){
+                (Some(now),Some(seen))=>seen>*now||last_absent.is_some_and(|at|pcscope_contracts::semantics::canonical_time(&at).ok().is_none_or(|at|at>=*now)),
+                _=>true,
+            }
+        });
     let transition = if stale {
         LifecycleTransition::Unchanged { reason: "list evidence does not supersede a later presence or an equally timed absence".into() }
     } else {
@@ -368,6 +374,7 @@ pub(crate) fn conclude_record_absence(
     };
     let mut absent=Vec::new();
     for (id,state,incarnation) in candidates {
+        if has_retained_observation(tx,id,observed_at,&binding.source,&binding.item_id)? {continue;}
         if let LifecycleTransition::NotObserved {..}=lifecycle(Some((state_from(&state),incarnation)),ObservationFacts::Absent,hints,observed_at) {
             // The complete list proves absence, not a new sighting and not deletion.
             tx.execute("UPDATE object_instances SET lifecycle='not_observed',last_absent_at=? WHERE instance_id=?",params![observed_at,id])?;
@@ -375,6 +382,57 @@ pub(crate) fn conclude_record_absence(
         }
     }
     Ok(absent)
+}
+
+/// Check retained current rows, across sources and roles, before retiring a shared instance.
+/// Open historical bindings alone are not proof of presence. Ambiguous/oversized material keeps
+/// the state instead of manufacturing a disappearance, and the bounded lookup never scans history.
+pub(crate) fn has_retained_observation(tx:&Connection,instance:u64,observed_at:&str,excluded_source:&str,excluded_item:&str)->Result<bool> {
+    use pcscope_contracts::adapter::{AdapterContext,Decoding,EvidenceInput,EvidenceKind,EvidenceRef};
+    let (typ,key,machine,installation,scope):(String,String,String,String,String)=tx.query_row(
+        "SELECT type_id,native_key,machine_id,installation_id,scope FROM object_instances WHERE instance_id=?",[instance],
+        |row|Ok((row.get(0)?,row.get(1)?,row.get(2)?,row.get(3)?,row.get(4)?)))?;
+    let Some(strategy)=pcscope_contracts::identity::TypeStrategy::for_type(&typ)else{return Ok(true)};
+    let rows:Vec<(String,String,String,Option<String>)>={
+        let mut query=tx.prepare("SELECT DISTINCT o.source,o.scope,o.id,CASE WHEN length(CAST(o.data AS BLOB))<=1048576 THEN o.data ELSE NULL END FROM source_bindings b JOIN objects o ON o.source=b.source AND o.id=b.item_id WHERE b.instance_id=? AND NOT(o.source=? AND o.id=?) LIMIT 129")?;
+        let rows=query.query_map(params![instance,excluded_source,excluded_item],|row|Ok((row.get(0)?,row.get(1)?,row.get(2)?,row.get(3)?)))?;
+        rows.collect::<rusqlite::Result<_>>()?
+    };
+    if rows.len()>128{return Ok(true)}
+    for (source,source_scope,item,payload) in rows {
+        let Some(adapter)=pcscope_contracts::reference::adapter_for(&source)else{return Ok(true)};
+        let Some(payload)=payload.and_then(|text|serde_json::from_str(&text).ok())else{return Ok(true)};
+        let input=EvidenceInput {source,item_id:item.clone(),native_record_id:item,source_scope:source_scope.clone(),payload,
+            evidence:EvidenceRef{kind:EvidenceKind::Snapshot,id:"retained-current-row".into()},structure_version:"v1".into(),source_time:None,
+            observed_at:observed_at.into(),ingested_at:observed_at.into(),decoding:Decoding{available:true,..Default::default()}};
+        let context=AdapterContext{machine_id:machine.clone(),installation_id:installation.clone(),collected_scope:pcscope_contracts::semantics::business_scope(&source_scope),
+            catalog_version:pcscope_contracts::model::catalog_version().into(),rule_version:pcscope_contracts::model::catalog_fingerprint(),boot_id:None,complete:true};
+        let adapted=adapter.adapt(&input,&context);
+        if !adapted.problems.is_empty(){return Ok(true)}
+        for observation in adapted.observations {
+            if observation.identity.type_id!=typ||observation.identity.scope!=scope{continue;}
+            let (candidate,missing)=pcscope_contracts::identity::normalise(&strategy,&observation.identity);
+            if !missing.is_empty()||candidate==key{return Ok(true)}
+        }
+    }
+    Ok(false)
+}
+
+/// A stable source row can change its identity (for example device driver A -> B).
+/// End only this row's old binding; keep the old instance active if another row still states it.
+pub(crate) fn retire_replaced_binding(tx:&Connection,request:&IdentityRequest,current:u64)->Result<Vec<u64>> {
+    let (_,missing)=pcscope_contracts::identity::normalise(&request.strategy,&request.candidate);
+    if !missing.is_empty()||!request.hints.configured||!request.hints.complete_observation{return Ok(Vec::new())}
+    let at=&request.evidence_time.observed_at;
+    let ids:Vec<u64>={let mut q=tx.prepare("SELECT DISTINCT i.instance_id FROM source_bindings b JOIN object_instances i ON i.instance_id=b.instance_id WHERE b.source=? AND b.item_id=? AND b.native_record_id=? AND b.scope=? AND b.valid_to IS NULL AND i.type_id=? AND i.machine_id=? AND i.installation_id=? AND i.instance_id<>? AND i.last_observed_at<? LIMIT 129")?;
+        let rows=q.query_map(params![request.binding.source,request.binding.item_id,request.binding.native_record_id,request.candidate.scope,request.candidate.type_id,request.machine_id,request.installation_id,current,at],|row|row.get(0))?;rows.collect::<rusqlite::Result<_>>()?};
+    if ids.len()>128{return Ok(Vec::new())}
+    let mut retired=Vec::new();
+    for id in ids {
+        tx.execute("UPDATE source_bindings SET valid_to=? WHERE instance_id=? AND source=? AND item_id=? AND native_record_id=? AND scope=? AND valid_to IS NULL",params![at,id,request.binding.source,request.binding.item_id,request.binding.native_record_id,request.candidate.scope])?;
+        if !has_retained_observation(tx,id,at,&request.binding.source,&request.binding.item_id)? && tx.execute("UPDATE object_instances SET lifecycle='not_observed',last_absent_at=? WHERE instance_id=? AND lifecycle='active'",params![at,id])?>0 {retired.push(id);}
+    }
+    Ok(retired)
 }
 
 /// Concludes absence for the instances a complete observation of `scope` did not cover.

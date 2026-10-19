@@ -1,5 +1,5 @@
 {
-  "version": "1.2.6",
+  "version": "1.2.7",
   "generated_by": "scripts/check-model-catalog.cjs",
   "note": "中立对象模型目录。ID 唯一来源是 model/vocabulary.cjs、model/types.cjs、model/source-map.cjs；本文件为展开结果，请勿手工编辑。",
   "categories": [
@@ -804,6 +804,13 @@
     {
       "id": "observed.first_seen",
       "name": "首次观察到",
+      "nature": "snapshot_change",
+      "result": "observed",
+      "target_type": null
+    },
+    {
+      "id": "observed.reappeared",
+      "name": "再次记录到此对象",
       "nature": "snapshot_change",
       "result": "observed",
       "target_type": null

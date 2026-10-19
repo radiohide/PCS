@@ -183,7 +183,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   const moduleDetail={status:'loaded',data:{summary:{...base,type_id:'runtime.module_instance',type_name:'模块加载实例',category:'runtime',instance_id:73579,alias:'module-pdh',display_name:'pdh.dll',lifecycle:'not_observed',record_basis:'observation',seen_at:'2026-10-19T05:25:19Z'},fields:[{field_id:'process_name',status:'known',value:'sihost'},{field_id:'module_origin',status:'known',value:'unknown'},{field_id:'signature_status',status:'known',value:'pending'}],actions_preview:[moduleGone,moduleFirst],bindings:[]}};
   await page.evaluate(({first,detail})=>{window.__qa.timeline=[first];window.__qa.detailFixture=detail;},{first:moduleFirst,detail:moduleDetail});
   await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-event-label').waitFor();
-  assert.equal(await page.locator('.timeline-event-label').textContent(),'首次记录到进程加载此模块');
+  assert.equal(await page.locator('.timeline-event-label').textContent(),'首次记录加载');
   assert.match(await page.locator('.timeline-object').innerText(),/查看当前状态/);
   await page.locator('.timeline-object').click();await page.locator('.model-detail .object-current-state').waitFor();
   assert.equal(await page.locator('.object-current-state').innerText(),'未加载');
@@ -191,7 +191,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.screenshot({path:path.join(output,'timeline-history-current-preview.png'),fullPage:false});
   checks.push('a historical module arrival opens the latest unloaded state, with historical fields and readable signature placeholders');
   await page.locator('.timeline-object').click();await page.evaluate(()=>{window.__qa.detailFixture.data.summary.lifecycle='active';});await page.locator('.timeline-object').click();await page.locator('.object-current-state').waitFor();
-  assert.equal(await page.locator('.object-current-state').innerText(),'已加载');assert.equal(await page.locator('.timeline-event-label').textContent(),'首次记录到进程加载此模块');
+  assert.equal(await page.locator('.object-current-state').innerText(),'已加载');assert.equal(await page.locator('.timeline-event-label').textContent(),'首次记录加载');
   checks.push('reopening queries the current object state without rewriting the historical first observation');
   await page.locator('.timeline-object').click();await page.evaluate(()=>{window.__qa.detailFixture.data.summary.record_basis='event_only';});await page.locator('.timeline-object').click();await page.locator('.object-current-state').waitFor();
   assert.equal(await page.locator('.object-current-state').innerText(),'未取得当前状态');

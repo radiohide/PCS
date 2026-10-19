@@ -11,7 +11,7 @@ const PCScopeTypePresentation=(()=>{
     [['runtime.process'],'已不在运行列表','进程已不在运行列表','此前的进程已不在运行列表中。'],
     [['runtime.module_instance'],'未加载','模块已不在加载列表','该模块已不在进程的加载列表中。'],
     [['runtime.logon_session','runtime.terminal_session'],'已不在登录会话列表','登录会话已不在列表','此前的登录会话已不在当前列表中。'],
-    [['desktop.print_job'],'已离开打印队列','打印任务已离开队列','作业可能已完成或被取消，日志未提供打印结果。'],
+    [['desktop.print_job'],'已离开打印队列','打印任务已离开队列','打印任务已离开队列。'],
     [['network.endpoint'],'已不在连接与监听列表','连接或监听项已不在列表','此前的连接或监听项已不在当前列表中。'],
     [['network.smb_session'],'已不在文件共享连接列表','文件共享连接已不在列表','此前的连接已不在当前列表中。'],
     [['startup.service','hardware.driver_service'],'服务登记不再列出','服务登记不再列出','当前服务清单中已无此登记。'],
@@ -42,8 +42,8 @@ const PCScopeTypePresentation=(()=>{
   function firstSeen(row,presence={}){
     const id=row?.type_id;
     const labels={
-      'runtime.process':'首次记录到此进程运行',
-      'runtime.module_instance':'首次记录到进程加载此模块',
+      'runtime.process':'首次记录运行',
+      'runtime.module_instance':'首次记录加载',
       'runtime.logon_session':'首次记录到此登录会话','runtime.terminal_session':'首次记录到此登录会话',
       'desktop.print_job':'首次记录到此打印作业进入队列',
       'startup.service':'首次记录到此服务登记','hardware.driver_service':'首次记录到此驱动服务登记',
@@ -107,6 +107,17 @@ const PCScopeTypePresentation=(()=>{
     if(value===null||value===undefined)return '未记录';
     const f=descriptor(row,id,all);
     if(f.kind==='ambiguous')return '含义待核实';
+    if(f.kind==='code')return f.summary||'状态代码已记录';
+    if(f.kind==='protocol_version')return typeof value==='string'&&/^\d+(?:\.\d+){1,3}$/.test(value)?'SMB '+value:'协议版本已记录';
+    if(f.kind==='container_status'){
+      if(typeof value!=='string')return '运行说明已记录';
+      if(/^Up\b/i.test(value))return /\(unhealthy\)/i.test(value)?'运行中 · 健康检查未通过':/\(healthy\)/i.test(value)?'运行中 · 健康检查通过':'运行中';
+      if(/^Exited\b/i.test(value))return '已退出';
+      if(/^Restarting\b/i.test(value))return '正在重启';
+      if(/^Created$/i.test(value))return '已创建';
+      if(/^Paused$/i.test(value))return '已暂停';
+      return '运行说明已记录';
+    }
     if(f.unknown?.includes(value))return '状态未知';
     if(f.kind==='boolean')return typeof value==='boolean'?(value?f.true:f.false):'值尚未识别';
     if(f.kind==='enum'){
@@ -165,6 +176,14 @@ const PCScopeTypePresentation=(()=>{
     const p=profile(row),all=facts(row,full);
     if(!p)return '';
     if(['name','display_name'].some(id=>{const name=all.get(id);return name&&(protectedStatuses.has(name.status)||hidden(name.value));}))return '';
+    if(row.type_id==='runtime.module_instance'){
+      const path=all.get('module_path'),process=all.get('process_name');
+      if(path?.status==='known'&&typeof path.value==='string'&&!hidden(path.value)){
+        const file=shortPath(path.value);
+        const owner=process?.status==='known'&&typeof process.value==='string'&&!hidden(process.value)?process.value.trim():'';
+        if(file&&owner)return file+' · '+owner;
+      }
+    }
     if(p.fixed_name)return p.fixed_name;
     if(p.context==='defender'){const kind=defenderKind(row,all);return kind==='configuration'?'Windows 防护设置':kind==='runtime'?'Windows 防护状态':'';}
     for(const rule of p.name_aliases||[]){

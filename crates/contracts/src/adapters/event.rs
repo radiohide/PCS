@@ -27,6 +27,8 @@ use serde_json::Value;
 
 #[path = "event_state_adapter.rs"]
 mod event_state_adapter;
+#[path = "sysmon.rs"]
+mod sysmon;
 
 pub struct EventAdapter;
 
@@ -224,6 +226,10 @@ impl SourceAdapter for EventAdapter {
     fn adapt(&self, input: &EvidenceInput, context: &AdapterContext) -> AdapterResult {
         if !is_event_source(&input.source) {
             return AdapterResult::not_an_object(format!("{} is not event material", input.source));
+        }
+        if input.source=="pcscope.eventlog.microsoft-windows-sysmon/operational"||input.payload["provider"]=="Microsoft-Windows-Sysmon"||input.item_id=="execution.sysmon_event" {
+            if let Some(action)=sysmon::action(input,context){let mut result=AdapterResult::adapted();result.actions.push(action);return result;}
+            return AdapterResult::not_an_object("Sysmon event schema is not supported; original event retained");
         }
         if let Some(action)=event_state_adapter::state_action(input,context) {
             let mut result=AdapterResult::adapted();

@@ -1,6 +1,6 @@
 {
   "date": "2026-10-19",
-  "product_version": "0.2.13",
+  "product_version": "0.2.14",
   "basis": "current_source_review",
   "verification": "逐项源码覆盖审查；没有执行真实驱动安装/卸载等破坏性操作；未声称全部端到端实机通过。",
   "counts": {
@@ -30,9 +30,9 @@
     {
       "id": "G02",
       "priority": "P0",
-      "status": "open",
+      "status": "implemented_with_stated_limits",
       "name": "同身份再次出现",
-      "current": "当前新增行动要求 first_observed_at 等于本条时间；旧对象离开后回来不会补“重新出现”。",
+      "current": "0.2.14 已按生命周期转换补 observed.reappeared；首次基线保持安静，重复回放不增加行动。旧材料定向补算仍待后续重放工具。",
       "acceptance": "同键 A→空→A→空，四阶段齐全；确认删除后新建须按代际规则。"
     },
     {
@@ -40,7 +40,7 @@
       "priority": "P0",
       "status": "open",
       "name": "父记录中的子项增减",
-      "current": "只有组成员/账户权限有专门子项缺席状态处理，仍未生成对应快照行动；其他展开来源须逐一补子集合差分。",
+      "current": "0.2.14 已补组成员、权限、浏览器策略、环境变量、系统策略、StartupApproved、排除项和 ADS 的完整子集合行动；ACL、目录子项和其他展开来源继续开放。",
       "acceptance": "父项 ID 不变，子项 [A,B]→[B,C]→[]：A/C/B 各自有增减，无父对象串联。"
     },
     {
@@ -80,7 +80,7 @@
       "priority": "P0",
       "status": "open",
       "name": "稳定源行中的对象身份更换",
-      "current": "设备 ID 不变而 DriverVersion 改变，原始记录是 object.changed；只处理 object.first_seen/removed 无法保证旧绑定退出与新绑定加入。",
+      "current": "0.2.14 已按设备＋版本重新绑定并关闭旧绑定，A→B→A 隔离回放通过；旧混合身份修复和实机驱动操作验收继续开放。",
       "acceptance": "驱动 A→B→A：两次旧绑定离开、两次新绑定加入，设备仍是同一个。"
     },
     {
@@ -111,8 +111,8 @@
       "id": "G12",
       "priority": "P0",
       "status": "open",
-      "name": "Sysmon 生产分类未接到对象行动",
-      "current": "原生 Kind() 对全部 Sysmon 事件输出 execution.sysmon_event；它不是已注册对象动作，EventAdapter 回退表又只支持 Security/TaskScheduler。collection-catalog 的 actions 用于分类/解释，未被该链路用于改写事件 kind。因此 1/5、6/7、3、11/23/26 等当前只能留原始事件，不能按已有分类宣称对象行动已接通。",
+      "name": "Sysmon 分类和跨来源实例关联",
+      "current": "0.2.14 后端已从 execution.sysmon_event 解码 1/5、6/7、3、11/23/26 的指定版本，并离线贯通入库与查询。其他 Sysmon 分类、与原生进程／文件的可靠身份关联及实机环境验收仍开放。",
       "acceptance": "将真实生产信封 1/5、6/7、3、11/23/26 贯穿存储与同用查询；校验 provider/channel、时间、身份和文件名单；不能仅传预分类的 fixture kind 验收。"
     }
   ],
@@ -1258,7 +1258,7 @@
         "pcscope.eventlog.microsoft-windows-sysmon/operational.status",
         "pcscope.eventlog.microsoft-windows-sysmon/operational.other"
       ],
-      "current": "前端/目录有进程 1/5、文件 11/23/26 等分类，但生产原生 Kind() 统一给 execution.sysmon_event，未接入对象行动（G12）。6/7 本身也只有加载，3 只有连接观察，没有卸载/关闭另一端。",
+      "current": "0.2.14 已接 1/5、6/7、3、11/23/26 指定版本的原生通用 kind；其余类别和跨来源身份继续开放。6/7 只有加载、3 只有连接观察，没有卸载/关闭另一端。",
       "environment": [
         "Windows 通道存在且可读；权限、启用状态及保留范围决定可用性"
       ],
@@ -10775,7 +10775,7 @@
         "hardware.disk",
         "desktop.shell_configuration"
       ],
-      "review": "1/5 是启退对应分类；原生统一 kind 未接到对象动作（G12），PID/ProcessGuid 仍须可靠关联。",
+      "review": "1/5 指定版本已从原生通用 kind 接入启退行动；与原生 PID＋创建时间实例的关联待补（G12）。",
       "rule": {
         "suffix": "processes",
         "leaf": "进程生命周期",
@@ -10918,7 +10918,7 @@
         "hardware.disk",
         "desktop.shell_configuration"
       ],
-      "review": "3 只有连接观察，无关闭事件分类；生产对象行动链路还缺 G12。",
+      "review": "3 指定版本已接连接观察，无关闭事件分类，完整身份关联继续开放（G12）。",
       "rule": {
         "suffix": "network",
         "leaf": "网络连接",
@@ -11028,7 +11028,7 @@
         "hardware.disk",
         "desktop.shell_configuration"
       ],
-      "review": "11 创建/覆盖、23/26 删除等已有分类，须名单内文件身份；15 流创建缺移除，生产行动仍缺 G12。",
+      "review": "11/23/26 指定版本已接操作历史，缺 FileId 时不关联当前文件；15 等其他分类继续开放（G12）。",
       "rule": {
         "suffix": "files",
         "leaf": "文件操作",
@@ -11237,7 +11237,7 @@
         "hardware.disk",
         "desktop.shell_configuration"
       ],
-      "review": "6 驱动加载、7 模块加载是两类对象的同一侧，不是加载卸载一对；生产行动仍缺 G12。",
+      "review": "6/7 指定版本已接加载历史；没有卸载对应端，服务和原生进程实例关联继续开放（G12）。",
       "rule": {
         "suffix": "modules",
         "leaf": "模块与驱动加载",
@@ -11662,7 +11662,7 @@
         "hardware.disk",
         "desktop.shell_configuration"
       ],
-      "review": "前端/目录有进程 1/5、文件 11/23/26 等分类，但生产原生 Kind() 统一给 execution.sysmon_event，未接入对象行动（G12）。6/7 本身也只有加载，3 只有连接观察，没有卸载/关闭另一端。 兜底原始事件，不计为已实现的成对过程。",
+      "review": "0.2.14 已接 1/5、6/7、3、11/23/26 指定版本的原生通用 kind；其余类别和跨来源身份继续开放。6/7 只有加载、3 只有连接观察，没有卸载/关闭另一端。 兜底原始事件，不计为已实现的成对过程。",
       "rule": {
         "suffix": "other",
         "leaf": "其他事件"
@@ -11871,7 +11871,7 @@
       "id": "account.group_membership",
       "pairs": "加入组 ↔ 移出组",
       "current": "Security 4732/4733 两端；原生组成员子表更新当前状态",
-      "identity": "组 SID＋成员 SID；子表移除更新对象但未生成对应快照行动",
+      "identity": "组 SID＋成员 SID；完整子表增减已补行动，旧材料重放另行验收",
       "gaps": [
         "G03",
         "G07"
@@ -12061,7 +12061,7 @@
     {
       "id": "runtime.process",
       "pairs": "启动 ↔ 退出",
-      "current": "原生进程清单；Security 4688/4689 有两端；Sysmon 1/5 仅目录分类，生产对象行动链路未接通（G12）",
+      "current": "原生进程清单；Security 4688/4689 有两端；0.2.14 已接 Sysmon 1/5 指定版本，原生实例关联仍待补（G12）",
       "identity": "PID＋创建时间/可靠 ProcessGuid；短进程需日志",
       "gaps": [
         "G01",
@@ -12080,8 +12080,8 @@
     {
       "id": "runtime.module_instance",
       "pairs": "加载 ↔ 卸载；所属进程退出",
-      "current": "指定进程原生模块清单；Sysmon 7 有加载日志，但生产对象行动链路未接通（G12），且无卸载对应分类",
-      "identity": "进程实例＋模块路径；同一进程卸载后重载缺再次出现行动",
+      "current": "指定进程原生模块清单已有再现行动；0.2.14 已接 Sysmon 7 指定版本，无卸载对应分类，跨来源实例关联待补（G12）",
+      "identity": "进程实例＋模块路径；同一进程卸载后重载已有再现行动，Sysmon 跨来源关联待补",
       "gaps": [
         "G01",
         "G02",
@@ -12403,7 +12403,7 @@
     {
       "id": "file.watched_file",
       "pairs": "路径出现 ↔ 不存在；创建 ↔ 删除；改名；内容/权限变化",
-      "current": "指定文件原生读取、模块文件自动名单；USN 有通用文件变更行动；Sysmon 创建/删除分类尚未接到生产对象行动（G12）",
+      "current": "指定文件原生读取、模块文件自动名单；USN 有通用文件变更行动；0.2.14 已接 Sysmon 11/23/26 指定版本的操作历史，缺 FileId 时不关联当前文件（G12）",
       "identity": "卷＋文件 ID，路径另跟踪；无法读取与明确不存在分开",
       "gaps": [
         "G01",
@@ -12800,7 +12800,7 @@
     {
       "id": "network.endpoint",
       "pairs": "TCP 连接/监听出现 ↔ 离开列表；UDP 端口出现 ↔ 离开列表",
-      "current": "原生 TCP/UDP 表；Security 5156/5157 是允许/阻止；Sysmon 3 原始连接日志尚未接到对象行动（G12）",
+      "current": "原生 TCP/UDP 表；Security 5156/5157 是允许/阻止；0.2.14 已接 Sysmon 3 指定版本，完整连接身份和关闭端继续开放（G12）",
       "identity": "协议＋端点＋进程/创建时间；UDP 键不全导致缺席端可被跳过",
       "gaps": [
         "G01",
@@ -13065,7 +13065,7 @@
     {
       "id": "hardware.driver_service",
       "pairs": "驱动服务登记加入 ↔ 移除；运行 ↔ 停止；加载 ↔ 卸载",
-      "current": "原生 Win32_SystemDriver 状态；Sysmon 6 有加载日志，生产对象行动链路未接通（G12）",
+      "current": "原生 Win32_SystemDriver 状态；0.2.14 已接 Sysmon 6 驱动文件加载，不能由文件名猜服务 Name（G12）",
       "identity": "服务名；缺卸载日志分类，服务运行状态另做字段对比",
       "gaps": [
         "G01",
@@ -13507,18 +13507,19 @@
   ],
   "input_sha256": {
     "model/sources.json": "0a6a1c20afa7c90f02bd40690cb7f0fa023c4264427a22c904fd655e1b214c90",
-    "model/catalog.json": "e947e462e9728ab3535487ce5679368b7b4ced889b1c0097e3a2374cdbf333b9",
+    "model/catalog.json": "764c1371fe3d6b5452024c7f8b706b3b29c0e9eae21a8e00e9bad438c26dd6f7",
     "model/native-migration.json": "6351a8501165247b8253d0dc83e23b6abdc8bc1ec972569b5ce3087f214af8f3",
     "apps/desktop/ui/collection-catalog.json": "698a40b281a965ce91e7683430da7de0a0c9c5a95afba249a4c56e9f9e7b86fb",
     "apps/desktop/ui/collection-controls.json": "f3ae0c24555cc6108a2dcd3c4750f06fe8f0d440c748eaa724ca9da731e92cfc",
     "crates/storage/src/timeline_policy.rs": "0540465872ca41e418389094f217113d9e7c06775f083c1c77866efc95f76296",
-    "crates/storage/src/query.rs": "5be0f86e01bb498a68f25ec77c9c7f994cba4be90f99815e5317212d113fd8d3",
+    "crates/storage/src/query.rs": "593c615607b7177f80978ee3656d570f7d13e4626be8218eb6942f34ad3edeb1",
     "crates/contracts/src/semantics.rs": "50f9326d75ddb309683670114bd63b25e7ac87c51b7fba02038820a1c8eaca48",
-    "crates/storage/src/projection.rs": "b98c2f969df347f77970ba37cee3d574a831f3c6c1eec404999dbe71a34e4ad5",
-    "crates/storage/src/identity.rs": "b523ddba74cdb1a684624d9d8cff98235578809f20bd1f33c5ef85807326e55a",
+    "crates/storage/src/projection.rs": "acf0463a3612bc304694d3e3efccfaff631e3cb346e6c40050ca4f19e3f514c4",
+    "crates/storage/src/identity.rs": "5d8cc6a3ac2b02759ebbd166eb1fef3670cf21ed3d27f0b29386317dbab15b38",
     "crates/storage/src/evidence.rs": "9f6121a173c4dfbaf36bb7505535303d2e1a6e640ccaac8f682913677f0db1da",
     "crates/storage/src/item_controls.rs": "3b1f9be31f81949509e49d403e5d6d6f66dadd46ca77356280027643030b194d",
-    "crates/contracts/src/adapters/event.rs": "4bbc9ad4b7a756dc06ba17dc25b6df316d592dc8374ace5ce1150419ba2b8370",
+    "crates/contracts/src/adapters/event.rs": "e11193d83090cdfc48e809965c3d4faa1ea01704f7162bc210a950200e0cc8a5",
+    "crates/contracts/src/adapters/sysmon.rs": "add9566d109cf5568e412e69728e5b111900721a9546f567fc6ae2b9f1a9f640",
     "crates/contracts/src/adapters/event_state_adapter.rs": "f973f05dca25b04dbc0eb3b3e8862e5eceab0cdcc787b8cba06f8a06f6c72cb9",
     "crates/contracts/src/adapters/source_gaps.rs": "5d1d98efdeb0e01d83f3d467820d4dd13259c1d90b1dd5dcc9c7217c9baffc53",
     "crates/contracts/src/reference.rs": "5d8c984075860914e03283c67a42b80240112b6f0446570274e4b98760eff4b5",

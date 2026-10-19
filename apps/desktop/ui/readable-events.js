@@ -1,6 +1,6 @@
 'use strict';
 const PCScopeReadableEvents=(()=>{
-  const actions={"software.update_history":{"name":"Windows 更新操作记录","type_id":"software.system_update"},"identity.logon":{"name":"登录","type_id":"runtime.logon_session"},"identity.logon_failed":{"name":"登录失败","type_id":"account.user"},"identity.logoff":{"name":"注销","type_id":"runtime.logon_session"},"identity.logoff_requested":{"name":"请求注销","type_id":"runtime.logon_session"},"identity.session_locked":{"name":"会话锁定","type_id":"runtime.terminal_session"},"identity.session_unlocked":{"name":"会话解锁","type_id":"runtime.terminal_session"},"identity.session_reconnected":{"name":"会话重连","type_id":"runtime.terminal_session"},"identity.session_disconnected":{"name":"会话断开","type_id":"runtime.terminal_session"},"identity.account_created":{"name":"账户建立","type_id":"account.user"},"identity.account_enabled":{"name":"账户启用","type_id":"account.user"},"identity.account_disabled":{"name":"账户禁用","type_id":"account.user"},"identity.account_deleted":{"name":"账户删除","type_id":"account.user"},"identity.account_changed":{"name":"账户变更","type_id":"account.user"},"identity.account_locked":{"name":"账户锁定","type_id":"account.user"},"identity.account_unlocked":{"name":"账户解锁","type_id":"account.user"},"identity.account_renamed":{"name":"账户重命名","type_id":"account.user"},"identity.group_member_added":{"name":"组成员加入","type_id":"account.group_membership"},"identity.group_member_removed":{"name":"组成员移除","type_id":"account.group_membership"},"identity.special_privileges":{"name":"登录获得特殊权限","type_id":"runtime.logon_session"},"execution.process_started":{"name":"进程启动","type_id":"runtime.process"},"execution.process_stopped":{"name":"进程退出","type_id":"runtime.process"},"execution.remote_thread":{"name":"远程线程创建","type_id":"runtime.process"},"execution.process_access":{"name":"进程访问","type_id":"runtime.process"},"execution.process_tampering":{"name":"进程映像异常","type_id":"runtime.process"},"execution.driver_loaded":{"name":"驱动加载","type_id":"hardware.driver_service"},"execution.module_loaded":{"name":"模块加载","type_id":"runtime.module_instance"},"execution.wmi_filter":{"name":"WMI 筛选器活动","type_id":"startup.wmi_filter"},"execution.wmi_consumer":{"name":"WMI 消费者活动","type_id":"startup.wmi_consumer"},"execution.wmi_binding":{"name":"WMI 绑定活动","type_id":"startup.wmi_binding"},"execution.pipe_created":{"name":"管道创建","type_id":"runtime.process"},"execution.pipe_connected":{"name":"管道连接","type_id":"runtime.process"},"execution.clipboard_changed":{"name":"剪贴板变化","type_id":"desktop.shell_configuration"},"files.access_audit":{"name":"对象访问审计","type_id":"file.watched_file"},"files.permissions_audit":{"name":"对象权限变更审计","type_id":"file.acl_entry"},"files.creation_time_changed":{"name":"文件创建时间修改","type_id":"file.watched_file"},"files.created":{"name":"文件创建或覆盖","type_id":"file.watched_file"},"files.stream_created":{"name":"文件流创建","type_id":"file.alternate_data_stream"},"files.deleted_archived":{"name":"文件删除并归档","type_id":"file.watched_file"},"files.deleted":{"name":"文件删除","type_id":"file.watched_file"},"files.executable_blocked":{"name":"可执行文件创建被阻止","type_id":"file.watched_file"},"files.shredding_blocked":{"name":"文件粉碎被阻止","type_id":"file.watched_file"},"files.executable_detected":{"name":"可执行文件创建","type_id":"file.watched_file"},"files.usn_changed":{"name":"文件变更记录","type_id":"file.watched_file"},"registry.value_operation":{"name":"注册表值操作","type_id":"policy.os_configuration"},"registry.object_changed":{"name":"注册表对象创建或删除","type_id":"policy.os_configuration"},"registry.value_set":{"name":"注册表值设置","type_id":"policy.os_configuration"},"registry.renamed":{"name":"注册表重命名","type_id":"policy.os_configuration"},"policy.audit_changed":{"name":"审计策略变更","type_id":"policy.os_configuration"},"startup.service_installed":{"name":"服务安装","type_id":"startup.service"},"startup.task_created":{"name":"任务创建","type_id":"startup.scheduled_task"},"startup.task_deleted":{"name":"任务删除","type_id":"startup.scheduled_task"},"startup.task_updated":{"name":"任务更新","type_id":"startup.scheduled_task"},"startup.task_started":{"name":"任务开始执行","type_id":"startup.scheduled_task"},"startup.task_ended":{"name":"任务执行结束","type_id":"startup.scheduled_task"},"network.share_access":{"name":"共享访问","type_id":"network.smb_share"},"network.connection_allowed":{"name":"连接允许","type_id":"network.endpoint"},"network.connection_blocked":{"name":"连接阻止","type_id":"network.endpoint"},"network.connection_observed":{"name":"网络连接","type_id":"network.endpoint"},"network.dns_query":{"name":"DNS 查询","type_id":"network.dns_cache_entry"},"storage.raw_read":{"name":"原始磁盘读取","type_id":"hardware.disk"},"sysmon.service_changed":{"name":"Sysmon 服务状态变化","type_id":"policy.os_configuration"},"sysmon.config_changed":{"name":"Sysmon 配置变化","type_id":"policy.os_configuration"},"sysmon.error":{"name":"Sysmon 内部错误","type_id":"policy.os_configuration"},"observed.configuration_changed":{"name":"观察到配置变化","type_id":null},"observed.state_changed":{"name":"观察到状态变化","type_id":null},"observed.first_seen":{"name":"首次观察到","type_id":null},"observed.no_longer_observed":{"name":"本次未发现","type_id":null},"coverage.gap":{"name":"采集缺口","type_id":null},"coverage.recovered":{"name":"采集恢复","type_id":null},"coverage.usn_gap":{"name":"USN 断点缺口","type_id":null},"coverage.security_log_cleared":{"name":"安全审计日志清除","type_id":"policy.os_configuration"},"coverage.unclean_shutdown":{"name":"非正常退出","type_id":null},"collector.item_configured":{"name":"采集项配置变化","type_id":null}};
+  const actions=(typeof PCScopeActionPresentationData!=='undefined'?PCScopeActionPresentationData:require('./action-presentation-data.js')).actions;
   const objects=typeof PCScopeObjectNames!=='undefined'?PCScopeObjectNames:require('./object-names.js');
   actions['startup.service_state_changed']={name:'服务运行状态变化',type_id:'startup.service'};
   const titles={'startup.task_started':'计划任务开始运行','startup.task_ended':'计划任务运行结束','identity.logon':'账户登录','identity.logoff':'账户退出登录','identity.special_privileges':'登录会话获得较高权限','observed.configuration_changed':'设置发生变化','observed.state_changed':'状态发生变化','observed.first_seen':'首次记录到此对象','observed.no_longer_observed':'本次检查未找到此对象'};
@@ -16,7 +16,7 @@ const PCScopeReadableEvents=(()=>{
   });
   const readable=value=>typeof value==='string'&&value.trim()&&!/[|]|(?:machine:|S-1-\d-|pcscope\.)/i.test(value)&&value.length<180;
   const historicalMappingIssue=row=>row.context?.history_quality?.status==='legacy_mapping_ambiguous';
-  function title(row){if(historicalMappingIssue(row))return '旧版采集记录需复核';if(row.action_id==='observed.first_seen')return firstSeen(row);if(row.action_id==='observed.no_longer_observed')return absence(row).title;if(['identity.logon','identity.logoff'].includes(row.action_id)&&Number(row.context?.logon_type)===5)return row.action_id==='identity.logon'?'系统服务登录':'系统服务结束登录';if(row.field_id==='module_base')return '模块加载位置发生变化';return titles[row.action_id]||actions[row.action_id]?.name||(readable(row.title)&&/[\u4e00-\u9fff]/.test(row.title)?row.title:'记录到系统活动');}
+  function title(row){if(historicalMappingIssue(row))return '旧版采集记录需复核';if(row.action_id==='observed.first_seen')return firstSeen(row);if(row.action_id==='observed.reappeared')return firstSeen(row).replace(/^首次/,'再次');if(row.action_id==='observed.no_longer_observed')return absence(row).title;if(['identity.logon','identity.logoff'].includes(row.action_id)&&Number(row.context?.logon_type)===5)return row.action_id==='identity.logon'?'系统服务登录':'系统服务结束登录';if(row.field_id==='module_base')return '模块加载位置发生变化';return titles[row.action_id]||actions[row.action_id]?.name||(readable(row.title)&&/[\u4e00-\u9fff]/.test(row.title)?row.title:'记录到系统活动');}
   function type(row){return row.context?.type_id||actions[row.action_id]?.type_id||'';}
   function typeLabel(row){
     if(historicalMappingIssue(row))return '历史采集记录';
@@ -58,25 +58,25 @@ const PCScopeReadableEvents=(()=>{
     if(row.field_id&&(row.after_status&&row.after_status!=='known'||objects.presentation.hidden(row.after)))return '本次未取得变化后的属性值。';
     if(!uncertainAssociation(row)&&type(row)==='policy.power_plan'&&row.field_id==='active'&&typeof row.after==='boolean')return row.after?'当时切换为此电源方案。':'当时已不再使用此电源方案。';
     if((!uncertainAssociation(row)||row.action_id==='startup.service_state_changed'&&row.context?.classification_status!=='unverified')&&type(row)==='startup.service'&&row.field_id==='state'&&typeof row.after==='string'){
-      if(row.after.toLowerCase()==='stopped')return '服务已停止，依赖它的功能可能暂不可用。';
+      if(row.after.toLowerCase()==='stopped')return '服务已停止。';
       if(row.after.toLowerCase()==='running')return '服务已开始运行。';
     }
     if(row.field_id==='module_base')return '程序的模块加载位置已变化。';
     if(['identity.logon','identity.logoff'].includes(row.action_id)&&Number(row.context?.logon_type)===5)return '后台服务使用了此账户。';
     if(row.action_id==='startup.task_started')return '任务已开始运行。';
-    if(row.action_id==='startup.task_ended')return ['failed','failure'].includes(row.result)?'本次任务未成功完成，相关自动处理可能受影响。':['succeeded','success'].includes(row.result)?'本次任务已成功完成。':row.result==='cancelled'?'本次任务已取消。':'本次运行已结束，日志未提供运行结果。';
+    if(row.action_id==='startup.task_ended')return ['failed','failure'].includes(row.result)?'任务执行失败。':['succeeded','success'].includes(row.result)?'本次任务已成功完成。':row.result==='cancelled'?'本次任务已取消。':'本次执行已结束。';
     if(row.action_id==='identity.logon_failed')return '本次登录未成功，相关账户未通过这次登录验证。';
     if(row.action_id==='identity.special_privileges')return '这次登录获准执行部分需要较高权限的操作。';
-    if(row.action_id==='network.connection_blocked')return '这次连接被阻止，相关访问可能无法完成。';
+    if(row.action_id==='network.connection_blocked')return '连接已被阻止。';
     if(row.action_id==='observed.no_longer_observed')return absence(row).impact;
-    if(!uncertainAssociation(row)&&row.field_id==='exists'&&row.after===false&&['file.watched_file','file.watched_directory'].includes(type(row)))return type(row)==='file.watched_directory'?'检查时文件夹已不在原位置，依赖该路径的功能可能受影响。':'检查时文件已不在原位置，依赖它的功能可能无法启动。';
+    if(!uncertainAssociation(row)&&row.field_id==='exists'&&row.after===false&&['file.watched_file','file.watched_directory'].includes(type(row)))return type(row)==='file.watched_directory'?'检查时文件夹已不在原位置。':'检查时文件已不在原位置。';
     if(['sha256','version','display_version'].includes(row.field_id)&&([null,undefined].includes(row.before)||[null,undefined].includes(row.after)||row.before_status&&row.before_status!=='known'||objects.presentation.hidden(row.before)))return '缺少前后对比值，可展开查看已取得的信息。';
     if(row.field_id==='sha256')return '文件内容已变化。';
     if(['version','display_version'].includes(row.field_id))return '版本信息已变化。';
-    if(['dacl','owner','access','permissions'].includes(row.field_id))return '访问权限有变化，可能影响谁能使用或修改相关内容。';
+    if(['dacl','owner','access','permissions'].includes(row.field_id))return '访问权限已变化。';
     if(row.field_id&&[null,undefined].includes(row.before)||row.field_id&&[null,undefined].includes(row.after))return '缺少前后对比值，可展开查看已取得的信息。';
     if(row.field_id)return '属性值已变化。';
-    if(row.result==='failed')return '这次操作未成功，相关功能可能受影响。';
+    if(row.result==='failed')return '操作失败。';
     return '';
   }
   const uncertainAssociation=row=>['unverified','mismatch'].includes(row.context?.attribution_status)||row.context?.classification_status==='unverified';
@@ -99,9 +99,9 @@ const PCScopeReadableEvents=(()=>{
       if(afterStatus!=='known')return {...result,label:({unreadable:'本次读取失败',conflicting:'信息存在冲突',evidence_pruned:'原始依据已清理',not_applicable:'不适用',not_provided:'本次未提供'})[afterStatus]||'本次状态未知',tone:afterStatus==='unreadable'?'attention':'neutral'};
       if(!uncertainAssociation(row)&&id==='startup.service'&&field==='state'){
         if(String(row.after).toLowerCase()==='running')result.tone='positive';
-        if(String(row.after).toLowerCase()==='stopped')result.note='当时依赖此服务的功能可能暂不可用。';
+
       }
-      if(field==='exists'&&row.after===false&&['file.watched_file','file.watched_directory'].includes(id))result.note='依赖此路径的功能可能受影响。';
+
       const after=format(row.after,afterStatus),before=format(row.before,beforeStatus);
       if(!uncertainAssociation(row)&&['observed.state_changed','observed.configuration_changed'].includes(row.action_id)){
         if(id==='security.protection'&&['signature_version','engine_version'].includes(field))return {...result,field:'',label:row.source_record?.protection_update?.engine_changed&&row.source_record?.protection_update?.signature_changed?'防护程序和病毒库已更新':field==='signature_version'?'病毒库已更新':'防护程序已更新',tone:'positive'};
@@ -126,7 +126,7 @@ const PCScopeReadableEvents=(()=>{
     }
     const labels={'execution.process_started':'开始运行','execution.process_stopped':'已退出','execution.module_loaded':'已加载','files.deleted':'已删除','files.deleted_archived':'已删除并归档','startup.task_started':'开始运行','network.connection_allowed':'已允许','network.connection_blocked':'已阻止','identity.logon_failed':'登录失败'};
     result.label=labels[row.action_id]||result.label;
-    if(row.action_id==='observed.first_seen')result.label=firstSeen(row);
+    if(['observed.first_seen','observed.reappeared'].includes(row.action_id))result.label=title(row);
     if(row.action_id==='observed.no_longer_observed')result.label=absence(row).title;
     if(row.action_id==='startup.task_ended'){
       result.label=['succeeded','success'].includes(row.result)?'运行成功':['failed','failure'].includes(row.result)?'运行失败':row.result==='cancelled'?'本次运行已取消':'本次运行已结束';
@@ -137,7 +137,7 @@ const PCScopeReadableEvents=(()=>{
     if(['failed','failure'].includes(row.result)){result.tone='negative';result.note=note;}
     if(row.action_id?.startsWith('coverage.')&&row.action_id!=='coverage.recovered')result.tone='attention';
     if(row.action_id==='coverage.recovered')result.tone='positive';
-    if(row.action_id==='network.connection_blocked')result.note='相关访问可能无法完成。';
+
     if(!labels[row.action_id]&&['observed','unknown',undefined].includes(row.result)&&!['observed.no_longer_observed','startup.task_ended'].includes(row.action_id)&&note&&/可能.*(?:漏|失败|不可用|受影响)/.test(note))result.note=note;
     return result;
   }

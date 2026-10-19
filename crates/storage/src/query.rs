@@ -386,6 +386,11 @@ fn action_context(conn: &Connection, action_row: i64, instance: Option<i64>, tar
             })
         } else if type_id == "startup.service" || type_id == "hardware.driver_service" {
             first(&["ServiceName", "DriverName"]).map(|name|(name.clone(),name))
+                .or_else(||first(&["ImageLoaded"]).map(|full|(short_path_name(&full),full)))
+        } else if type_id == "runtime.module_instance" {
+            first(&["ImageLoaded"]).map(|full|(short_path_name(&full),full))
+        } else if type_id.starts_with("file.") {
+            first(&["TargetFilename", "ObjectName"]).map(|full|(short_path_name(&full),full))
         } else if type_id == "runtime.process" {
             first(&["NewProcessName", "Image", "ProcessName"]).map(|full|(short_path_name(&full),full))
         } else {None};
