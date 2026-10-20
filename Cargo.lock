@@ -302,7 +302,7 @@ checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 
 [[package]]
 name = "pcscope-cli"
-version = "0.2.16"
+version = "0.2.20"
 dependencies = [
  "anyhow",
  "pcscope-contracts",
@@ -313,7 +313,7 @@ dependencies = [
 
 [[package]]
 name = "pcscope-contracts"
-version = "0.2.16"
+version = "0.2.20"
 dependencies = [
  "anyhow",
  "serde",
@@ -324,7 +324,7 @@ dependencies = [
 
 [[package]]
 name = "pcscope-eventlog"
-version = "0.2.16"
+version = "0.2.20"
 dependencies = [
  "anyhow",
  "pcscope-supervisor",
@@ -333,7 +333,7 @@ dependencies = [
 
 [[package]]
 name = "pcscope-ipc"
-version = "0.2.16"
+version = "0.2.20"
 dependencies = [
  "anyhow",
  "pcscope-contracts",
@@ -346,7 +346,7 @@ dependencies = [
 
 [[package]]
 name = "pcscope-powershell-adapter"
-version = "0.2.16"
+version = "0.2.20"
 dependencies = [
  "anyhow",
  "chrono",
@@ -356,7 +356,7 @@ dependencies = [
 
 [[package]]
 name = "pcscope-service"
-version = "0.2.16"
+version = "0.2.20"
 dependencies = [
  "anyhow",
  "chrono",
@@ -374,14 +374,14 @@ dependencies = [
 
 [[package]]
 name = "pcscope-simulator"
-version = "0.2.16"
+version = "0.2.20"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
 name = "pcscope-software"
-version = "0.2.16"
+version = "0.2.20"
 dependencies = [
  "anyhow",
  "chrono",
@@ -392,7 +392,7 @@ dependencies = [
 
 [[package]]
 name = "pcscope-storage"
-version = "0.2.16"
+version = "0.2.20"
 dependencies = [
  "anyhow",
  "pcscope-contracts",
@@ -405,7 +405,7 @@ dependencies = [
 
 [[package]]
 name = "pcscope-supervisor"
-version = "0.2.16"
+version = "0.2.20"
 dependencies = [
  "anyhow",
  "pcscope-contracts",
@@ -414,7 +414,7 @@ dependencies = [
 
 [[package]]
 name = "pcscope-usn"
-version = "0.2.16"
+version = "0.2.20"
 dependencies = [
  "anyhow",
  "chrono",

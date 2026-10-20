@@ -46,7 +46,8 @@ assert(cases.length&&cases.every(n=>Number.isInteger(n)&&n>=2&&n<=6));assert(rou
      apply:async(response,context)=>{
       await options.apply(response,context);const trial=m.current;
       trial.height=content.scrollHeight;await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-      trial.total_ms=performance.now()-trial.start;trial.loaded_rows=document.querySelectorAll('.timeline-entry').length;
+      trial.total_ms=performance.now()-trial.start;trial.loaded_rows=document.querySelectorAll('.timeline-branch').length;
+      trial.mounted_cards=document.querySelectorAll('.timeline-entry').length;
       trial.partial_labels=[...document.querySelectorAll('.timeline-group-count')].some(n=>n.textContent.includes('已加载'));
       trial.dom_nodes=content.querySelectorAll('*').length;trial.done=true;
      }

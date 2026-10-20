@@ -18,6 +18,9 @@ use serde_json::{json, Value};
 /// echoed back so a client can tell what it actually got.
 pub const DEFAULT_PAGE: usize = 50;
 pub const MAX_PAGE: usize = 200;
+/// Lightweight timeline pages have a separate row and encoded-byte budget.
+pub const MAX_TIMELINE_CARDS: usize = 800;
+pub const TIMELINE_CARD_BYTES: usize = 4 * 1024 * 1024;
 
 // ---------- requests ----------
 
@@ -99,6 +102,9 @@ impl Default for InstanceFilter {
 /// something that happened, and hiding it would make the timeline read as complete when it is not.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ActionFilter {
+    /// Only omit fields unused by cards; full record remains available by detail_id.
+    #[serde(default)]
+    pub cards_only: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub action_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -127,7 +133,7 @@ fn default_true() -> bool {
 }
 impl Default for ActionFilter {
     fn default() -> Self {
-        Self { action_id: None, category: None, type_id: None, source: None, instance: None, include_unassigned: true, include_routine: false, since: None, cursor: None, limit: default_limit() }
+        Self { cards_only: false, action_id: None, category: None, type_id: None, source: None, instance: None, include_unassigned: true, include_routine: false, since: None, cursor: None, limit: default_limit() }
     }
 }
 
@@ -138,6 +144,7 @@ pub enum QueryRequest {
     /// Every action, newest first, across objects. `InstanceActions` answers "what happened to this
     /// one"; this answers "what happened", which is the timeline.
     ActionTimeline(ActionFilter),
+    ActionDetail { action_row: i64 },
     InstanceList(InstanceFilter),
     InstanceDetail { instance: String },
     InstanceActions { instance: String, #[serde(default, skip_serializing_if = "Option::is_none")] cursor: Option<String>, #[serde(default = "default_limit")] limit: usize },
@@ -494,8 +501,9 @@ pub fn response_shape() -> Value {
         "coverage_result": ["success", "partial", "denied", "missing", "failed", "never"],
         "coverage_history": ["catching_up", "caught_up", "gap", "source_missing", "history_pruned", "unknown"],
         "evidence_state": ["available", "pruned"],
-        "queries": ["type_catalog", "instance_list", "instance_detail", "instance_actions", "action_timeline", "evidence_detail", "source_coverage", "source_readings", "projection_status"],
+        "queries": ["type_catalog", "instance_list", "instance_detail", "instance_actions", "action_timeline", "action_detail", "evidence_detail", "source_coverage", "source_readings", "projection_status"],
         "page": {"default": DEFAULT_PAGE, "maximum": MAX_PAGE},
+        "timeline_cards": {"cards_only_default":false,"maximum":MAX_TIMELINE_CARDS,"maximum_data_bytes":TIMELINE_CARD_BYTES,"detail_query":"action_detail","detail_key":"detail_id"},
         "instance_list_counts": {"include_counts_default":true,"include_instance_total_default":false,"instance_total_optional":true,"scope":"same filter and cursor window; unrelated-material counts are omitted, never zero-filled"},
         "default_visibility": "active and not_observed instances are returned by default; ended and removed require an explicit lifecycle filter; provisional instances are included and flagged",
     })

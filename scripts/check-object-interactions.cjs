@@ -33,6 +33,10 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
     if(r.operation==='monitoring_settings')return {elevated:false,settings:{configured:true,mode:'low',repair:false},report:{audits:[],logs:[]}};
     if(r.operation!=='query')throw Error('Unexpected operation: '+r.operation);
     if(q.query==='type_catalog')return samples.type_catalog;
+    if(q.query==='action_detail'){
+      if(window.__qa.failDetail){window.__qa.failDetail=false;throw Error('detail temporary failure');}
+      return {status:'loaded',data:{action_id:'test.detail',source_record:{raw:'按需读取的完整记录'}}};
+    }
     if(q.query==='source_readings'&&window.__qa.sourcePages)return window.__qa.sourcePages[q.cursor?1:0];
     if(q.query==='instance_actions'&&window.__qa.actionPages)return window.__qa.actionPages[q.cursor?1:0];
     if(q.query==='action_timeline'&&window.__qa.timelineDataset){
@@ -190,7 +194,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.evaluate(({first,detail})=>{window.__qa.timeline=[first];window.__qa.detailFixture=detail;},{first:moduleFirst,detail:moduleDetail});
   await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-event-label').waitFor();
   assert.equal(await page.locator('.timeline-event-label').textContent(),'首次记录加载');
-  assert.match(await page.locator('.timeline-object').innerText(),/查看当前状态/);
+  assert.match(await page.locator('.timeline-object').textContent(),/查看当前状态/);
   await page.locator('.timeline-object').click();await page.locator('.model-detail .object-current-state').waitFor();
   assert.equal(await page.locator('.object-current-state').innerText(),'未加载');
   const moduleText=await page.locator('.model-detail').innerText();assert.match(moduleText,/最后加载时的信息.*历史变化/s);assert.match(moduleText,/尚未取得签名结果/);assert.doesNotMatch(moduleText,/\bunknown\b|\bpending\b|新发现/);
@@ -226,6 +230,8 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   const pointTimes=['2026-10-15T08:09:04.0982704Z','2026-10-15T08:09:04.0982607Z'];
   const pointRows=pointTimes.map((occurred_at,index)=>({instance_id:index+1,action_id:index?'identity.logon':'identity.special_privileges',result:'observed',precision:'exact',time_derived:false,occurred_at,observed_at:'2026-10-15T08:09:24.616Z',context:{type_id:'runtime.logon_session',subject_label:'登录会话示例 '+index,attribution_status:'stored'}}));
   await page.evaluate(data=>window.__qa.timeline=data,pointRows);await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-entry').first().waitFor();
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
   assert.equal(await page.locator('.timeline-group').count(),1);assert.equal(await page.locator('.timeline-group-count').textContent(),'2 条记录');
   assert.equal(await page.locator('.timeline-precision').textContent(),'时间段');assert.equal(await page.locator('.timeline-time-end').count(),1);
   assert.equal(await page.locator('.timeline-category-count').textContent(),'2');
@@ -258,6 +264,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.evaluate(data=>{window.__qa.timeline=data;},grouped79);
   await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===79);
   const group79=page.locator('.timeline-group').first(),processChip=group79.locator('[data-timeline-category-toggle="运行进程"]');
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
   assert.equal(await group79.locator('.timeline-group-count').textContent(),'79 条记录');
   for(const [label,count] of [['运行进程',50],['系统服务',18],['网卡',8],['文件',3]])assert.equal(await group79.locator('[data-timeline-category-toggle="'+label+'"] .timeline-category-count').textContent(),String(count));
   await group79.locator('.timeline-entry details summary').first().click();
@@ -367,14 +374,17 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.evaluate(({first,second})=>{window.__qa.timelinePages=[{status:'loaded',data:first,page:{has_more:true,next_cursor:'after-first-200'}},{status:'loaded',data:[second],page:{has_more:false}}];},{first:startupRows,second:afterStartup});
   const readsBeforeStartup=await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').length);
   await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===200&&document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
   assert.equal(await page.locator('.timeline-group-count').first().textContent(),'83 条记录','the first render merges network and DNS without scrolling');
   assert.equal(await page.locator('.timeline-group').first().locator('.timeline-category-toggle').count(),2);
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
   assert.equal(await page.locator('.timeline-group-count').last().textContent(),'117 条记录','lookahead proves the second group complete');
   await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').length),readsBeforeStartup+2,'opening completes two groups and buffers only the transport lookahead');
-  assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').at(-1).limit),200);
+  assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').at(-1).limit),400);
   await page.screenshot({path:path.join(output,'timeline-first-200-grouped.png'),fullPage:false});
   await page.locator('#timeline-more').scrollIntoViewIfNeeded();await page.locator('#timeline-more').hover();await page.mouse.wheel(0,240);await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===201);
-  assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').at(-1).limit),200,'subsequent scrolling uses the measured 200-row batch');
+  assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').at(-1).limit),400,'subsequent scrolling uses the bounded lightweight batch');
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
   assert.equal(await page.locator('.timeline-group-count').nth(1).textContent(),'117 条记录','reading past the cutoff confirms and relabels the completed group');
   checks.push('startup completes two groups using bounded transport, merges categories, and reuses the buffered next group on scroll');
   // Keep this deliberately small first page outside the auto-loader's viewport margin
@@ -393,6 +403,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.locator('#timeline-more').scrollIntoViewIfNeeded();await page.locator('#timeline-more').hover();await page.mouse.wheel(0,240);
   await page.locator('#timeline-more').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===8);
   assert.equal(await page.locator('.timeline-list').count(),1);assert.equal(await page.locator('.timeline-group').count(),2);
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
   assert.equal(await page.locator('.timeline-group-count').first().textContent(),'5 条记录');
   assert.match(await page.locator('.timeline-time-value').first().textContent(),/10:50.*10:55/,'bucket header stays aligned after appending older records');
   const mergedGroup=page.locator('.timeline-group').first();
@@ -419,6 +430,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.evaluate(({first,second})=>{window.__qa.timelinePages=[{status:'loaded',data:first,page:{has_more:true,next_cursor:'split-intervals'}},{status:'loaded',data:second,page:{has_more:false}}];},{first:currentEvents.slice(0,3),second:[shiftEvent(currentEvents[3],-20),shiftEvent(currentEvents[4],-40)]});
   await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-entry').first().waitFor();
   await page.locator('#timeline-more').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===5);
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
   assert.deepEqual(await page.locator('.timeline-group-count').allTextContents(),['3 条记录','2 条记录'],'incoming records respect the fixed boundary across pages');
   const spans=await page.locator('.timeline-group').evaluateAll(groups=>groups.map(group=>JSON.parse(group.dataset.timeMeta)));
   for(const span of spans){assert.equal(Date.parse(span.end)-Date.parse(span.start),300000);}
@@ -436,6 +448,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.locator('.timeline-entry details summary').first().click();
   await page.evaluate(()=>{window.__qa.holdPointOlder=false;window.__qa.releasePointOlder?.();});
   await page.locator('#timeline-more').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===3);
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
   assert.deepEqual(await page.locator('.timeline-group-count').allTextContents(),['1 条记录','2 条记录']);
   assert.match(await page.locator('.timeline-time-value').first().textContent(),/16:10.*16:15/);
   assert.equal(await page.locator('.timeline-entry details[open]').count(),1);
@@ -498,11 +511,12 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   checks.push('sparse timelines stop at the requested group count on startup and each scrolling intent');
   const groupSizes=[230,260,50,300,40,70];
   const completeRows=groupSizes.flatMap((count,g)=>Array.from({length:count},(_,i)=>({...pointRows[0],instance_id:g*1000+i+1,occurred_at:new Date(Date.UTC(2026,9,15,8,55)-g*300000).toISOString(),context:{type_id:i%2?'startup.service':'runtime.process',subject_label:'完整组 '+g+' / '+i,attribution_status:'stored'}})));
-  await page.evaluate(data=>{window.__qa.timelineDataset=data;window.__qa.failGroupAt=200;},completeRows);
+  await page.evaluate(data=>{window.__qa.timelineDataset=data;window.__qa.failGroupAt=400;},completeRows);
   await page.locator('[data-page="timeline"]').click();await page.locator('#timeline-more button:visible').waitFor();
-  assert.equal(await page.locator('.timeline-entry').count(),200,'a failed continuation retains the partial group');
+  assert.equal(await page.locator('.timeline-entry').count(),400,'a failed continuation retains the partial group');
   await page.locator('#timeline-more button').click();
   await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false'&&document.querySelectorAll('.timeline-entry').length===490);
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
   assert.deepEqual(await page.locator('.timeline-group-count').allTextContents(),['230 条记录','260 条记录']);
   assert.equal(await page.locator('.timeline-branch').evaluateAll(rows=>new Set(rows.map(r=>r.querySelector('[data-object-alias]').dataset.objectAlias)).size),490,'retry never duplicates streamed rows');
   const completeGroup=page.locator('.timeline-group').first();
@@ -576,6 +590,37 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.evaluate(()=>localStorage.setItem('pcscope.timelineGroupMinutes','7'));await page.reload();await page.locator('#timeline-group-minutes').waitFor();
   assert.equal(await page.locator('#timeline-group-minutes').inputValue(),'5','invalid saved selection falls back to five minutes');
   checks.push('all six grouping intervals regroup correctly; selection survives navigation, clear filters and reload, with invalid-value fallback');
+  const windowRows=Array.from({length:1400},(_,i)=>({...pointRows[0],instance_id:i+1,detail_id:i+1,context:{type_id:i%2?'startup.service':'runtime.process',subject_label:'窗口记录 '+i,attribution_status:'stored'}}));
+  await page.evaluate(data=>{window.__qa.timelineDataset=data;window.__qa.listFailures=0;document.querySelector('main').scrollTop=0;},windowRows);
+  await page.locator('[data-page="timeline"]').click();
+  await page.waitForFunction(()=>document.querySelectorAll('.timeline-branch').length===1400&&document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
+  await page.waitForFunction(()=>document.querySelectorAll('[data-timeline-parked]').length>1200);
+  assert.equal(await page.evaluate(()=>window.__qa.calls.filter(q=>q.query==='action_detail').length),0,'card loading does not read raw details');
+  const firstRow=page.locator('.timeline-branch').first();
+  await firstRow.scrollIntoViewIfNeeded();await firstRow.locator('[data-action-detail]>summary').waitFor();
+  await page.evaluate(()=>window.__qa.failDetail=true);await firstRow.locator('[data-action-detail]>summary').click();
+  await firstRow.locator('[data-action-detail-body]').filter({hasText:'重新展开可重试'}).waitFor();
+  await firstRow.locator('[data-action-detail]>summary').click();await firstRow.locator('[data-action-detail]>summary').click();
+  await firstRow.locator('pre').filter({hasText:'按需读取的完整记录'}).waitFor();
+  await page.locator('.timeline-branch').last().scrollIntoViewIfNeeded();await page.locator('.timeline-branch').last().locator('.timeline-entry').waitFor();
+  assert.equal(await firstRow.locator('details[open]').count(),1,'opened detail stays mounted away from viewport');
+  assert((await page.locator('.timeline-entry').count())<200,'long lists release distant card DOM');
+  await page.locator('.timeline-branch').nth(500).scrollIntoViewIfNeeded();
+  await page.locator('.timeline-branch').nth(500).locator('h3').filter({hasText:'窗口记录 500'}).waitFor();
+  await firstRow.scrollIntoViewIfNeeded();
+  assert.equal(await page.evaluate(()=>window.__qa.calls.filter(q=>q.query==='action_detail').length),2,'restoring rows reuses successful detail response');
+  await firstRow.locator('[data-action-detail]>summary').click();
+  await page.locator('[data-timeline-invert]').first().click();
+  assert.equal(await page.locator('.timeline-branch[hidden]').count(),1400);
+  await page.locator('[data-timeline-show-all]').first().click();
+  await page.waitForFunction(()=>document.querySelector('.timeline-branch .timeline-entry'));
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
+  assert.equal(await page.locator('.timeline-group-count').textContent(),'1400 条记录');
+  await page.setViewportSize({width:600,height:800});
+  await page.locator('.timeline-branch').nth(1000).scrollIntoViewIfNeeded();await page.locator('.timeline-branch').nth(1000).locator('h3').waitFor();
+  await page.locator('[data-page="objects"]').click();assert.equal(await page.locator('.timeline-branch').count(),0);
+  checks.push('long timeline releases distant cards, restores on scroll and resize, preserves open details and exact category counts, and disposes on navigation');
+  checks.push('raw details are requested only on expansion, failure can retry and successful results survive scrolling without duplicate reads');
   assert.deepEqual(errors,[]);assert.deepEqual(await page.evaluate(()=>[...new Set(window.__qa.calls.map(c=>c.operation))].filter(op=>!['status','query','monitoring_settings'].includes(op))),[]);
   fs.writeFileSync(path.join(output,'object-interactions-result.json'),JSON.stringify({passed:true,checks,page_errors:errors,basis:'Actual index.html and app.js in headless Chrome; fixed read-only IPC; no native collection or UAC.'},null,2));console.log('PASS: '+checks.length+' real app interaction scenarios; no collection calls or browser errors.');
  }finally{if(browser)await browser.close();await new Promise(r=>server.close(r));}

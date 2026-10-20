@@ -39,5 +39,14 @@ function fixture(rows,{groups=2,pageSize=200,failAt=null,active=()=>true}={}){
  const noRows=fixture([]);assert.equal((await noRows.reader.read()).status,'empty');
  const unknown=fixture([{id:1},{id:2}]);assert.equal((await unknown.reader.read()).group_page.groups,1);
  const huge=fixture(source([8000,2,1]));assert.equal((await huge.reader.read()).data.length,8002);assert.equal(huge.calls.length,41);assert.equal(new Set(huge.emitted).size,8002);
+ let reads=0,releasePaint,startedSecond;
+ const secondStarted=new Promise(resolve=>startedSecond=resolve);
+ const pipeline=pages.create({keyOf:r=>time.moment(r).key,query:async cursor=>{
+  reads++;if(cursor)startedSecond();
+  return {status:'loaded',data:[row(cursor?1:0,cursor?'b':'a')],page:{has_more:!cursor,next_cursor:cursor?null:'next',watermark:'same'}};
+ },emit:async response=>{if(response.data[0].id==='a')await new Promise(resolve=>releasePaint=resolve);}});
+ const loading=pipeline.read();await secondStarted;
+ assert.equal(reads,2,'next read overlaps painting rather than waiting for it');
+ releasePaint();assert.equal((await loading).data.length,2);
  console.log('PASS: complete group paging for 2–6 groups, bounded transport/lookahead, dense groups, exact-once retry, cancellation, watermark/cursor/empty-page guards.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

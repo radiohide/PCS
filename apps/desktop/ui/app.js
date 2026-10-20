@@ -421,7 +421,8 @@ async function renderTimeline(){
     <label class="object-search">未对应到具体对象的日志<select id="timeline-unassigned"><option value="true" ${timelineFilters.unassigned?'selected':''}>也显示</option><option value="false" ${timelineFilters.unassigned?'':'selected'}>暂时隐藏</option></select></label>
     <button id="timeline-clear">清空筛选</button></div><p id="timeline-loading" class="muted" role="status" hidden></p><div id="timeline-results" aria-live="polite"></div><div id="timeline-more"></div></section>`;
   const results=content.querySelector('#timeline-results'),more=content.querySelector('#timeline-more');
-  const groupControls=PCScopeTimelineGroups.mount(results,{collapsed:timelineCollapsed});
+  const windowed=PCScopeTimelineWindow.mount(results);
+  const groupControls=PCScopeTimelineGroups.mount(results,{collapsed:timelineCollapsed,track:windowed.track});
   const foldAll=content.querySelector('#timeline-fold-all');
   const showFoldMode=()=>{foldAll.textContent=timelineCollapsed?'全部展开':'全部折叠';foldAll.setAttribute('aria-controls',results.id);};
   showFoldMode();
@@ -429,7 +430,7 @@ async function renderTimeline(){
   const scrolling=content.closest?.('main')||content;
   const pagingInput=new AbortController();
   results.addEventListener('click',event=>{if(event.target.closest('[data-timeline-toggle],[data-timeline-time-toggle],[data-timeline-category-toggle],[data-timeline-show-all],[data-timeline-invert]'))pagingReady=false;},{capture:true,signal:pagingInput.signal});
-  state.disposePage=()=>{clearTimeout(timer);++requestId;pagingInput.abort();groupControls.dispose();};
+  state.disposePage=()=>{clearTimeout(timer);++requestId;pagingInput.abort();groupControls.dispose();windowed.dispose();};
   mountModuleFileHistory();
   let catalog=[],requestId=0,timer,reader=null,renderedRows=0;
   const loading=content.querySelector('#timeline-loading');
@@ -438,7 +439,7 @@ async function renderTimeline(){
     content.querySelector('#timeline-type').innerHTML='<option value="">全部类型</option>'+catalog.filter(t=>!timelineFilters.category||t.category===timelineFilters.category).map(t=>`<option value="${esc(t.type_id)}" ${t.type_id===timelineFilters.type_id?'selected':''}>${esc(PCScopeObjectNames.typeName(t))}</option>`).join('');
   };
   const request=()=>{
-    const body={query:'action_timeline',limit:200,include_unassigned:timelineFilters.unassigned,include_routine:timelineFilters.routine};
+    const body={query:'action_timeline',limit:400,cards_only:true,include_unassigned:timelineFilters.unassigned,include_routine:timelineFilters.routine};
     if(timelineFilters.action)body.action_id=timelineFilters.action;
     if(timelineFilters.category)body.category=timelineFilters.category;
     if(timelineFilters.type_id)body.type_id=timelineFilters.type_id;
@@ -446,6 +447,20 @@ async function renderTimeline(){
 
     return body;
   };
+  results.addEventListener('toggle',async event=>{
+    const details=event.target;
+    if(!details.matches?.('details[data-action-detail]')||!details.open||details.dataset.loaded||details.dataset.loading)return;
+    details.dataset.loading='true';
+    const body=details.querySelector('[data-action-detail-body]');
+    body.innerHTML='<p class="muted">正在读取记录…</p>';
+    try{
+      const response=await api('query',{request:{query:'action_detail',action_row:Number(details.dataset.actionDetail)}});
+      if(!details.isConnected)return;
+      if(response.status!=='loaded'||!response.data)throw Error(PCScopeModelView.messageOf(response,'该记录的详情已不可用。'));
+      body.innerHTML=PCScopeModelView.timelineRecord(response.data);details.dataset.loaded='true';
+    }catch(error){if(details.isConnected)body.innerHTML='<p class="muted">'+errorHtml(error)+' 收起后重新展开可重试。</p>';}
+    finally{delete details.dataset.loading;}
+  },{capture:true,signal:pagingInput.signal});
   results.addEventListener('click',async event=>{
       const button=event.target.closest('[data-object-alias]');if(!button||!results.contains(button))return;
       const entry=button.closest('.timeline-entry');
@@ -467,12 +482,16 @@ async function renderTimeline(){
       query:cursor=>api('query',{request:{...body,...(cursor?{cursor}:{})}}),
       progress:({groups,target,rows})=>{if(current()){loading.hidden=false;loading.textContent='已读取 '+rows+' 条，正在补齐第 '+groups+' / '+target+' 组…';}},
       emit:async response=>{
-        let emitted=0;
+        let emitted=0,frameStarted=performance.now(),first=true;
         for(const {html} of PCScopeModelView.timelineBatches(response)){
           if(!current())return;
-          if(renderedRows)groupControls.append(html);else {results.innerHTML=html;groupControls.sync();}
+          if(renderedRows)groupControls.append(html);else {windowed.clear();results.innerHTML=html;groupControls.sync();}
           const added=Math.min(50,response.data.length-emitted);renderedRows+=added;emitted+=added;groupControls.markBoundary(true);
-          await new Promise(resolve=>requestAnimationFrame(resolve));
+          // Paint the first cards promptly, then yield by work time instead of paying
+          // an entire display frame for every tiny batch on a fast machine.
+          if(first||performance.now()-frameStarted>=8){
+            await new Promise(resolve=>requestAnimationFrame(resolve));frameStarted=performance.now();first=false;
+          }
         }
       }
     });
@@ -493,7 +512,7 @@ async function renderTimeline(){
     },
     onError:error=>{results.setAttribute('aria-busy','false');loading.hidden=true;if(!renderedRows)results.innerHTML=`<div class="empty">${errorHtml(error)}</div>`;}
   });
-  const refresh=()=>{++requestId;reader=null;renderedRows=0;pagingReady=false;return pager.reset();};
+  const refresh=()=>{++requestId;reader=null;renderedRows=0;pagingReady=false;windowed.clear();return pager.reset();};
   const allowPaging=event=>{
     if(event.type==='keydown'&&(!['ArrowDown','PageDown','End',' '].includes(event.key)||event.target.closest('input,select,textarea,[contenteditable]')||event.key===' '&&event.target.closest('button,summary')))return;
     if(event.type==='wheel'&&event.deltaY<=0)return;

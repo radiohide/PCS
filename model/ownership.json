@@ -72,6 +72,7 @@
         "pcscope/scripts/measure-query-performance.cjs",
         "pcscope/scripts/measure-webview-performance.cjs",
         "pcscope/scripts/measure-timeline-group-performance.cjs",
+        "pcscope/scripts/measure-timeline-replay.cjs",
         "pcscope/scripts/check-auto-page.cjs",
         "pcscope/scripts/check-timeline-pages.cjs",
         "pcscope/scripts/check-overview-load.cjs",

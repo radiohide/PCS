@@ -107,6 +107,7 @@ pub fn answer(conn: &Connection, request: &QueryRequest) -> Result<QueryResponse
         QueryRequest::InstanceDetail { instance } => self::instance(conn, instance),
         QueryRequest::InstanceActions { instance, limit, .. } => actions(conn, instance, *limit),
         QueryRequest::ActionTimeline(filter) => timeline(conn, filter),
+        QueryRequest::ActionDetail { action_row } => action_detail(conn, *action_row),
         QueryRequest::EvidenceDetail { evidence } => self::evidence(conn, evidence),
         QueryRequest::SourceCoverage { source } => coverage(conn, source.as_deref()),
         QueryRequest::SourceReadings { source, cursor, limit } => source_readings(conn, source.as_deref(), cursor.as_deref(), *limit),
@@ -553,7 +554,7 @@ pub fn actions(conn: &Connection, reference: &str, limit: usize) -> Result<Query
 /// that could not be attributed is still something that happened, and dropping it would make the
 /// timeline look complete when it is not.
 pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryResponse> {
-    let limit = clamp(filter.limit);
+    let limit = if filter.cards_only { filter.limit.clamp(1, MAX_TIMELINE_CARDS) } else { clamp(filter.limit) };
     let mut probe = filter.clone();
     probe.cursor = None;
     probe.limit = 0;
@@ -663,18 +664,15 @@ pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryRespons
             row.get::<_, i64>(0)?,
         ))
     })?;
-    let mut all_rows = rows.collect::<rusqlite::Result<Vec<_>>>()?;
-    let has_more = all_rows.len() > limit;
-    all_rows.truncate(limit);
-    let next_cursor = if has_more {
-        all_rows.last().map(|(_, anchor, id)| encode_cursor(&walk_watermark, anchor, *id))
-    } else {
-        None
-    };
-    let mut data: Vec<Value> = all_rows.into_iter().map(|(value, _, _)| value).collect();
+    let mut has_more = false;
+    let mut data = Vec::with_capacity(limit);
+    let mut last_key = None;
+    let mut bytes = 2;
     let mut labels=HistoryLabelCache::new();
-    for action in &mut data {
-        if prepared.is_none(){enrich_action_context(conn,action,&mut labels)?;}
+    for (index,row) in rows.enumerate() {
+        if index==limit {has_more=true;break;}
+        let (mut action,anchor,id)=row?;
+        if prepared.is_none(){enrich_action_context(conn,&mut action,&mut labels)?;}
         if !filter.include_routine && action["field_id"]=="signature_version" && action["context"]["type_id"]=="security.protection" {
             let engine:Option<(Option<String>,Option<String>)>=conn.query_row("SELECT before_value,after_value FROM object_actions s WHERE instance_id=? AND observed_at=? AND field_id='engine_version' AND action_id='observed.state_changed' AND action_row<=? AND pcscope_action_visible(s.action_id,'security.protection',s.field_id,s.before_value,s.after_value,1) ORDER BY action_row DESC LIMIT 1",params![action["instance_id"].as_i64(),action["observed_at"].as_str(),action_bound(&walk_watermark)],|r|Ok((r.get(0)?,r.get(1)?))).optional()?;
             if let Some((before,after))=engine {
@@ -682,10 +680,44 @@ pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryRespons
                 action["source_record"]=json!({"protection_update":{"engine_changed":true,"signature_changed":true,"engine_before":decode(before),"engine_after":decode(after)}});
             }
         }
+        if filter.cards_only {
+            compact_action(&mut action, id);
+            let size=serde_json::to_vec(&action)?.len()+1;
+            if !data.is_empty() && bytes+size>TIMELINE_CARD_BYTES {has_more=true;break;}
+            // One oversized row must not trap a cursor in an endless empty page.
+            if size+2>TIMELINE_CARD_BYTES {
+                return Ok(QueryResponse::rejected(ResponseStatus::Unsupported,"timeline_record_too_large","这条记录过大，请缩小筛选范围后重试。",pcscope_contracts::model::catalog_version()));
+            }
+            bytes+=size;
+        }
+        last_key=Some((anchor,id));data.push(action);
     }
+    let next_cursor=if has_more {last_key.map(|(anchor,id)|encode_cursor(&walk_watermark,&anchor,id))}else{None};
     let status = if data.is_empty() { ResponseStatus::Empty } else { ResponseStatus::Loaded };
     let page = Page { next_cursor, limit, watermark: walk_watermark, has_more };
     Ok(response(status, Value::Array(data), Some(page), None))
+}
+
+/// Preserve all card inputs, including source hints which affect first-seen and update wording.
+/// Do not change the prepared projection or its revision: detail pruning is a transport concern.
+fn compact_action(action: &mut Value, id: i64) {
+    action["detail_id"]=json!(id);
+    if let Some(source)=action.get_mut("source_record").and_then(Value::as_object_mut) {
+        source.retain(|key,_|matches!(key.as_str(),"snapshot_presence"|"protection_update"|"title"));
+    }
+    if let Some(facts)=action["context"]["key_facts"].as_array_mut() {
+        for fact in facts {
+            if let Some(fields)=fact.as_object_mut() {
+                fields.remove("observed_at");fields.remove("source_time");fields.remove("derivation");
+            }
+        }
+    }
+}
+
+fn action_detail(conn: &Connection, id: i64) -> Result<QueryResponse> {
+    let mut action=conn.query_row(&format!("SELECT {ACTION_COLUMNS} FROM object_actions a WHERE a.action_row=?"),[id],action_row).optional()?;
+    if let Some(value)=action.as_mut() {enrich_action_context(conn,value,&mut HistoryLabelCache::new())?;}
+    Ok(response(if action.is_some(){ResponseStatus::Loaded}else{ResponseStatus::Empty},action.unwrap_or(Value::Null),None,None))
 }
 
 /// One piece of evidence, by its address.
@@ -1659,6 +1691,42 @@ mod tests {
 
     fn action_ids(response: &QueryResponse) -> Vec<String> {
         response.data.as_ref().and_then(Value::as_array).map(|rows| rows.iter().filter_map(|row| row["action_id"].as_str().map(str::to_owned)).collect()).unwrap_or_default()
+    }
+
+    #[test]
+    fn lightweight_timeline_has_independent_limits_and_exact_details() {
+        let store=seeded(1);
+        for _ in 0..805 {add_action(&store,"test.card","2026-10-20T00:00:00Z",None,Some("unassigned"));}
+        store.conn.execute("UPDATE object_actions SET source_record=?",[json!({"raw":"x".repeat(16000),"snapshot_presence":{"state":"Listen"}}).to_string()]).unwrap();
+        let full=timeline(&store,ActionFilter{limit:800,..Default::default()});
+        assert_eq!(full.data.as_ref().unwrap().as_array().unwrap().len(),200);
+        let first=timeline(&store,ActionFilter{cards_only:true,limit:9999,..Default::default()});
+        let data=first.data.as_ref().unwrap().as_array().unwrap();
+        assert_eq!(data.len(),800);
+        assert!(data[0]["source_record"]["raw"].is_null());
+        assert_eq!(data[0]["source_record"]["snapshot_presence"]["state"],"Listen");
+        let id=data[0]["detail_id"].as_i64().unwrap();
+        let detail=store.query(&QueryRequest::ActionDetail{action_row:id}).unwrap().data.unwrap();
+        assert_eq!(detail,full.data.unwrap()[0]);
+        let second=timeline(&store,ActionFilter{cards_only:true,limit:400,cursor:first.page.unwrap().next_cursor,..Default::default()});
+        assert_eq!(second.data.unwrap().as_array().unwrap().len(),5);
+        assert!(!second.page.unwrap().has_more);
+        assert_eq!(store.query(&QueryRequest::ActionDetail{action_row:-1}).unwrap().status,ResponseStatus::Empty);
+    }
+
+    #[test]
+    fn lightweight_byte_budget_resumes_at_last_returned_row() {
+        let store=seeded(1);
+        for _ in 0..8 {add_action(&store,"test.large","2026-10-20T00:00:00Z",None,Some("unassigned"));}
+        store.conn.execute("UPDATE object_actions SET before_value=?",[json!("x".repeat(1024*1024)).to_string()]).unwrap();
+        let mut cursor=None;let mut ids=std::collections::HashSet::new();
+        loop {
+            let page=timeline(&store,ActionFilter{cards_only:true,limit:800,cursor,..Default::default()});
+            let rows=page.data.unwrap();assert!(rows.to_string().len()<=TIMELINE_CARD_BYTES);
+            for row in rows.as_array().unwrap(){assert!(ids.insert(row["detail_id"].as_i64().unwrap()));}
+            let page=page.page.unwrap();if !page.has_more{break;}cursor=page.next_cursor;
+        }
+        assert_eq!(ids.len(),8);
     }
 
     #[test]

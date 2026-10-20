@@ -1,5 +1,5 @@
 'use strict';
-// Local display controls. Record nodes stay mounted, including any open object or log details.
+// Local display controls. Row anchors stay mounted; distant card contents can be released.
 const PCScopeTimelineGroups=(()=>{
   const time=typeof PCScopeTimelineTime!=='undefined'?PCScopeTimelineTime:require('./timeline-time.js');
   // The same readable category is already the switch identity. Keep its color stable
@@ -12,7 +12,7 @@ const PCScopeTimelineGroups=(()=>{
     return tones[hash%tones.length];
   }
   let sequence=0;
-  function mount(root,{collapsed=false}={}){
+  function mount(root,{collapsed=false,track=()=>{}}={}){
     const states=new Map(),unknownStates=new WeakMap(),metadata=new WeakMap(),pending=new WeakSet(),bucketIndex=new Map(),categoryCounts=new WeakMap();
     let lastMoment=null;
     const read=group=>{if(!metadata.has(group))metadata.set(group,JSON.parse(group.dataset.timeMeta));return metadata.get(group);};
@@ -60,7 +60,7 @@ const PCScopeTimelineGroups=(()=>{
       }
       for(const group of changed.keys()){updateTime(group);place(list,group);}
       for(const day of [...list.children])if(!day.querySelector('.timeline-group'))day.remove();
-      for(const [group,rows] of changed)update(group,rows);
+      for(const [group,rows] of changed){update(group,rows);track(rows);}
     }
     function stateOf(group){
       const key=group.dataset.timeGroup,store=key?states:unknownStates,identity=key||group;
@@ -148,6 +148,7 @@ const PCScopeTimelineGroups=(()=>{
         for(const row of root.querySelectorAll('.timeline-branch'))if(Number(row.dataset.timelineOrder)>order){order=Number(row.dataset.timelineOrder);lastMoment=JSON.parse(row.dataset.timelineMoment);}
       }
       for(const group of groups)update(group);
+      track(root.querySelectorAll('.timeline-branch'));
     }
     function setCollapsed(value){
       collapsed=!!value;

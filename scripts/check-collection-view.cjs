@@ -53,6 +53,7 @@ Object.assign(context,{
   AbortController,
   PCScopeTimelinePages:require('../apps/desktop/ui/timeline-pages.js'),
   PCScopeTimelineTime:require('../apps/desktop/ui/timeline-time.js'),
+  PCScopeTimelineWindow:{mount:()=>({track(){},clear(){},dispose(){}})},
   PCScopeTimelineGroups:{mount:()=>({append(){},sync(){},markBoundary(){},dispose(){},setAllCollapsed(){}})},
   PCScopeAutoPage:{mount:(_node,options)=>({pause(){},reset:async()=>options.apply(await options.query(null),{append:false})})},
   api:async(operation,args)=>{
@@ -70,7 +71,7 @@ await context.renderTimeline();
 // action nobody could attribute is still something that happened.
 assert.equal(lastQuery.query,'action_timeline');
 assert.equal(lastQuery.include_unassigned,true,'未归属动作必须默认包含');
-assert.equal(lastQuery.limit,200);
+assert.equal(lastQuery.limit,400);
 
 content.querySelector('#timeline-category').onchange({target:{value:'startup'}});await pending();
 assert.equal(lastQuery.category,'startup');
