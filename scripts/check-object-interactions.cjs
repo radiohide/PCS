@@ -40,6 +40,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
     if(q.query==='source_readings'&&window.__qa.sourcePages)return window.__qa.sourcePages[q.cursor?1:0];
     if(q.query==='instance_actions'&&window.__qa.actionPages)return window.__qa.actionPages[q.cursor?1:0];
     if(q.query==='action_timeline'&&window.__qa.timelineDataset){
+     if(window.__qa.holdRefresh)await new Promise(resolve=>window.__qa.releaseRefresh=resolve);
      const from=q.cursor?Number(q.cursor):0;
      if(window.__qa.failGroupAt===from){window.__qa.failGroupAt=null;throw Error('temporary grouped query failure');}
      const data=window.__qa.timelineDataset.slice(from,from+q.limit),more=from+q.limit<window.__qa.timelineDataset.length;
@@ -613,6 +614,22 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   assert((await page.locator('.timeline-entry').count())<200,'long lists release distant card DOM');
   await page.locator('.timeline-branch').nth(500).scrollIntoViewIfNeeded();
   await page.locator('.timeline-branch').nth(500).locator('h3').filter({hasText:'窗口记录 500'}).waitFor();
+  // An automatic refresh must retain the actual DOM anchor, open details and page size.
+  const captureReading=()=>page.evaluate(()=>{
+    const row=document.querySelectorAll('.timeline-branch')[500];
+    return {top:row.getBoundingClientRect().top,scroll:document.querySelector('main').scrollTop,
+      rows:document.querySelectorAll('.timeline-branch').length,
+      queries:window.__qa.calls.filter(c=>c.query==='action_timeline').length};
+  });
+  const beforeRefresh=await captureReading();
+  await page.evaluate(async()=>{
+    state.autoRefresh=true;state.lastAutomaticPageRefresh=0;window.__qa.modelRevision=100;
+    for(const timer of window.__qa.intervals.filter(t=>t.delay===3000))await timer.callback();
+  });
+  assert.deepEqual(await captureReading(),beforeRefresh,'refresh must not query, clear, move or trim the history being read');
+  assert.equal(await firstRow.locator('details[open]').count(),1);
+  assert.equal(await page.locator('#load-latest').textContent(),'有更新 · 载入最新');
+  checks.push('automatic updates preserve scrolled virtualized history, exact reading position and open details without extra timeline queries');
   await firstRow.scrollIntoViewIfNeeded();
   assert.equal(await page.evaluate(()=>window.__qa.calls.filter(q=>q.query==='action_detail').length),2,'restoring rows reuses successful detail response');
   await firstRow.locator('[data-action-detail]>summary').click();
@@ -622,11 +639,61 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.waitForFunction(()=>document.querySelector('.timeline-branch .timeline-entry'));
   await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
   assert.equal(await page.locator('.timeline-group-count').textContent(),'1400 条记录');
+  await page.evaluate(async()=>{
+    document.querySelector('main').scrollTop=0;state.lastAutomaticPageRefresh=0;
+    for(const timer of window.__qa.intervals.filter(t=>t.delay===3000))await timer.callback();
+  });
+  assert.equal(await page.locator('#load-latest').textContent(),'有更新 · 载入最新','local group controls remain protected even at the top');
+  await page.locator('#load-latest').click();
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
+  assert.equal(await page.locator('#load-latest').textContent(),'载入最新');
+  checks.push('group choices protect the page at the top; explicit latest reload clears the pending update');
+  await page.evaluate(()=>{
+    document.querySelector('main').scrollTop=0;state.lastAutomaticPageRefresh=0;
+    window.__qa.modelRevision=101;window.__qa.holdRefresh=true;
+    window.__qa.refreshJob=window.__qa.intervals.find(t=>t.delay===3000).callback();
+  });
+  await page.waitForFunction(()=>!!window.__qa.releaseRefresh);
+  assert.equal(await page.locator('.timeline-branch').count(),1400,'background preparation keeps the existing complete page');
+  await page.locator('.timeline-branch').nth(500).scrollIntoViewIfNeeded();
+  await page.locator('.timeline-branch').nth(500).locator('h3').waitFor();
+  const duringRefresh=await captureReading();
+  await page.evaluate(async()=>{
+    window.__qa.holdRefresh=false;window.__qa.releaseRefresh();await window.__qa.refreshJob;
+  });
+  assert.deepEqual(await captureReading(),duringRefresh,'starting to read during an IPC request cancels replacement');
+  assert.equal(await page.locator('#load-latest').textContent(),'有更新 · 载入最新');
+  await page.evaluate(async()=>{
+    document.querySelector('main').scrollTop=0;state.lastAutomaticPageRefresh=0;
+    for(const timer of window.__qa.intervals.filter(t=>t.delay===3000))await timer.callback();
+  });
+  assert.equal(await page.locator('#load-latest').textContent(),'载入最新');
+  assert.equal(await page.evaluate(()=>document.querySelector('main').scrollTop),0);
+  checks.push('slow automatic reads keep old cards visible, cannot interrupt newly started reading, and resume when returning to the top');
   await page.setViewportSize({width:600,height:800});
   await page.locator('.timeline-branch').nth(1000).scrollIntoViewIfNeeded();await page.locator('.timeline-branch').nth(1000).locator('h3').waitFor();
   await page.locator('[data-page="objects"]').click();assert.equal(await page.locator('.timeline-branch').count(),0);
   checks.push('long timeline releases distant cards, restores on scroll and resize, preserves open details and exact category counts, and disposes on navigation');
   checks.push('raw details are requested only on expansion, failure can retry and successful results survive scrolling without duplicate reads');
+  await page.setViewportSize({width:1440,height:1000});
+  await page.evaluate(data=>{window.__qa.timelineDataset=data;timelineGroupsPerLoad=2;document.querySelector('main').scrollTop=0;},sparseRows);
+  await page.locator('[data-page="timeline"]').click();
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
+  await page.evaluate(async()=>{
+    document.querySelector('main').scrollTop=0;state.lastAutomaticPageRefresh=0;window.__qa.modelRevision=102;window.__qa.failGroupAt=0;
+    for(const timer of window.__qa.intervals.filter(t=>t.delay===3000))await timer.callback();
+  });
+  assert.equal(await page.locator('.timeline-group').count(),2,'a background failure keeps the last complete page');
+  assert.equal(await page.locator('#load-latest').textContent(),'有更新 · 载入最新');
+  await page.evaluate(async()=>{
+    state.lastAutomaticPageRefresh=0;for(const timer of window.__qa.intervals.filter(t=>t.delay===3000))await timer.callback();
+  });
+  assert.equal(await page.locator('#load-latest').textContent(),'载入最新');
+  await page.locator('#timeline-more').hover();await page.mouse.wheel(0,240);
+  await page.waitForFunction(()=>document.querySelectorAll('.timeline-group').length===4&&document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
+  assert.equal(await page.locator('.timeline-branch').count(),4);
+  assert.equal(await page.locator('.timeline-group').evaluateAll(groups=>new Set(groups.map(g=>g.dataset.timeGroup)).size),4);
+  checks.push('failed background refresh retains the last complete page; successful retry transfers its cursor and scrolling loads the next groups exactly once');
   assert.deepEqual(errors,[]);assert.deepEqual(await page.evaluate(()=>[...new Set(window.__qa.calls.map(c=>c.operation))].filter(op=>!['status','query','monitoring_settings'].includes(op))),[]);
   fs.writeFileSync(path.join(output,'object-interactions-result.json'),JSON.stringify({passed:true,checks,page_errors:errors,basis:'Actual index.html and app.js in headless Chrome; fixed read-only IPC; no native collection or UAC.'},null,2));console.log('PASS: '+checks.length+' real app interaction scenarios; no collection calls or browser errors.');
  }finally{if(browser)await browser.close();await new Promise(r=>server.close(r));}

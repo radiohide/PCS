@@ -1,6 +1,6 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const source=fs.readFileSync(require('node:path').join(__dirname,'../apps/desktop/ui/app.js'),'utf8');
-const nodes=new Map();const node=id=>{if(!nodes.has(id))nodes.set(id,{setAttribute(k,v){this[k]=v;},removeAttribute(k){delete this[k];}});return nodes.get(id);};
+const nodes=new Map();const node=id=>{if(!nodes.has(id))nodes.set(id,{dataset:{},setAttribute(k,v){this[k]=v;},removeAttribute(k){delete this[k];}});return nodes.get(id);};
 const state={page:'timeline',autoRefresh:true,refreshEpoch:0,status:{collecting:true},refreshPolling:false,loadingLatest:false};
 let timelineBusy=false,calls=[],reloads=0,renders=0,tick,now=100000,response=async()=>({collecting:false,last_collection:{ok:true}});
 // Record what the refresh path asks the page for, so the counters it may overwrite stay pinned.
@@ -27,6 +27,13 @@ node('#auto-refresh').onclick();response=async()=>({collecting:false,read_model_
 node('#auto-refresh').onclick();await tick();assert.equal(reloads,7,'resuming must show changes received while paused');
 timelineBusy=true;response=async()=>({collecting:true,read_model_revision:'group-load-change'});now+=15000;await tick();assert.equal(reloads,7,'automatic refresh must not interrupt a group being completed');assert.equal(state.pendingPageRefresh,true);
 timelineBusy=false;await tick();assert.equal(reloads,8,'deferred refresh runs after the group finishes');
+let automaticOption;
+state.reloadPage=async options=>{automaticOption=options?.automatic;return false;};
+response=async()=>({collecting:true,read_model_revision:'reading-change'});now+=15000;await tick();
+assert.equal(automaticOption,true);assert.equal(state.pendingPageRefresh,true);
+assert.equal(node('#load-latest').textContent,'有更新 · 载入最新');
+state.reloadPage=async()=>{reloads++;};now+=15000;await tick();
+assert.equal(state.pendingPageRefresh,false);assert.equal(node('#load-latest').textContent,'载入最新');
 assert(calls.every(op=>op==='status'));assert.equal(node('#load-latest').disabled,false);
 // The refresh path may only rewrite the legacy counter block. The overview renders its counters
 // from the object model, and a bare `.stats` selector matched that block too, replacing model

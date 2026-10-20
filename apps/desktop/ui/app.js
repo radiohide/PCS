@@ -236,6 +236,7 @@ async function render(){
   PCScopeAutoPage.disposeWithin(content);
   const revision=++renderRevision;
   state.reloadPage=null;
+  showPendingRefresh(false);
   const page=state.page;document.querySelectorAll('[data-page]').forEach(b=>b.setAttribute('aria-current',b.dataset.page===page?'page':'false'));
   content.innerHTML='<div class="empty">正在读取本机历史…</div>';
   try{
@@ -299,6 +300,12 @@ function modelRefreshKey(status){
   // Older backends have no revision: committed material and projection progress are a
   // compatibility signal. A new backend reports actual model/display changes directly.
   return status?.read_model_revision??JSON.stringify([status?.pid,status?.counts?.records,status?.counts?.snapshots,status?.projection_worker?.at]);
+}
+function showPendingRefresh(pending){
+  const button=document.querySelector('#load-latest');
+  button.dataset.pendingRefresh=String(pending);
+  if(!state.loadingLatest)button.textContent=pending?'有更新 · 载入最新':'载入最新';
+  button.title=pending?'保留当前阅读位置，点击查看最新记录':'显示最新结果';
 }
 async function refreshStatus(automatic=false){
   const epoch=state.refreshEpoch;const valid=()=>!automatic||(state.autoRefresh&&epoch===state.refreshEpoch);
@@ -370,7 +377,7 @@ document.querySelector('#load-latest').onclick=async()=>{
   button.disabled=true;button.textContent='载入中…';
   try{await PCScopeView.ready;if(!await refreshStatus()){await connect(true);return;}if(state.page===page){const counters=content.querySelector('.stats-legacy');if(counters)counters.outerHTML=stats();if(state.reloadPage)await state.reloadPage();else await render();state.pendingPageRefresh=false;state.lastAutomaticPageRefresh=Date.now();}}
   catch(e){notice(errorText(e),e);}
-  finally{state.loadingLatest=false;button.disabled=false;button.textContent='载入最新';}
+  finally{state.loadingLatest=false;button.disabled=false;showPendingRefresh(false);}
 };
 setInterval(async()=>{
   // Pausing page refresh does not stop connection recovery. Skip permission switches so a
@@ -389,8 +396,11 @@ setInterval(async()=>{
     if(state.pendingPageRefresh&&['overview','timeline','health'].includes(state.page)
       &&Date.now()-(state.lastAutomaticPageRefresh||0)>=15000
       &&!(state.page==='timeline'&&content.querySelector('#timeline-results[aria-busy=true]'))){
-      if(state.reloadPage)await state.reloadPage();else await render();
-      state.pendingPageRefresh=false;state.lastAutomaticPageRefresh=Date.now();
+      const page=state.page,reload=state.reloadPage;
+      const refreshed=reload?await reload({automatic:true}):await render();
+      if(epoch!==state.refreshEpoch||page!==state.page||reload!==state.reloadPage)return;
+      state.pendingPageRefresh=refreshed===false;showPendingRefresh(state.pendingPageRefresh);
+      state.lastAutomaticPageRefresh=Date.now();
     }
   }finally{state.refreshPolling=false;}
 },3000);
@@ -426,10 +436,10 @@ async function renderTimeline(){
   const foldAll=content.querySelector('#timeline-fold-all');
   const showFoldMode=()=>{foldAll.textContent=timelineCollapsed?'全部展开':'全部折叠';foldAll.setAttribute('aria-controls',results.id);};
   showFoldMode();
-  let pagingReady=false;
+  let pagingReady=false,readingControls=false,prepared=null;
   const scrolling=content.closest?.('main')||content;
   const pagingInput=new AbortController();
-  results.addEventListener('click',event=>{if(event.target.closest('[data-timeline-toggle],[data-timeline-time-toggle],[data-timeline-category-toggle],[data-timeline-show-all],[data-timeline-invert]'))pagingReady=false;},{capture:true,signal:pagingInput.signal});
+  results.addEventListener('click',event=>{if(event.target.closest('[data-timeline-toggle],[data-timeline-time-toggle],[data-timeline-category-toggle],[data-timeline-show-all],[data-timeline-invert]')){pagingReady=false;readingControls=true;}},{capture:true,signal:pagingInput.signal});
   state.disposePage=()=>{clearTimeout(timer);++requestId;pagingInput.abort();groupControls.dispose();windowed.dispose();};
   mountModuleFileHistory();
   let catalog=[],requestId=0,timer,reader=null,renderedRows=0;
@@ -474,14 +484,15 @@ async function renderTimeline(){
         panel.innerHTML=response.status==='empty'?`<div class="empty">${esc(PCScopeModelView.messageOf(response,'没有该对象的详情'))}</div>`:PCScopeModelView.detail(response);
       }catch(error){if(panel.isConnected)panel.innerHTML=`<div class="empty">${errorHtml(error)}</div>`;}
   },{signal:pagingInput.signal});
-  const createReader=()=>{
+  const createReader=({background=false,valid=()=>true}={})=>{
     const revision=requestId,body=request(),minutes=PCScopeTimelineTime.getMinutes();
-    const current=()=>!pagingInput.signal.aborted&&results.isConnected&&revision===requestId;
-    return PCScopeTimelinePages.create({groups:timelineGroupsPerLoad,active:current,
+    const current=()=>!pagingInput.signal.aborted&&results.isConnected&&revision===requestId&&(!background||valid());
+    const candidate=PCScopeTimelinePages.create({groups:timelineGroupsPerLoad,active:current,
       keyOf:row=>PCScopeTimelineTime.moment(row,minutes).key,
       query:cursor=>api('query',{request:{...body,...(cursor?{cursor}:{})}}),
-      progress:({groups,target,rows})=>{if(current()){loading.hidden=false;loading.textContent='已读取 '+rows+' 条，正在补齐第 '+groups+' / '+target+' 组…';}},
+      progress:({groups,target,rows})=>{if(!background&&current()){loading.hidden=false;loading.textContent='已读取 '+rows+' 条，正在补齐第 '+groups+' / '+target+' 组…';}},
       emit:async response=>{
+        if(background)return;
         let emitted=0,frameStarted=performance.now(),first=true;
         for(const {html} of PCScopeModelView.timelineBatches(response)){
           if(!current())return;
@@ -495,13 +506,21 @@ async function renderTimeline(){
         }
       }
     });
+    return {...candidate,activate:()=>{background=false;}};
   };
   const pager=PCScopeAutoPage.mount(more,{
     // Folding can bring the sentinel into view. Wait for scrolling intent before
     // continuing, rather than walking history just because the layout got shorter.
     canAutoLoad:()=>pagingReady,
-    query:()=>{reader??=createReader();return reader.read();},
-    onStart:()=>{results.setAttribute('aria-busy','true');loading.hidden=false;loading.textContent='正在读取 '+timelineGroupsPerLoad+' 个时间组…';if(!renderedRows)results.innerHTML='<div class="empty">正在读取变化记录…</div>';},
+    query:()=>{
+      if(prepared){
+        const {response,html}=prepared;prepared=null;
+        windowed.clear();results.innerHTML=html;groupControls.sync();renderedRows=response.data.length;
+        return response;
+      }
+      reader??=createReader();return reader.read();
+    },
+    onStart:()=>{results.setAttribute('aria-busy','true');if(prepared)return;loading.hidden=false;loading.textContent='正在读取 '+timelineGroupsPerLoad+' 个时间组…';if(!renderedRows)results.innerHTML='<div class="empty">正在读取变化记录…</div>';},
     apply:async(response,{append})=>{
       timelineWalk.watermark=response.page?.watermark||null;
       if(!renderedRows){results.innerHTML=PCScopeModelView.timeline(response);groupControls.sync();}
@@ -512,7 +531,30 @@ async function renderTimeline(){
     },
     onError:error=>{results.setAttribute('aria-busy','false');loading.hidden=true;if(!renderedRows)results.innerHTML=`<div class="empty">${errorHtml(error)}</div>`;}
   });
-  const refresh=()=>{++requestId;reader=null;renderedRows=0;pagingReady=false;windowed.clear();return pager.reset();};
+  const refresh=()=>{++requestId;reader=null;prepared=null;renderedRows=0;pagingReady=false;readingControls=false;showPendingRefresh(false);windowed.clear();return pager.reset();};
+  const reading=()=>scrolling.scrollTop>1||readingControls||results.querySelector('details[open],.timeline-object-detail')||results.contains(document.activeElement)||results.getAttribute('aria-busy')==='true';
+  const refreshAutomatically=async()=>{
+    if(reading())return false;
+    const revision=requestId,epoch=state.refreshEpoch;
+    const valid=()=>revision===requestId&&!pagingInput.signal.aborted&&state.autoRefresh&&epoch===state.refreshEpoch;
+    // Prepare a complete first page without clearing the current DOM or its cursor.
+    // Recheck after every await: a person may start reading while IPC is still pending.
+    const candidate=createReader({background:true,valid:()=>valid()&&!reading()});
+    try{
+      const response=await candidate.read();if(!valid()||reading())return false;
+      let html='';
+      for(const batch of PCScopeModelView.timelineBatches(response)){
+        html+=batch.html;await new Promise(resolve=>requestAnimationFrame(resolve));
+        if(!valid()||reading())return false;
+      }
+      prepared={response,html:html||PCScopeModelView.timeline(response)};
+      candidate.activate();reader=candidate;pagingReady=false;
+      await pager.reset();return true;
+    }catch(error){
+      // Keep the readable page and retry at the normal refresh cadence.
+      return false;
+    }
+  };
   const allowPaging=event=>{
     if(event.type==='keydown'&&(!['ArrowDown','PageDown','End',' '].includes(event.key)||event.target.closest('input,select,textarea,[contenteditable]')||event.key===' '&&event.target.closest('button,summary')))return;
     if(event.type==='wheel'&&event.deltaY<=0)return;
@@ -521,7 +563,7 @@ async function renderTimeline(){
   };
   for(const event of ['wheel','touchmove','keydown','pointerdown'])scrolling.addEventListener(event,allowPaging,{passive:true,signal:pagingInput.signal});
   foldAll.onclick=()=>{
-    timelineCollapsed=!timelineCollapsed;pagingReady=false;
+    timelineCollapsed=!timelineCollapsed;pagingReady=false;readingControls=true;
     localStorage.setItem('pcscope.timelineCollapsed',String(timelineCollapsed));
     groupControls.setCollapsed(timelineCollapsed);showFoldMode();
   };
@@ -536,7 +578,7 @@ async function renderTimeline(){
   for(const key of ['category','type_id'])content.querySelector('#timeline-'+(key==='type_id'?'type':key)).onchange=e=>{timelineFilters[key]=e.target.value;if(key==='category')timelineFilters.type_id='';options();schedule(0);};
   content.querySelector('#timeline-clear').onclick=()=>{Object.assign(timelineFilters,{action:'',category:'',type_id:'',period:'',unassigned:true,routine:false});content.querySelector('#timeline-action').value='';content.querySelector('#timeline-period').value='';content.querySelector('#timeline-unassigned').value='true';content.querySelector('#timeline-routine').value='false';options();schedule(0);};
   content.querySelector('#collect').onclick=collect;
-  state.reloadPage=()=>{reset();return refresh();};
+  state.reloadPage=({automatic=false}={})=>{if(automatic)return refreshAutomatically();reset();return refresh();};
   try{catalog=(await api('query',{request:{query:'type_catalog'}})).data||[];}catch(error){catalog=[];notice(errorText(error),error);}
   options();await refresh();
 }
