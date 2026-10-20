@@ -547,6 +547,31 @@ pub fn actions(conn: &Connection, reference: &str, limit: usize) -> Result<Query
     Ok(response(status, Value::Array(data), Some(page), None))
 }
 
+// Sparse object scopes must not walk every unrelated display row to prove the page
+// ended. Read a bounded candidate set through the existing instance/action index.
+// Dense scopes retain the time index, so pagination never sorts all network history.
+fn scoped_action_candidates(conn: &Connection, filter: &ActionFilter) -> Result<Option<Vec<i64>>> {
+    const MAX_CANDIDATES: usize = 10_000;
+    let mut clauses=Vec::new();
+    let mut args:Vec<Box<dyn rusqlite::ToSql>>=Vec::new();
+    if let Some(category)=&filter.category {clauses.push("category=?".to_owned());args.push(Box::new(category.clone()));}
+    if let Some(typ)=&filter.type_id {clauses.push("type_id=?".to_owned());args.push(Box::new(typ.clone()));}
+    if let Some(instance)=&filter.instance {
+        match instance.parse::<i64>() {
+            Ok(id)=>{clauses.push("instance_id=?".to_owned());args.push(Box::new(id));}
+            Err(_)=>{clauses.push(format!("{ALIAS}=?"));args.push(Box::new(instance.clone()));}
+        }
+    }
+    if clauses.is_empty(){return Ok(None);}
+    let sql=format!("SELECT a.action_row FROM object_actions a INDEXED BY object_actions_instance
+        WHERE a.instance_id IN (SELECT instance_id FROM object_instances WHERE {})
+        LIMIT {}",clauses.join(" AND "),MAX_CANDIDATES+1);
+    let bound:Vec<&dyn rusqlite::ToSql>=args.iter().map(|v|v.as_ref()).collect();
+    let mut statement=conn.prepare_cached(&sql)?;
+    let ids=statement.query_map(bound.as_slice(),|r|r.get::<_,i64>(0))?.collect::<rusqlite::Result<Vec<_>>>()?;
+    Ok((ids.len()<=MAX_CANDIDATES).then_some(ids))
+}
+
 /// Every action, newest first.
 ///
 /// This is what the timeline reads: `InstanceActions` answers "what happened to this one", and this
@@ -554,6 +579,10 @@ pub fn actions(conn: &Connection, reference: &str, limit: usize) -> Result<Query
 /// that could not be attributed is still something that happened, and dropping it would make the
 /// timeline look complete when it is not.
 pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryResponse> {
+    timeline_with_scope_plan(conn,filter,true)
+}
+
+fn timeline_with_scope_plan(conn: &Connection, filter: &ActionFilter, use_scope: bool) -> Result<QueryResponse> {
     let limit = if filter.cards_only { filter.limit.clamp(1, MAX_TIMELINE_CARDS) } else { clamp(filter.limit) };
     let mut probe = filter.clone();
     probe.cursor = None;
@@ -588,6 +617,12 @@ pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryRespons
         vec![format!("pcscope_action_visible(a.action_id,coalesce((SELECT type_id FROM object_instances i WHERE i.instance_id=a.instance_id),a.target_type,''),coalesce(a.field_id,''),a.before_value,a.after_value,{})",u8::from(filter.include_routine))]
     };
     let mut args: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
+    let candidates=if use_scope {scoped_action_candidates(conn,filter)?}else{None};
+    if let Some(ids)=&candidates {
+        // One bounded JSON parameter keeps the statement reusable for different scopes.
+        clauses.push("a.action_row IN (SELECT CAST(value AS INTEGER) FROM json_each(?))".into());
+        args.push(Box::new(serde_json::to_string(ids)?));
+    }
     if let Some(bound) = window {
         clauses.push("a.action_row <= ?".into());
         args.push(Box::new(bound));
@@ -644,7 +679,10 @@ pub fn timeline(conn: &Connection, filter: &ActionFilter) -> Result<QueryRespons
         args.push(Box::new(cursor_id));
     }
 
-    let from=if prepared.is_some(){"display_actions d INDEXED BY display_actions_anchor CROSS JOIN object_actions a ON a.action_row=d.action_row"}else{"object_actions a"};
+    let from=if prepared.is_some(){
+        if candidates.is_some(){"object_actions a CROSS JOIN display_actions d ON d.action_row=a.action_row"}
+        else{"display_actions d INDEXED BY display_actions_anchor CROSS JOIN object_actions a ON a.action_row=d.action_row"}
+    }else{"object_actions a"};
     let stored=if prepared.is_some(){"d.view"}else{"NULL"};
     let sql = format!(
         "SELECT {ACTION_COLUMNS}, {anchor} AS anchor,{stored}
@@ -1691,6 +1729,48 @@ mod tests {
 
     fn action_ids(response: &QueryResponse) -> Vec<String> {
         response.data.as_ref().and_then(Value::as_array).map(|rows| rows.iter().filter_map(|row| row["action_id"].as_str().map(str::to_owned)).collect()).unwrap_or_default()
+    }
+
+    #[test]
+    fn sparse_scope_paging_matches_time_scan_without_visiting_unrelated_actions() {
+        let store=seeded(2);
+        store.conn.execute_batch("UPDATE object_instances SET category='hardware',type_id='hardware.device' WHERE instance_id=1;
+            UPDATE object_instances SET category='network',type_id='network.endpoint' WHERE instance_id=2;
+            WITH RECURSIVE n(x) AS(VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<20000)
+            INSERT INTO object_actions(instance_id,action_id,result,precision,observed_at,rule_version)
+            SELECT 2,'fixture.network','observed','observation_only','2026-10-20T00:00:00Z','test' FROM n;").unwrap();
+        for _ in 0..9 {add_action(&store,"fixture.hardware","2020-01-01T00:00:00Z",Some(1),None);}
+        // Keep this scale fixture independent of raw parsing; normal production builders
+        // and revision invalidation have their own coverage in display_tests.
+        store.conn.execute(&format!("INSERT INTO display_actions(action_row,revision,visible_main,visible_all,view,identity_guard,anchor,prepared_generation)
+            SELECT a.action_row,?,1,1,json_object('action_id',a.action_id,'instance_id',a.instance_id,
+                'observed_at',a.observed_at,'precision',a.precision,'context',json_object('type_id',i.type_id)),
+                {},coalesce(a.interval_until,a.occurred_at,a.observed_at),1
+            FROM object_actions a JOIN object_instances i ON i.instance_id=a.instance_id",crate::display::identity_guard_sql()),[crate::display::revision()]).unwrap();
+        store.conn.execute_batch("DELETE FROM display_work;DELETE FROM display_identity_work;UPDATE display_build SET published=1,generation=1;").unwrap();
+        let alias:String=store.conn.query_row(&format!("SELECT {ALIAS} FROM object_instances WHERE instance_id=1"),[],|r|r.get(0)).unwrap();
+        let filters=[
+            ActionFilter{category:Some("hardware".into()),..Default::default()},
+            ActionFilter{type_id:Some("hardware.device".into()),..Default::default()},
+            ActionFilter{instance:Some("1".into()),..Default::default()},
+            ActionFilter{instance:Some(alias),include_routine:true,..Default::default()},
+            ActionFilter{category:Some("hardware".into()),type_id:Some("network.endpoint".into()),..Default::default()},
+            ActionFilter{category:Some("hardware".into()),since:Some("2026".into()),..Default::default()},
+        ];
+        for mut filter in filters {
+            filter.limit=3;filter.cards_only=true;
+            loop {
+                let expected=timeline_with_scope_plan(&store.conn,&filter,false).unwrap();
+                let visits=std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));let counter=visits.clone();
+                store.conn.progress_handler(100,Some(move ||counter.fetch_add(1,std::sync::atomic::Ordering::Relaxed)>200));
+                let actual=timeline(&store,filter.clone());
+                store.conn.progress_handler(0,None::<fn()->bool>);
+                assert_eq!(serde_json::to_value(&actual).unwrap(),serde_json::to_value(&expected).unwrap());
+                let page=actual.page.unwrap();if !page.has_more {break;}filter.cursor=page.next_cursor;
+            }
+        }
+        assert!(scoped_action_candidates(&store.conn,&ActionFilter{category:Some("network".into()),..Default::default()}).unwrap().is_none(),"dense scopes retain time-index paging");
+        assert!(scoped_action_candidates(&store.conn,&ActionFilter::default()).unwrap().is_none());
     }
 
     #[test]
