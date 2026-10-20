@@ -27,3 +27,11 @@
 - 正常及浅色实际页面截图检查通过；设置入口位于时间线筛选区，卡片保留原有简洁风格。
 
 运行证据保存在忽略目录 `target/object-interactions-result.json`、`target/timeline-bucket-performance.json` 和时间线截图中。完整后台性能门槛及已知写入等待事项继续见 `performance-0.2.16.md`。
+
+## 固定目录及正式库复核
+
+桌面构建成功，`dist/dev/pcscope-desktop.exe` 与 `apps/desktop/src-tauri/target/debug/pcscope-desktop.exe` 校验一致，SHA-256 为 `3D002F036BF306C8ADC3CFEC2980C291D7A389F3DD00BF88204A432E256C9B94`。正常目录继续使用默认路径；debug 原有路径配置保留。构建出现 MinGW 既有资源清单合并警告，实际程序启动及 WebView 验收通过。
+
+正式库、实际固定目录 WebView2 窗口中，20 次只读首屏加载全部成功，每次 200 条；p50 229.4 ms、p95 279.7 ms、最大 294.7 ms。测量覆盖页面请求、真实 Tauri/IPC、DOM 和两帧绘制，不是操作系统冷启动。真实页面另核对版本 0.2.17、默认 5 分钟、六个选项、全部卡片实际时间标签和整分钟边界。
+
+部署和测试前后增强后台始终为原 PID 15404、同一数据目录且权限保持增强；没有重新处理历史。测试窗口已退出，日常界面重新打开。后台此前遗留的采集写入等待问题不在此次修改范围内。
