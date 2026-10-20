@@ -30,6 +30,12 @@ assert.equal(readableEvents.card(arrival('pcscope.network.tcp','Listen')).label,
 assert.equal(readableEvents.card(arrival('pcscope.network.udp',null)).label,'首次记录到此 UDP 端口');
 assert.equal(readableEvents.card(arrival('pcscope.network.tcp','SynSent')).label,'首次记录到此网络项');
 assert.equal(readableEvents.card({action_id:'observed.first_seen',context:{type_id:'network.endpoint'}}).label,'首次记录到此网络项','an old first observation must not imply connection creation');
+for(const type of require('../model/catalog.json').types.map(t=>t.id)){
+ const initial={action_id:'observed.first_seen',result:'observed',precision:'observation_only',observed_at:'2026-10-20T00:00:00Z',context:{type_id:type,attribution_status:'stored'},source_record:{snapshot_presence:{baseline:true,state:'Running'}}};
+ assert.equal(readableEvents.title(initial),'首次记录');
+ assert.equal(readableEvents.card(initial).label,'首次记录','initial inventory has one concise label across types');
+ assert.doesNotMatch(readableEvents.card(initial).note||'',/不代表|不能确认|未必/);
+}
 assert.match(readableEvents.impact(missing('account.group_membership')),/成员关系/);
 assert.match(readableEvents.impact(missing('security.certificate_registration')),/证书存储区.*登记/);
 assert.match(readableEvents.impact(missing('virtualization.disk_attachment')),/磁盘连接/);

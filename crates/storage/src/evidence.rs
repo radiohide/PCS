@@ -174,6 +174,41 @@ pub(crate) fn record_snapshot_appearance(tx:&Connection,source:&str,scope:&str,r
     insert(tx,&address,item,EvidenceKind::Record,source,scope,item,None,observed,ingested,
         &serde_json::to_string(&decoding_of_stored_material())?,&record_payload_ref(seq))
 }
+/// Initial inventories are retained separately from arrivals. Walk their existing narrow
+/// kind index rather than scanning unrelated event history; queue only a small byte/time batch.
+pub(crate) fn prepare_snapshot_baselines(tx:&Connection,limit:usize)->Result<Value> {
+    anyhow::ensure!((1..=64).contains(&limit),"baseline batch must be 1–64 records");
+    let started=std::time::Instant::now();
+    let cursor:i64=tx.query_row("SELECT value FROM settings WHERE key='projection.baseline_cursor.v1'",[],|r|r.get::<_,String>(0)).optional()?.map(|v|v.parse()).transpose()?.unwrap_or(0);
+    let ids:Vec<i64>={
+        let mut q=tx.prepare_cached("SELECT seq FROM record_search INDEXED BY record_search_kind WHERE kind='baseline.observed' AND seq>? ORDER BY seq LIMIT ?")?;
+        let rows=q.query_map(params![cursor,limit as i64],|r|r.get(0))?;
+        rows.collect::<rusqlite::Result<_>>()?
+    };
+    let (mut next,mut examined,mut queued,mut skipped,mut bytes)=(cursor,0,0,0,0i64);
+    for seq in &ids {
+        if examined>0&&started.elapsed()>=std::time::Duration::from_millis(40){break}
+        let (source,item,at,size):(String,Option<String>,String,i64)=tx.query_row(
+            "SELECT source,object_id,occurred_at,length(CAST(data AS BLOB)) FROM records WHERE seq=?",[seq],
+            |r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?)))?;
+        if size<=1048576&&bytes+size>2097152 {break}
+        next=*seq;examined+=1;
+        let Some(item)=item else{skipped+=1;continue};
+        if size>1048576||pcscope_contracts::reference::adapter_for(&source).is_none()||pcscope_contracts::adapters::source_gaps::reading_destination(&source).is_some(){skipped+=1;continue}
+        let text:String=tx.query_row("SELECT data FROM records WHERE seq=?",[seq],|r|r.get(0))?;bytes+=size;
+        let data:Value=match serde_json::from_str(&text){Ok(v)=>v,Err(_)=>{skipped+=1;continue}};
+        let Some(scope)=data["scope"].as_str().filter(|s|!s.is_empty())else{skipped+=1;continue};
+        if data["basis"]!="snapshot"||data.get("before")!=Some(&Value::Null)||!data["after"].is_object(){skipped+=1;continue}
+        let address=format!("snapshot-baseline:{seq}");
+        queued+=insert(tx,&address,&item,EvidenceKind::Record,&source,scope,&item,None,&at,&at,
+            &serde_json::to_string(&decoding_of_stored_material())?,&record_payload_ref(*seq))?;
+    }
+    if next!=cursor {
+        tx.execute("INSERT INTO settings(key,value) VALUES('projection.baseline_cursor.v1',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",[next.to_string()])?;
+    }
+    Ok(json!({"examined":examined,"queued":queued,"skipped":skipped,"cursor":next,"material_bytes":bytes,"caught_up":examined==ids.len()&&ids.len()<limit}))
+}
+
 /// Opt-in bounded recovery. The sequence cursor and original records stay independent.
 pub(crate) fn repair_snapshot_appearance(tx:&Connection,limit:usize)->Result<Value> {
     anyhow::ensure!((1..=256).contains(&limit),"appearance repair batch must be 1–256 records");

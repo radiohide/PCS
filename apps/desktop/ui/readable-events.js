@@ -32,7 +32,7 @@ const PCScopeReadableEvents=(()=>{
     const result=objects.presentation.absence({type_id:uncertainAssociation(row)?'':type(row)});
     return {...result,impact:'检查时，'+result.impact.replace(/当前/g,'').replace(/^本次检查/,'')};
   }
-  function firstSeen(row){return objects.presentation.firstSeen({type_id:uncertainAssociation(row)?'':type(row)},row.source_record?.snapshot_presence||{});}
+  function firstSeen(row){if(row.source_record?.snapshot_presence?.baseline===true)return '首次记录';return objects.presentation.firstSeen({type_id:uncertainAssociation(row)?'':type(row)},row.source_record?.snapshot_presence||{});}
   function subject(row){
     if(readable(row.context?.subject_label)){
       const c=row.context;

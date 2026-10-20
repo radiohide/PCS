@@ -767,6 +767,12 @@ impl Store {
     pub fn repair_snapshot_absence(&self,limit:usize)->Result<Value> {
         let tx=self.conn.unchecked_transaction()?;let report=evidence::repair_snapshot_absence(&tx,limit)?;tx.commit()?;Ok(report)
     }
+    /// Bounded initial-inventory preparation for the existing background worker.
+    pub fn prepare_snapshot_baselines(&self,limit:usize)->Result<Value> {
+        let tx=self.conn.unchecked_transaction()?;
+        let report=evidence::prepare_snapshot_baselines(&tx,limit)?;
+        tx.commit()?;Ok(report)
+    }
     /// Explicit bounded recovery of retained additions; never edits the original records.
     pub fn repair_snapshot_appearance(&self,limit:usize)->Result<Value> {
         let tx=self.conn.unchecked_transaction()?;let report=evidence::repair_snapshot_appearance(&tx,limit)?;tx.commit()?;Ok(report)

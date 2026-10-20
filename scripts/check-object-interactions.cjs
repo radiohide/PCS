@@ -202,6 +202,12 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   checks.push('a historical module arrival opens the latest unloaded state, with historical fields and readable signature placeholders');
   await page.locator('.timeline-object').click();await page.evaluate(()=>{window.__qa.detailFixture.data.summary.lifecycle='active';});await page.locator('.timeline-object').click();await page.locator('.object-current-state').waitFor();
   assert.equal(await page.locator('.object-current-state').innerText(),'已加载');assert.equal(await page.locator('.timeline-event-label').textContent(),'首次记录加载');
+  await page.evaluate(()=>{window.__qa.timeline[0].source_record.snapshot_presence.baseline=true;});
+  await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-event-label').waitFor();
+  assert.equal(await page.locator('.timeline-event-label').textContent(),'首次记录');
+  await page.locator('.timeline-object').click();await page.locator('.object-current-state').waitFor();
+  assert.equal(await page.locator('.object-current-state').innerText(),'已加载');
+  checks.push('initial collection is visible as first recorded while its object detail keeps the current state');
   checks.push('reopening queries the current object state without rewriting the historical first observation');
   await page.locator('.timeline-object').click();await page.evaluate(()=>{window.__qa.detailFixture.data.summary.record_basis='event_only';});await page.locator('.timeline-object').click();await page.locator('.object-current-state').waitFor();
   assert.equal(await page.locator('.object-current-state').innerText(),'未取得当前状态');

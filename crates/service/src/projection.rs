@@ -48,12 +48,26 @@ impl Worker {
             let mut display:std::result::Result<Value,String>=Ok(json!({"pending":true}));
             let mut display_retry_at=Instant::now();let mut display_failures=0u32;
             let mut projection_timings=StageTimings::default();let mut display_timings=StageTimings::default();
+            let mut baseline_timings=StageTimings::default();
+            let mut baselines:std::result::Result<Value,String>=Ok(json!({"pending":true}));
+            let mut baseline_retry_at=Instant::now();let mut baseline_failures=0u32;
             while !worker_stop.load(Ordering::SeqCst) {
                 // Release the shared writer after every small atomic batch.
                 let result = projection_timings.run(&store,|store|store.project_pending(&machine, &installation, 64));
                 // Reacquire after raw projection: collectors get a chance to commit between
                 // the two bounded transactions. Display work cannot be starved by raw backlog.
                 std::thread::yield_now();
+                let mut baseline_queued=false;
+                // Existing observations must establish bindings before initial inventories
+                // become timeline entries. One bounded batch; no extra polling process.
+                if result.as_ref().is_ok_and(|r|r.examined==0)&&Instant::now()>=baseline_retry_at {
+                    baselines=baseline_timings.run(&store,|s|s.prepare_snapshot_baselines(32)).map_err(|e|e.to_string());
+                    baseline_queued=baselines.as_ref().ok().is_some_and(|r|r["queued"].as_u64().unwrap_or(0)>0);
+                    if baselines.is_err(){baseline_failures=baseline_failures.saturating_add(1);}
+                    else{baseline_failures=0;}
+                    baseline_retry_at=Instant::now()+Duration::from_secs(if baseline_failures>0{(1u64<<baseline_failures.min(6)).min(60)}else{1});
+                    std::thread::yield_now();
+                }
                 if Instant::now()>=display_retry_at {
                     display=display_timings.run(&store,|store|store.prepare_display(128,Duration::from_millis(40))).map_err(|error|error.to_string());
                     if display.is_err() {
@@ -63,12 +77,13 @@ impl Worker {
                 }
                 let delay = match result {
                     Ok(report) => {
-                        if report.examined == 0 { worker_ready.store(true, Ordering::SeqCst); }
+                        if report.examined == 0 && !baseline_queued { worker_ready.store(true, Ordering::SeqCst); }
                         *worker_status.lock().unwrap() = json!({"state":if report.examined==0 {"idle"} else {"projecting"},
                             "examined":report.examined,"projected":report.projected,
                             "rejected":report.rejected,"unadapted":report.unadapted,
                             "display":display.as_ref().ok(),"display_error":display.as_ref().err().map(ToString::to_string),
-                            "timing":{"projection":projection_timings.view(),"display":display_timings.view()},
+                            "initial_inventory":baselines.as_ref().ok(),"initial_inventory_error":baselines.as_ref().err(),
+                            "timing":{"projection":projection_timings.view(),"display":display_timings.view(),"initial_inventory":baseline_timings.view()},
                             "at":chrono::Utc::now().to_rfc3339()});
                         if report.examined == 0 {
                             if display.as_ref().ok().is_some_and(|d|d["history_pending"]==true||d["built"].as_u64().unwrap_or(0)>0||d["linked"].as_u64().unwrap_or(0)>0) {Duration::from_millis(10)}else{Duration::from_millis(250)}
@@ -157,7 +172,7 @@ mod tests {
         store.lock().unwrap().reader().execute_batch("DROP TRIGGER injected_failure").unwrap();
         wait_for(|| worker.ready.load(Ordering::SeqCst));
         assert_eq!(count(&store, "object_instances"), 1);
-        assert_eq!(count(&store, "evidence"), 1);
+        assert_eq!(count(&store, "evidence"), 2,"snapshot and initial-inventory reference both survive retry");
     }
 
     #[test]
@@ -200,7 +215,8 @@ mod tests {
         wait_for(|| worker.ready.load(Ordering::SeqCst));
         assert_eq!(identity, store.lock().unwrap().projection_installation("M").unwrap());
         assert_eq!(count(&store, "object_instances"), 1);
-        assert_eq!(count(&store, "evidence"), 132);
+        assert_eq!(count(&store, "evidence"), 133,"one retained initial-inventory record is prepared once");
+        assert_eq!(count(&store, "object_actions WHERE action_id='observed.first_seen' AND json_extract(source_record,'$.snapshot_presence.baseline')=1"),1);
         assert!(store.lock().unwrap().projection_installation("other-machine").is_err());
     }
 }
