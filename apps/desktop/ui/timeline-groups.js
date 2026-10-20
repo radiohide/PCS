@@ -110,6 +110,7 @@ const PCScopeTimelineGroups=(()=>{
         button.querySelector('.timeline-category-count').textContent=count;
       }
       for(const [category,button] of buttons)if(!counts.has(category))button.remove();
+      for(const button of group.querySelectorAll('[data-timeline-show-all],[data-timeline-invert]'))button.setAttribute('aria-controls',body.id);
       count(group);
       group.querySelector('[data-timeline-visible]').textContent=visible===total?'全部显示':'显示 '+visible+' / '+total+' 条';
       group.querySelector('.timeline-category-footer').hidden=visible===total;
@@ -123,7 +124,7 @@ const PCScopeTimelineGroups=(()=>{
       group.querySelector(':scope > .timeline-group-empty').hidden=state.collapsed||visible!==0;
     }
     const onClick=event=>{
-      const button=event.target.closest('button[data-timeline-toggle],button[data-timeline-time-toggle],button[data-timeline-category-toggle],button[data-timeline-show-all]');
+      const button=event.target.closest('button[data-timeline-toggle],button[data-timeline-time-toggle],button[data-timeline-category-toggle],button[data-timeline-show-all],button[data-timeline-invert]');
       if(!button||!root.contains(button))return;
       const group=button.closest('.timeline-group');if(!group)return;
       const state=stateOf(group);
@@ -132,6 +133,9 @@ const PCScopeTimelineGroups=(()=>{
       const before=scroller?anchor.getBoundingClientRect().top:null;
       if(folding)state.collapsed=!state.collapsed;
       else if(button.hasAttribute('data-timeline-show-all'))state.muted.clear();
+      else if(button.hasAttribute('data-timeline-invert')){
+        for(const category of categoryCounts.get(group).keys()){if(state.muted.has(category))state.muted.delete(category);else state.muted.add(category);}
+      }
       else {const category=button.dataset.timelineCategoryToggle;if(state.muted.has(category))state.muted.delete(category);else state.muted.add(category);}
       update(group);
       // Keep a sticky time control within reach when its long list is collapsed or restored.
