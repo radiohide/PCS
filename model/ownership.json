@@ -70,6 +70,7 @@
         "pcscope/scripts/check-query-consumers.cjs",
         "pcscope/scripts/check-query-queue.cjs",
         "pcscope/scripts/measure-query-performance.cjs",
+        "pcscope/scripts/measure-webview-performance.cjs",
         "pcscope/scripts/check-auto-page.cjs",
         "pcscope/scripts/check-overview-load.cjs",
         "pcscope/scripts/check-status-issues.cjs",

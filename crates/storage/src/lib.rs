@@ -518,8 +518,13 @@ impl Store {
         )?;
         self_activity::ingest(&tx,previous_seq)?;
         tx.commit()?;
+        // FULL-synchronous WAL commit already makes the accepted material durable. TRUNCATE
+        // waits for history readers while holding the collection writer's mutex, delaying both
+        // new material and model/display work by the busy timeout for every envelope. PASSIVE
+        // copies the pages it can now; readers keep their snapshots and later commits reuse WAL.
+        // Capacity enforcement retains its explicit reclamation/checkpoint path below.
         self.conn
-            .execute_batch("PRAGMA wal_checkpoint(TRUNCATE);")?;
+            .execute_batch("PRAGMA wal_checkpoint(PASSIVE);")?;
         Ok(inserted)
     }
 
@@ -1331,6 +1336,37 @@ impl Store {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn committed_collection_does_not_wait_for_an_active_history_reader() {
+        let directory=std::env::temp_dir().join(format!("pcscope-reader-writer-{}-{}",std::process::id(),
+            std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+        std::fs::create_dir(&directory).unwrap();let path=directory.join("history.db");
+        let elapsed={
+            let mut store=Store::open(&path).unwrap();
+            store.ingest(&snapshot("reader-before",true,json!([{"id":"a","data":{"value":1}}]))).unwrap();
+            let reader=Connection::open_with_flags(&path,rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY).unwrap();
+            reader.execute_batch("BEGIN;").unwrap();
+            let count=|conn:&Connection|conn.query_row("SELECT count(*) FROM snapshots",[],|row|row.get::<_,i64>(0)).unwrap();
+            assert_eq!(count(&reader),1); // Actually acquire a WAL read snapshot before writing.
+            store.conn.busy_timeout(std::time::Duration::from_secs(2)).unwrap();
+            let mut timings=Vec::new();
+            for index in 2..=101 {
+                let next=snapshot(&format!("reader-{index}"),true,json!([{"id":"a","data":{"value":index}}]));
+                let started=std::time::Instant::now();assert_eq!(store.ingest(&next).unwrap(),1);timings.push(started.elapsed());
+                assert_eq!(store.ingest(&next).unwrap(),0,"replaying acknowledged material stays idempotent");
+            }
+            assert_eq!(count(&reader),1,"the existing history reader retains a consistent snapshot");
+            let fresh=Connection::open_with_flags(&path,rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY).unwrap();
+            assert_eq!(count(&fresh),101,"a fresh reader sees all committed collections immediately");
+            assert_eq!(store.conn.query_row("PRAGMA synchronous",[],|row|row.get::<_,i64>(0)).unwrap(),2);
+            reader.execute_batch("ROLLBACK;").unwrap();
+            timings.sort();eprintln!("active history reader, 100 collection commits: p50={:?}, p95={:?}, p99={:?}",timings[49],timings[94],timings[98]);
+            timings[99]
+        };
+        {let reopened=Store::open(&path).unwrap();assert_eq!(reopened.conn.query_row("SELECT count(*) FROM snapshots",[],|row|row.get::<_,i64>(0)).unwrap(),101);}
+        std::fs::remove_file(&path).unwrap();std::fs::remove_dir(&directory).unwrap();
+        assert!(elapsed<std::time::Duration::from_secs(1),"collection waited {elapsed:?} for an unrelated history reader");
+    }
     #[test]
     fn incremental_vacuum_finishes_a_page_batch_before_checkpointing() {
         let store=Store::open(":memory:").unwrap();

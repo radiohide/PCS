@@ -5,6 +5,31 @@ use serde_json::{json, Value};
 use std::sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}};
 use std::time::{Duration,Instant};
 
+// Fixed-size, in-memory measurements distinguish writer contention from actual processing.
+// No extra sampling task, database writes or growing history is needed.
+#[derive(Default)]
+struct StageTimings {
+    batches:u64,wait_ms:u64,work_ms:u64,max_wait_ms:u64,max_work_ms:u64,
+    last_wait_ms:u64,last_work_ms:u64,
+}
+impl StageTimings {
+    fn run<T>(&mut self,store:&Arc<Mutex<Store>>,action:impl FnOnce(&Store)->Result<T>)->Result<T> {
+        let started=Instant::now();
+        let guard=store.lock().map_err(|_|anyhow::anyhow!("storage lock poisoned"))?;
+        let acquired=Instant::now();let result=action(&guard);let finished=Instant::now();drop(guard);
+        self.last_wait_ms=acquired.duration_since(started).as_millis().try_into().unwrap_or(u64::MAX);
+        self.last_work_ms=finished.duration_since(acquired).as_millis().try_into().unwrap_or(u64::MAX);
+        self.batches=self.batches.saturating_add(1);self.wait_ms=self.wait_ms.saturating_add(self.last_wait_ms);
+        self.work_ms=self.work_ms.saturating_add(self.last_work_ms);
+        self.max_wait_ms=self.max_wait_ms.max(self.last_wait_ms);self.max_work_ms=self.max_work_ms.max(self.last_work_ms);result
+    }
+    fn view(&self)->Value {
+        json!({"batches":self.batches,"wait_ms_total":self.wait_ms,"work_ms_total":self.work_ms,
+            "max_wait_ms":self.max_wait_ms,"max_work_ms":self.max_work_ms,
+            "last_wait_ms":self.last_wait_ms,"last_work_ms":self.last_work_ms})
+    }
+}
+
 pub struct Worker {
     pub ready: Arc<AtomicBool>,
     pub status: Arc<Mutex<Value>>,
@@ -22,16 +47,15 @@ impl Worker {
         let thread = std::thread::Builder::new().name("object-projection".into()).spawn(move || {
             let mut display:std::result::Result<Value,String>=Ok(json!({"pending":true}));
             let mut display_retry_at=Instant::now();let mut display_failures=0u32;
+            let mut projection_timings=StageTimings::default();let mut display_timings=StageTimings::default();
             while !worker_stop.load(Ordering::SeqCst) {
                 // Release the shared writer after every small atomic batch.
-                let result = store.lock().map_err(|_| anyhow::anyhow!("storage lock poisoned"))
-                    .and_then(|store| store.project_pending(&machine, &installation, 64));
+                let result = projection_timings.run(&store,|store|store.project_pending(&machine, &installation, 64));
                 // Reacquire after raw projection: collectors get a chance to commit between
                 // the two bounded transactions. Display work cannot be starved by raw backlog.
                 std::thread::yield_now();
                 if Instant::now()>=display_retry_at {
-                    display=store.lock().map_err(|_| anyhow::anyhow!("storage lock poisoned"))
-                        .and_then(|store|store.prepare_display(128,Duration::from_millis(40))).map_err(|error|error.to_string());
+                    display=display_timings.run(&store,|store|store.prepare_display(128,Duration::from_millis(40))).map_err(|error|error.to_string());
                     if display.is_err() {
                         display_failures=display_failures.saturating_add(1);
                         display_retry_at=Instant::now()+Duration::from_secs((1u64<<display_failures.min(6)).min(60));
@@ -44,6 +68,7 @@ impl Worker {
                             "examined":report.examined,"projected":report.projected,
                             "rejected":report.rejected,"unadapted":report.unadapted,
                             "display":display.as_ref().ok(),"display_error":display.as_ref().err().map(ToString::to_string),
+                            "timing":{"projection":projection_timings.view(),"display":display_timings.view()},
                             "at":chrono::Utc::now().to_rfc3339()});
                         if report.examined == 0 {
                             if display.as_ref().ok().is_some_and(|d|d["history_pending"]==true||d["built"].as_u64().unwrap_or(0)>0||d["linked"].as_u64().unwrap_or(0)>0) {Duration::from_millis(10)}else{Duration::from_millis(250)}
@@ -52,7 +77,8 @@ impl Worker {
                     Err(error) => {
                         // Transaction rollback leaves the evidence and pending work intact.
                         worker_ready.store(false, Ordering::SeqCst);
-                        *worker_status.lock().unwrap() = json!({"state":"retrying","error":error.to_string(),"at":chrono::Utc::now().to_rfc3339()});
+                        *worker_status.lock().unwrap() = json!({"state":"retrying","error":error.to_string(),"at":chrono::Utc::now().to_rfc3339(),
+                            "timing":{"projection":projection_timings.view(),"display":display_timings.view()}});
                         eprintln!("object projection failed; pending work retained: {error:#}");
                         Duration::from_secs(1)
                     }
