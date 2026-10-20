@@ -51,6 +51,7 @@ Object.assign(context,{
   clearTimeout:()=>{},setTimeout:fn=>{pending=fn;return 1;},
   localStorage:{getItem:()=>null,setItem(){}},
   AbortController,
+  PCScopeTimelinePages:require('../apps/desktop/ui/timeline-pages.js'),
   PCScopeTimelineTime:require('../apps/desktop/ui/timeline-time.js'),
   PCScopeTimelineGroups:{mount:()=>({append(){},sync(){},markBoundary(){},dispose(){},setAllCollapsed(){}})},
   PCScopeAutoPage:{mount:(_node,options)=>({pause(){},reset:async()=>options.apply(await options.query(null),{append:false})})},

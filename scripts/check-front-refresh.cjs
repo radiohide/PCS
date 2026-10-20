@@ -2,11 +2,11 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const source=fs.readFileSync(require('node:path').join(__dirname,'../apps/desktop/ui/app.js'),'utf8');
 const nodes=new Map();const node=id=>{if(!nodes.has(id))nodes.set(id,{setAttribute(k,v){this[k]=v;},removeAttribute(k){delete this[k];}});return nodes.get(id);};
 const state={page:'timeline',autoRefresh:true,refreshEpoch:0,status:{collecting:true},refreshPolling:false,loadingLatest:false};
-let calls=[],reloads=0,renders=0,tick,now=100000,response=async()=>({collecting:false,last_collection:{ok:true}});
+let timelineBusy=false,calls=[],reloads=0,renders=0,tick,now=100000,response=async()=>({collecting:false,last_collection:{ok:true}});
 // Record what the refresh path asks the page for, so the counters it may overwrite stay pinned.
 const selectors=[];
 state.reloadPage=async()=>{reloads++;};
-const context=vm.createContext({Date:{now:()=>now},issues:{syncStatus(){}},state,connecting:null,recovery:{connected(){},disconnected(){}},connectionNotice(){},PCScopeMonitoring:{switching:false},document:{querySelector:node},content:{querySelector:s=>{selectors.push(s);return null;}},stats:()=>'',api:async op=>{calls.push(op);return response();},PCScopeView:{ready:Promise.resolve()},notice:()=>{throw Error("automatic refresh must not produce a notice");},errorText:String,render:async()=>{renders++;},setInterval:fn=>{tick=fn;}});
+const context=vm.createContext({Date:{now:()=>now},issues:{syncStatus(){}},state,connecting:null,recovery:{connected(){},disconnected(){}},connectionNotice(){},PCScopeMonitoring:{switching:false},document:{querySelector:node},content:{querySelector:s=>{selectors.push(s);return timelineBusy&&s==='#timeline-results[aria-busy=true]'?{}:null;}},stats:()=>'',api:async op=>{calls.push(op);return response();},PCScopeView:{ready:Promise.resolve()},notice:()=>{throw Error("automatic refresh must not produce a notice");},errorText:String,render:async()=>{renders++;},setInterval:fn=>{tick=fn;}});
 vm.runInContext(source.slice(source.indexOf('function modelRefreshKey('),source.indexOf('function connectionNotice('))+source.slice(source.indexOf("document.querySelector('#auto-refresh').onclick"),source.indexOf('const timelineFilters=')),context);
 (async()=>{
 node('#auto-refresh').onclick();assert.equal(state.autoRefresh,false);await tick();assert.deepEqual(calls,['status']);assert.equal(renders,0);
@@ -25,6 +25,8 @@ state.status={collecting:true,projection_worker:{at:'before'}};response=async()=
 assert.equal(renders,0,'timeline refresh must retain its page controls');
 node('#auto-refresh').onclick();response=async()=>({collecting:false,read_model_revision:'paused-change'});await tick();assert.equal(reloads,6);
 node('#auto-refresh').onclick();await tick();assert.equal(reloads,7,'resuming must show changes received while paused');
+timelineBusy=true;response=async()=>({collecting:true,read_model_revision:'group-load-change'});now+=15000;await tick();assert.equal(reloads,7,'automatic refresh must not interrupt a group being completed');assert.equal(state.pendingPageRefresh,true);
+timelineBusy=false;await tick();assert.equal(reloads,8,'deferred refresh runs after the group finishes');
 assert(calls.every(op=>op==='status'));assert.equal(node('#load-latest').disabled,false);
 // The refresh path may only rewrite the legacy counter block. The overview renders its counters
 // from the object model, and a bare `.stats` selector matched that block too, replacing model

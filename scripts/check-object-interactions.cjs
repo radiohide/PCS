@@ -35,6 +35,12 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
     if(q.query==='type_catalog')return samples.type_catalog;
     if(q.query==='source_readings'&&window.__qa.sourcePages)return window.__qa.sourcePages[q.cursor?1:0];
     if(q.query==='instance_actions'&&window.__qa.actionPages)return window.__qa.actionPages[q.cursor?1:0];
+    if(q.query==='action_timeline'&&window.__qa.timelineDataset){
+     const from=q.cursor?Number(q.cursor):0;
+     if(window.__qa.failGroupAt===from){window.__qa.failGroupAt=null;throw Error('temporary grouped query failure');}
+     const data=window.__qa.timelineDataset.slice(from,from+q.limit),more=from+q.limit<window.__qa.timelineDataset.length;
+     return {status:'loaded',data,page:{has_more:more,next_cursor:more?String(from+q.limit):null,watermark:'group-fixture'}};
+    }
     if(q.query==='action_timeline'&&window.__qa.timelinePages){
      if(q.cursor==='point-older'&&window.__qa.holdPointOlder)await new Promise(resolve=>window.__qa.releasePointOlder=resolve);
      if(q.cursor==='older-page'&&window.__qa.holdOlderPage)await new Promise(resolve=>window.__qa.releaseOlderPage=resolve);
@@ -170,13 +176,13 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   assert.match(await page.locator('.timeline-entry').first().innerText(),/已不在运行列表/);
   assert.equal(await page.locator('.timeline-group').count(),1,'one interval label covers all eight records');
   assert.equal(await page.locator('.timeline-entry details[open]').count(),0,'raw type identifiers stay collapsed');
-  assert.doesNotMatch(await page.locator('#timeline-results').innerText(),/runtime\.process|file\.watched_file|尚不能据此确认已被删除/);
+  assert.doesNotMatch((await page.locator('.timeline-card-body').allTextContents()).join(' '),/runtime\.process|file\.watched_file|尚不能据此确认已被删除/);
   await page.screenshot({path:path.join(output,'timeline-types-preview.png'),fullPage:false});
   checks.push('real timeline distinguishes process, file, service, task, module, queue, connection and certificate with visible types and collapsed raw details');
   const arrivalRows=['Established','Listen',null].map((connectionState,index)=>({...timelineRows[0],action_id:'observed.first_seen',instance_id:index+1,source_record:{snapshot_presence:{source:index===2?'pcscope.network.udp':'pcscope.network.tcp',protocol:index===2?null:'TCP',state:connectionState}},context:{type_id:'network.endpoint',subject_label:'本机端口 '+(61981+index),attribution_status:'stored',key_facts:[{field_id:'state',status:'known',value:'Closed'}]}}));
   await page.evaluate(data=>window.__qa.timeline=data,arrivalRows);await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-entry').first().waitFor();
   assert.deepEqual(await page.locator('.timeline-event-label').allTextContents(),['首次记录到此连接','首次记录到此监听端口','首次记录到此 UDP 端口']);
-  assert.doesNotMatch(await page.locator('#timeline-results').innerText(),/已不在连接与监听列表|Closed/);
+  assert.doesNotMatch((await page.locator('.timeline-card-body').allTextContents()).join(' '),/已不在连接与监听列表|Closed/);
   checks.push('new TCP connections, listening ports and UDP ports have distinct arrival cards based on the original snapshot rather than later state');
   const moduleFirst={...timelineRows[0],instance_id:73579,action_id:'observed.first_seen',interval_from:'2026-10-16T08:34:29Z',interval_until:'2026-10-19T05:16:21Z',observed_at:'2026-10-19T05:16:21Z',source_record:{snapshot_presence:{source:'pcscope.execution.modules'}},context:{type_id:'runtime.module_instance',subject_label:'pdh.dll',attribution_status:'stored'}};
   const moduleGone={...moduleFirst,action_id:'observed.no_longer_observed',interval_from:'2026-10-19T05:25:19Z',interval_until:'2026-10-19T05:26:20Z',observed_at:'2026-10-19T05:26:20Z'};
@@ -208,10 +214,10 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   ]};
   await page.evaluate(data=>window.__qa.routineFixture=data,readableUpdates);await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-entry').first().waitFor();
   assert.equal(await page.locator('#timeline-routine').inputValue(),'false');assert.equal(await page.locator('.timeline-entry').count(),4);
-  const updateText=await page.locator('#timeline-results').innerText();for(const expected of ['模块加载位置已变化','防护程序和病毒库已更新','电量偏低','运行失败'])assert(updateText.includes(expected));
+  const updateText=(await page.locator('.timeline-card-body').allTextContents()).join(' ');for(const expected of ['模块加载位置已变化','防护程序和病毒库已更新','电量偏低','运行失败'])assert(updateText.includes(expected));
   assert.doesNotMatch(updateText,/最近使用时间已更新|最近执行|1\.0|1\.1/);
   await page.locator('#timeline-routine').selectOption('true');await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===6);
-  assert.match(await page.locator('#timeline-results').innerText(),/最近使用时间已更新/);assert.match(await page.locator('#timeline-results').innerText(),/最近执行/);
+  assert.match((await page.locator('.timeline-card-body').allTextContents()).join(' '),/最近使用时间已更新/);assert.match((await page.locator('.timeline-card-body').allTextContents()).join(' '),/最近执行/);
   assert.equal(await page.evaluate(()=>window.__qa.calls.filter(q=>q.query==='action_timeline').at(-1).include_routine),true);
   await page.locator('#timeline-clear').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===4);
   assert.equal(await page.locator('#timeline-routine').inputValue(),'false');
@@ -353,24 +359,24 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   assert.equal(await page.locator('.timeline-entry').count(),50,'the first render batch is bounded while the rest wait for the next frame');
   await page.evaluate(row=>window.__qa.timeline=[row],{...timelineRows[0],context:{type_id:'startup.service',subject_label:'新的筛选结果',attribution_status:'stored'}});await page.locator('#timeline-clear').click();await page.waitForTimeout(40);
   await page.evaluate(()=>{window.__qa.holdRender=false;window.requestAnimationFrame=window.__qa.originalFrame;for(const callback of window.__qa.renderWaits.splice(0))requestAnimationFrame(callback);});
-  await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===1&&document.querySelector('#timeline-results').textContent.includes('新的筛选结果'));
+  await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===1&&document.querySelector('#timeline-results').textContent.includes('新的筛选结果')&&document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
   assert.equal(await page.locator('#timeline-results').getAttribute('aria-busy'),'false');
   checks.push('a 200-row response renders in bounded 50-row batches and changing filters cancels stale pending render batches');
   const startupRows=Array.from({length:200},(_,index)=>({...timelineRows[0],instance_id:index+1,interval_from:index<80?'2026-10-15T03:00:30.1160614Z':index<83?'2026-10-15T03:00:29.9816849Z':'2026-10-15T02:00:00Z',interval_until:index<80?'2026-10-15T03:02:41.3133775Z':index<83?'2026-10-15T03:02:41.1726548Z':'2026-10-15T02:05:00Z',context:{type_id:index<80?'network.endpoint':index<83?'network.dns_cache_entry':'file.watched_file',subject_label:'首屏示例 '+index,attribution_status:'stored'}}));
   const afterStartup={...timelineRows[0],interval_from:'2026-10-15T01:00:00Z',interval_until:'2026-10-15T01:05:00Z'};
   await page.evaluate(({first,second})=>{window.__qa.timelinePages=[{status:'loaded',data:first,page:{has_more:true,next_cursor:'after-first-200'}},{status:'loaded',data:[second],page:{has_more:false}}];},{first:startupRows,second:afterStartup});
   const readsBeforeStartup=await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').length);
-  await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===200);
+  await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===200&&document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
   assert.equal(await page.locator('.timeline-group-count').first().textContent(),'83 条记录','the first render merges network and DNS without scrolling');
   assert.equal(await page.locator('.timeline-group').first().locator('.timeline-category-toggle').count(),2);
-  assert.equal(await page.locator('.timeline-group-count').last().textContent(),'已加载 117 条','the cutoff group does not claim to be complete');
-  await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').length),readsBeforeStartup+1,'opening reads one page and does not prefetch older history');
+  assert.equal(await page.locator('.timeline-group-count').last().textContent(),'117 条记录','lookahead proves the second group complete');
+  await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').length),readsBeforeStartup+2,'opening completes two groups and buffers only the transport lookahead');
   assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').at(-1).limit),200);
   await page.screenshot({path:path.join(output,'timeline-first-200-grouped.png'),fullPage:false});
   await page.locator('#timeline-more').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===201);
   assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').at(-1).limit),200,'subsequent scrolling uses the measured 200-row batch');
   assert.equal(await page.locator('.timeline-group-count').nth(1).textContent(),'117 条记录','reading past the cutoff confirms and relabels the completed group');
-  checks.push('startup reads exactly 200 rows, merges 80 network and 3 DNS rows, does not prefetch distant pages, then requests 200-row batches on scroll');
+  checks.push('startup completes two groups using bounded transport, merges categories, and reuses the buffered next group on scroll');
   // Keep this deliberately small first page outside the auto-loader's viewport margin
   // until the test scrolls, including when compilation makes browser steps slower.
   await page.setViewportSize({width:1440,height:640});
@@ -437,10 +443,10 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.setViewportSize({width:1440,height:1000});
   // Keep the initial page longer than the screen-ahead buffer until folding is exercised.
   const foldRows=Array.from({length:45},(_,index)=>({...timelineRows[0],instance_id:index+1,interval_from:'2026-10-15T0'+(3-Math.floor(index/15))+':00:00Z',interval_until:'2026-10-15T0'+(3-Math.floor(index/15))+':05:00Z',context:{type_id:index%3===0?'runtime.process':index%3===1?'startup.service':'file.watched_file',subject_label:'模式示例 '+index,attribution_status:'stored'}}));
-  const foldPages=[{status:'loaded',data:foldRows.slice(0,30),page:{has_more:true,next_cursor:'fold-older'}},{status:'loaded',data:foldRows.slice(30),page:{has_more:true,next_cursor:'fold-even-older'}}];
+  const foldPages=[{status:'loaded',data:foldRows.slice(0,30),page:{has_more:true,next_cursor:'fold-older'}},{status:'loaded',data:foldRows.slice(30),page:{has_more:false,next_cursor:null}}];
   await page.locator('main').evaluate(el=>el.scrollTop=0);
   await page.evaluate(pages=>window.__qa.timelinePages=pages,foldPages);
-  await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===30);
+  await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===30&&document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
   const foldButton=page.locator('#timeline-fold-all'),firstFoldGroup=page.locator('.timeline-group').first();
   assert.equal(await foldButton.textContent(),'全部折叠');
   await firstFoldGroup.locator('.timeline-entry details summary').first().click();
@@ -468,34 +474,57 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.waitForTimeout(350);assert.equal(await page.locator('.timeline-entry').count(),45,'one scroll must not drain pages while folded cards leave the sentinel visible');
   checks.push('bulk fold and expand preserve categories and details; manual exceptions survive and older groups follow the mode without a folding-triggered history walk');
   await firstFoldGroup.locator('[data-timeline-toggle]').click();
-  await page.locator('#load-latest').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===30);
+  await page.locator('#load-latest').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===30&&document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
   assert.equal(await page.locator('.timeline-group.is-collapsed').count(),2,'manual refresh retains the selected mode');
   const refreshFoldCalls=await page.evaluate(()=>window.__qa.calls.filter(call=>call.query==='action_timeline').length);
-  await page.waitForTimeout(350);assert.equal(await page.evaluate(()=>window.__qa.calls.filter(call=>call.query==='action_timeline').length),refreshFoldCalls,'collapsed refresh reads one page only');
+  await page.waitForTimeout(350);assert.equal(await page.evaluate(()=>window.__qa.calls.filter(call=>call.query==='action_timeline').length),refreshFoldCalls,'collapsed refresh reads two complete groups only');
   await page.screenshot({path:path.join(output,'timeline-all-collapsed.png'),fullPage:false});
   await page.reload();await page.locator('#timeline-fold-all').waitFor();
   assert.equal(await page.locator('#timeline-fold-all').textContent(),'全部展开','the mode survives a full page reload');
   await page.evaluate(pages=>{window.__qa.timelinePages=pages;window.__qa.listFailures=0;},foldPages);
-  await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===30);
+  await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===30&&document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
   assert.equal(await page.locator('.timeline-group.is-collapsed').count(),2);
   await page.locator('#timeline-fold-all').click();
   assert.equal(await page.locator('.timeline-group.is-collapsed').count(),0);
   assert.equal(await page.evaluate(()=>localStorage.getItem('pcscope.timelineCollapsed')),'false');
   checks.push('bulk fold mode survives refresh and reload, restores one initial page only, and switches back to expanded mode');
-  const singleFoldPages=[{status:'loaded',data:grouped79.slice(0,40),page:{has_more:true,next_cursor:'single-fold-next'}},{status:'loaded',data:grouped79.slice(40,60),page:{has_more:true,next_cursor:'single-fold-last'}}];
-  await page.locator('main').evaluate(el=>el.scrollTop=0);await page.evaluate(pages=>window.__qa.timelinePages=pages,singleFoldPages);
-  await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===40);
-  await page.locator('[data-timeline-toggle]').click();const singleFoldCalls=await page.evaluate(()=>window.__qa.calls.length);
-  await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>window.__qa.calls.length),singleFoldCalls,'collapsing a single group does not start preloading');
-  await page.locator('#timeline-more').hover();await page.mouse.wheel(0,240);await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===60);
-  await page.waitForTimeout(400);assert.equal(await page.evaluate(()=>window.__qa.calls.length),singleFoldCalls+1,'one scrolling intent preloads one page when an individual group remains collapsed');
-  checks.push('individual collapsed groups preload at most one page per continued scrolling intent, including when the global mode is expanded');
-  await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===40);
-  await page.locator('[data-timeline-category-toggle]').click();const mutedPrefetchCalls=await page.evaluate(()=>window.__qa.calls.length);
-  await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>window.__qa.calls.length),mutedPrefetchCalls,'hiding a category does not start preloading');
-  await page.locator('#timeline-more').hover();await page.mouse.wheel(0,240);await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===60);
-  await page.waitForTimeout(400);assert.equal(await page.evaluate(()=>window.__qa.calls.length),mutedPrefetchCalls+1,'hidden categories cannot drain unseen pages');
-  checks.push('hiding categories waits for scrolling and bounds preloading to one page while filtered rows remain hidden');
+  const groupSizes=[230,260,50,300,40,70];
+  const completeRows=groupSizes.flatMap((count,g)=>Array.from({length:count},(_,i)=>({...pointRows[0],instance_id:g*1000+i+1,occurred_at:new Date(Date.UTC(2026,9,15,8,55)-g*300000).toISOString(),context:{type_id:i%2?'startup.service':'runtime.process',subject_label:'完整组 '+g+' / '+i,attribution_status:'stored'}})));
+  await page.evaluate(data=>{window.__qa.timelineDataset=data;window.__qa.failGroupAt=200;},completeRows);
+  await page.locator('[data-page="timeline"]').click();await page.locator('#timeline-more button:visible').waitFor();
+  assert.equal(await page.locator('.timeline-entry').count(),200,'a failed continuation retains the partial group');
+  await page.locator('#timeline-more button').click();
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false'&&document.querySelectorAll('.timeline-entry').length===490);
+  assert.deepEqual(await page.locator('.timeline-group-count').allTextContents(),['230 条记录','260 条记录']);
+  assert.equal(await page.locator('.timeline-branch').evaluateAll(rows=>new Set(rows.map(r=>r.querySelector('[data-object-alias]').dataset.objectAlias)).size),490,'retry never duplicates streamed rows');
+  const completeGroup=page.locator('.timeline-group').first();
+  await completeGroup.locator('details summary').first().click();await completeGroup.locator('[data-timeline-category-toggle]').first().click();
+  await page.locator('#timeline-fold-all').click();
+  const beforeCompleteScroll=await page.evaluate(()=>window.__qa.calls.length);
+  await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>window.__qa.calls.length),beforeCompleteScroll,'folding does not load extra groups');
+  await page.locator('#timeline-more').hover();await page.mouse.wheel(0,240);
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false'&&document.querySelectorAll('.timeline-entry').length===840);
+  assert.equal(await page.locator('.timeline-group').count(),4);
+  assert.equal(await completeGroup.locator('details[open]').count(),1);assert.equal(await completeGroup.locator('[aria-pressed=false]').count(),1);
+  await page.waitForTimeout(350);assert.equal(await page.locator('.timeline-entry').count(),840,'one intent loads two complete groups without walking the entire history');
+  await page.locator('#timeline-more').hover();await page.mouse.wheel(0,240);
+  await page.waitForFunction(()=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false'&&document.querySelectorAll('.timeline-entry').length===950);
+  assert.equal(await page.locator('.timeline-group').count(),6);assert.match(await page.locator('#timeline-more').innerText(),/已显示全部/);
+  checks.push('complete groups span transport pages, preserve local selections and details, recover partial failure exactly once and load two groups per scrolling intent');
+  for(const n of [3,4,5,6,2]){
+    await page.locator('#timeline-groups-per-load').selectOption(String(n));
+    const total=groupSizes.slice(0,n).reduce((sum,count)=>sum+count,0);
+    await page.waitForFunction(({n,total})=>document.querySelector('#timeline-results').getAttribute('aria-busy')==='false'&&document.querySelectorAll('.timeline-entry').length===total&&document.querySelectorAll('.timeline-group').length===n,{n,total});
+    assert.equal(await page.evaluate(()=>localStorage.getItem('pcscope.timelineGroupsPerLoad')),String(n));
+  }
+  await page.locator('#timeline-groups-per-load').selectOption('4');await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===840&&document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
+  await page.locator('#timeline-clear').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===840&&document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
+  assert.equal(await page.locator('#timeline-groups-per-load').inputValue(),'4');
+  await page.reload();await page.locator('#timeline-groups-per-load').waitFor();assert.equal(await page.locator('#timeline-groups-per-load').inputValue(),'4');
+  await page.evaluate(()=>localStorage.setItem('pcscope.timelineGroupsPerLoad','7'));await page.reload();await page.locator('#timeline-groups-per-load').waitFor();assert.equal(await page.locator('#timeline-groups-per-load').inputValue(),'2');
+  await page.evaluate(()=>window.__qa.listFailures=0);
+  if(await page.locator('#timeline-fold-all').textContent()==='全部展开')await page.locator('#timeline-fold-all').click();
+  checks.push('2–6 groups per load are exact, remember the choice across clear/reload and reject invalid stored values');
   const readings=Array.from({length:3},(_,index)=>({source:'pcscope.execution.module-file-state',item_id:'module-'+index+'.dll',observed_at:'2026-10-15T02:50:18Z',evidence:{id:'sample-'+index},payload:{path:'C:\\Example\\module-'+index+'.dll',check:{status:'stable'}}}));
   await page.evaluate(rows=>{window.__qa.sourcePages=[{status:'loaded',data:rows.slice(0,2),page:{has_more:true,next_cursor:'older-readings'}},{status:'loaded',data:rows.slice(2),page:{has_more:false}}];},readings);
   await page.locator('#module-file-history>summary').scrollIntoViewIfNeeded();await page.locator('#module-file-history>summary').click();
@@ -522,6 +551,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   assert.equal(bucketPerformance.groups,1);assert.equal(bucketPerformance.count,'1000');
   fs.writeFileSync(path.join(output,'timeline-bucket-performance.json'),JSON.stringify(bucketPerformance,null,2));
   checks.push('1,000 records appended in 20 batches retain one bucket and exact incremental category totals');
+  await page.evaluate(()=>{timelineGroupsPerLoad=6;localStorage.setItem('pcscope.timelineGroupsPerLoad','6');});
   const preferenceRows=Array.from({length:6},(_,index)=>({...pointRows[0],instance_id:index+1,occurred_at:'2026-10-15T08:'+String(index*10).padStart(2,'0')+':30Z'})).reverse();
   await page.evaluate(data=>{window.__qa.timelinePages=[{status:'loaded',data,page:{has_more:false}}];},preferenceRows);
   await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===6);

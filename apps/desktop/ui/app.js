@@ -387,7 +387,8 @@ setInterval(async()=>{
     // Projection can commit new actions during a long collection, or after collection ends.
     // Keep a dirty flag across throttled ticks; never start overlapping page requests.
     if(state.pendingPageRefresh&&['overview','timeline','health'].includes(state.page)
-      &&Date.now()-(state.lastAutomaticPageRefresh||0)>=15000){
+      &&Date.now()-(state.lastAutomaticPageRefresh||0)>=15000
+      &&!(state.page==='timeline'&&content.querySelector('#timeline-results[aria-busy=true]'))){
       if(state.reloadPage)await state.reloadPage();else await render();
       state.pendingPageRefresh=false;state.lastAutomaticPageRefresh=Date.now();
     }
@@ -406,6 +407,7 @@ setInterval(async()=>{
 const timelineFilters={action:'',category:'',type_id:'',period:'',unassigned:true,routine:false};
 let timelineCollapsed=localStorage.getItem('pcscope.timelineCollapsed')==='true';
 PCScopeTimelineTime.setMinutes(localStorage.getItem('pcscope.timelineGroupMinutes'));
+let timelineGroupsPerLoad=PCScopeTimelinePages.normalise(localStorage.getItem('pcscope.timelineGroupsPerLoad'));
 let timelineWalk={cursor:null,watermark:null};
 async function renderTimeline(){
   content.innerHTML=head('时间线','按时间查看系统变化。','<div class="operation-feedback"><button type="button" id="timeline-fold-all">全部折叠</button><button id="collect" class="primary">立即采集</button><span id="collect-feedback" role="status"></span></div>')+`<section class="panel"><div class="object-filters">
@@ -414,9 +416,10 @@ async function renderTimeline(){
     <label>类型<select id="timeline-type"><option value="">全部类型</option></select></label>
     <label>时间范围<select id="timeline-period">${[['','全部时间'],['1','最近 24 小时'],['7','最近 7 天'],['30','最近 30 天']].map(([v,n])=>`<option value="${v}" ${v===timelineFilters.period?'selected':''}>${n}</option>`).join('')}</select></label>
     <label>分组间隔<select id="timeline-group-minutes">${PCScopeTimelineTime.options.map(n=>`<option value="${n}" ${n===PCScopeTimelineTime.getMinutes()?'selected':''}>${n} 分钟</option>`).join('')}</select></label>
+    <label>每次加载<select id="timeline-groups-per-load">${PCScopeTimelinePages.options.map(n=>`<option value="${n}" ${n===timelineGroupsPerLoad?'selected':''}>${n} 个时间组</option>`).join('')}</select></label>
     <label>显示内容<select id="timeline-routine"><option value="false" ${timelineFilters.routine?'':'selected'}>主要变化</option><option value="true" ${timelineFilters.routine?'selected':''}>含日常更新</option></select></label>
     <label class="object-search">未对应到具体对象的日志<select id="timeline-unassigned"><option value="true" ${timelineFilters.unassigned?'selected':''}>也显示</option><option value="false" ${timelineFilters.unassigned?'':'selected'}>暂时隐藏</option></select></label>
-    <button id="timeline-clear">清空筛选</button></div><div id="timeline-results" aria-live="polite"></div><div id="timeline-more"></div></section>`;
+    <button id="timeline-clear">清空筛选</button></div><p id="timeline-loading" class="muted" role="status" hidden></p><div id="timeline-results" aria-live="polite"></div><div id="timeline-more"></div></section>`;
   const results=content.querySelector('#timeline-results'),more=content.querySelector('#timeline-more');
   const groupControls=PCScopeTimelineGroups.mount(results,{collapsed:timelineCollapsed});
   const foldAll=content.querySelector('#timeline-fold-all');
@@ -425,9 +428,10 @@ async function renderTimeline(){
   let pagingReady=!timelineCollapsed;
   const pagingInput=new AbortController();
   results.addEventListener('click',event=>{if(event.target.closest('[data-timeline-toggle],[data-timeline-time-toggle],[data-timeline-category-toggle],[data-timeline-show-all],[data-timeline-invert]'))pagingReady=false;},{capture:true,signal:pagingInput.signal});
-  state.disposePage=()=>{pagingInput.abort();groupControls.dispose();};
+  state.disposePage=()=>{clearTimeout(timer);++requestId;pagingInput.abort();groupControls.dispose();};
   mountModuleFileHistory();
-  let catalog=[],requestId=0,timer;
+  let catalog=[],requestId=0,timer,reader=null,renderedRows=0;
+  const loading=content.querySelector('#timeline-loading');
   const options=()=>{
     content.querySelector('#timeline-category').innerHTML='<option value="">全部类别</option>'+[...new Set(catalog.map(t=>t.category))].map(c=>`<option value="${esc(c)}" ${c===timelineFilters.category?'selected':''}>${esc(categoryNames[c]||c)}</option>`).join('');
     content.querySelector('#timeline-type').innerHTML='<option value="">全部类型</option>'+catalog.filter(t=>!timelineFilters.category||t.category===timelineFilters.category).map(t=>`<option value="${esc(t.type_id)}" ${t.type_id===timelineFilters.type_id?'selected':''}>${esc(PCScopeObjectNames.typeName(t))}</option>`).join('');
@@ -438,11 +442,11 @@ async function renderTimeline(){
     if(timelineFilters.category)body.category=timelineFilters.category;
     if(timelineFilters.type_id)body.type_id=timelineFilters.type_id;
     if(timelineFilters.period)body.since=new Date(Date.now()-Number(timelineFilters.period)*86400000).toISOString();
-    if(timelineWalk.cursor)body.cursor=timelineWalk.cursor;
+
     return body;
   };
-  const bindObjects=container=>{
-    container.querySelectorAll('[data-object-alias]').forEach(button=>button.onclick=async()=>{
+  results.addEventListener('click',async event=>{
+      const button=event.target.closest('[data-object-alias]');if(!button||!results.contains(button))return;
       const entry=button.closest('.timeline-entry');
       let panel=entry.querySelector('.timeline-object-detail');
       if(panel){panel.remove();button.setAttribute('aria-expanded','false');return;}
@@ -452,34 +456,42 @@ async function renderTimeline(){
         const response=await api('query',{request:{query:'instance_detail',instance:button.dataset.objectAlias}});
         if(!panel.isConnected)return;
         panel.innerHTML=response.status==='empty'?`<div class="empty">${esc(PCScopeModelView.messageOf(response,'没有该对象的详情'))}</div>`:PCScopeModelView.detail(response);
-      }catch(error){panel.innerHTML=`<div class="empty">${errorHtml(error)}</div>`;}
+      }catch(error){if(panel.isConnected)panel.innerHTML=`<div class="empty">${errorHtml(error)}</div>`;}
+  },{signal:pagingInput.signal});
+  const createReader=()=>{
+    const revision=requestId,body=request(),minutes=PCScopeTimelineTime.getMinutes();
+    const current=()=>!pagingInput.signal.aborted&&results.isConnected&&revision===requestId;
+    return PCScopeTimelinePages.create({groups:timelineGroupsPerLoad,active:current,
+      keyOf:row=>PCScopeTimelineTime.moment(row,minutes).key,
+      query:cursor=>api('query',{request:{...body,...(cursor?{cursor}:{})}}),
+      progress:({groups,target,rows})=>{if(current()){loading.hidden=false;loading.textContent='已读取 '+rows+' 条，正在补齐第 '+groups+' / '+target+' 组…';}},
+      emit:async response=>{
+        let emitted=0;
+        for(const {html} of PCScopeModelView.timelineBatches(response)){
+          if(!current())return;
+          if(renderedRows)groupControls.append(html);else {results.innerHTML=html;groupControls.sync();}
+          const added=Math.min(50,response.data.length-emitted);renderedRows+=added;emitted+=added;groupControls.markBoundary(true);
+          await new Promise(resolve=>requestAnimationFrame(resolve));
+        }
+      }
     });
   };
   const pager=PCScopeAutoPage.mount(more,{
     // Folding can bring the sentinel into view. Wait for scrolling intent before
     // continuing, rather than walking history just because the layout got shorter.
     canAutoLoad:()=>pagingReady,
-    query:cursor=>{timelineWalk.cursor=cursor;return api('query',{request:request()});},
-    onStart:({append})=>{if(!append){results.setAttribute('aria-busy','true');results.innerHTML='<div class="empty">正在读取变化记录…</div>';}},
+    query:()=>{reader??=createReader();return reader.read();},
+    onStart:()=>{results.setAttribute('aria-busy','true');loading.hidden=false;loading.textContent='正在读取 '+timelineGroupsPerLoad+' 个时间组…';if(!renderedRows)results.innerHTML='<div class="empty">正在读取变化记录…</div>';},
     apply:async(response,{append})=>{
       timelineWalk.watermark=response.page?.watermark||null;
-      const revision=requestId;let batch=0;
-      const current=()=>!pagingInput.signal.aborted&&results.isConnected&&revision===requestId;
-      // Fetch a full page, then yield between small paint batches so scrolling stays responsive.
-      for(const {html,pending} of PCScopeModelView.timelineBatches(response)){
-        if(!current())return;
-        if(append||batch)groupControls.append(html);else {results.innerHTML=html;groupControls.sync();}
-        ++batch;groupControls.markBoundary(pending||!!response.page?.has_more);
-        if(pending)await new Promise(resolve=>requestAnimationFrame(resolve));
-      }
-      if(!current())return;
+      if(!renderedRows){results.innerHTML=PCScopeModelView.timeline(response);groupControls.sync();}
+      // Every logical page finishes on a bucket boundary, even when more history exists.
+      groupControls.markBoundary(false);loading.hidden=true;results.setAttribute('aria-busy','false');
       if(append&&(timelineCollapsed||results.querySelector('.timeline-group.is-collapsed,[data-timeline-category-toggle][aria-pressed=false]')))pagingReady=false;
-      groupControls.markBoundary(!!response.page?.has_more);
-      results.setAttribute('aria-busy','false');bindObjects(results);
     },
-    onError:(error,{append})=>{results.setAttribute('aria-busy','false');if(!append)results.innerHTML=`<div class="empty">${errorHtml(error)}</div>`;}
+    onError:error=>{results.setAttribute('aria-busy','false');loading.hidden=true;if(!renderedRows)results.innerHTML=`<div class="empty">${errorHtml(error)}</div>`;}
   });
-  const refresh=()=>{++requestId;pagingReady=!timelineCollapsed;return pager.reset();};
+  const refresh=()=>{++requestId;reader=null;renderedRows=0;pagingReady=!timelineCollapsed;return pager.reset();};
   const allowPaging=event=>{
     if(event.type==='keydown'&&(!['ArrowDown','PageDown','End',' '].includes(event.key)||event.target.closest('input,select,textarea,[contenteditable]')||event.key===' '&&event.target.closest('button,summary')))return;
     if(event.type==='wheel'&&event.deltaY<=0)return;
@@ -495,6 +507,7 @@ async function renderTimeline(){
   const reset=()=>{timelineWalk={cursor:null,watermark:null};};
   const schedule=(delay=250)=>{clearTimeout(timer);++requestId;pager.pause();reset();timer=setTimeout(()=>refresh(),delay);};
   content.querySelector('#timeline-action').oninput=e=>{timelineFilters.action=e.target.value;schedule();};
+  content.querySelector('#timeline-groups-per-load').onchange=e=>{timelineGroupsPerLoad=PCScopeTimelinePages.normalise(e.target.value);localStorage.setItem('pcscope.timelineGroupsPerLoad',String(timelineGroupsPerLoad));schedule(0);};
   content.querySelector('#timeline-group-minutes').onchange=e=>{PCScopeTimelineTime.setMinutes(e.target.value);localStorage.setItem('pcscope.timelineGroupMinutes',String(PCScopeTimelineTime.getMinutes()));schedule(0);};
   content.querySelector('#timeline-period').onchange=e=>{timelineFilters.period=e.target.value;reset();schedule(0);};
   content.querySelector('#timeline-unassigned').onchange=e=>{timelineFilters.unassigned=e.target.value==='true';reset();schedule(0);};

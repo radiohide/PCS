@@ -204,3 +204,7 @@ footer{justify-content:space-between;flex-shrink:0;gap:12px;height:38px}
 @media(max-width:700px){.timeline-group.is-collapsed .timeline-when{grid-template-columns:minmax(0,1fr)}}
 
 .object-current-state{font-size:14px;font-weight:600;padding:10px 12px;border-left:3px solid var(--accent);background:var(--raised);border-radius:4px}.timeline-value-caption{font-size:11px;color:var(--muted)}
+
+/* Offscreen cards keep their measured height; skip their layout/paint until near the viewport. */
+.timeline-entry{content-visibility:auto;contain-intrinsic-size:auto 210px}
+#timeline-loading{padding:0 16px}
