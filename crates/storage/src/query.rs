@@ -552,6 +552,13 @@ pub fn actions(conn: &Connection, reference: &str, limit: usize) -> Result<Query
 // Dense scopes retain the time index, so pagination never sorts all network history.
 fn scoped_action_candidates(conn: &Connection, filter: &ActionFilter) -> Result<Option<Vec<i64>>> {
     const MAX_CANDIDATES: usize = 10_000;
+    // Rare event kinds (for example failed logons) must not scan the entire display
+    // time index just to prove that fewer than one transport page exist.
+    if let Some(action)=&filter.action_id {
+        let mut statement=conn.prepare_cached("SELECT action_row FROM object_actions WHERE action_id=? LIMIT 10001")?;
+        let ids=statement.query_map([action],|r|r.get::<_,i64>(0))?.collect::<rusqlite::Result<Vec<_>>>()?;
+        if ids.len()<=MAX_CANDIDATES {return Ok(Some(ids));}
+    }
     let mut clauses=Vec::new();
     let mut args:Vec<Box<dyn rusqlite::ToSql>>=Vec::new();
     if let Some(category)=&filter.category {clauses.push("category=?".to_owned());args.push(Box::new(category.clone()));}
@@ -563,9 +570,20 @@ fn scoped_action_candidates(conn: &Connection, filter: &ActionFilter) -> Result<
         }
     }
     if clauses.is_empty(){return Ok(None);}
-    let sql=format!("SELECT a.action_row FROM object_actions a INDEXED BY object_actions_instance
-        WHERE a.instance_id IN (SELECT instance_id FROM object_instances WHERE {})
-        LIMIT {}",clauses.join(" AND "),MAX_CANDIDATES+1);
+    let mut sql=format!("SELECT a.action_row FROM object_actions a INDEXED BY object_actions_instance
+        WHERE a.instance_id IN (SELECT instance_id FROM object_instances WHERE {})",clauses.join(" AND "));
+    // An event can have a known type without an authenticated object identity.
+    // Keep those records in category/type searches, but never in an object's history.
+    if filter.include_unassigned && filter.instance.is_none() {
+        let mut orphan=vec!["a.instance_id IS NULL".to_owned()];
+        if let Some(category)=&filter.category {
+            orphan.push("a.target_type IN (SELECT type_id FROM type_definitions WHERE category=?)".into());
+            args.push(Box::new(category.clone()));
+        }
+        if let Some(typ)=&filter.type_id {orphan.push("a.target_type=?".into());args.push(Box::new(typ.clone()));}
+        sql.push_str(&format!(" UNION ALL SELECT a.action_row FROM object_actions a WHERE {}",orphan.join(" AND ")));
+    }
+    sql.push_str(&format!(" LIMIT {}",MAX_CANDIDATES+1));
     let bound:Vec<&dyn rusqlite::ToSql>=args.iter().map(|v|v.as_ref()).collect();
     let mut statement=conn.prepare_cached(&sql)?;
     let ids=statement.query_map(bound.as_slice(),|r|r.get::<_,i64>(0))?.collect::<rusqlite::Result<Vec<_>>>()?;
@@ -645,11 +663,13 @@ fn timeline_with_scope_plan(conn: &Connection, filter: &ActionFilter, use_scope:
         args.push(Box::new(action_id.clone()));
     }
     if let Some(type_id) = &filter.type_id {
-        clauses.push("EXISTS(SELECT 1 FROM object_instances i WHERE i.instance_id=a.instance_id AND i.type_id=?)".into());
+        clauses.push("(EXISTS(SELECT 1 FROM object_instances i WHERE i.instance_id=a.instance_id AND i.type_id=?) OR (a.instance_id IS NULL AND a.target_type=?))".into());
+        args.push(Box::new(type_id.clone()));
         args.push(Box::new(type_id.clone()));
     }
     if let Some(category) = &filter.category {
-        clauses.push("EXISTS(SELECT 1 FROM object_instances i WHERE i.instance_id=a.instance_id AND i.category=?)".into());
+        clauses.push("(EXISTS(SELECT 1 FROM object_instances i WHERE i.instance_id=a.instance_id AND i.category=?) OR (a.instance_id IS NULL AND a.target_type IN (SELECT type_id FROM type_definitions WHERE category=?)))".into());
+        args.push(Box::new(category.clone()));
         args.push(Box::new(category.clone()));
     }
     if let Some(instance) = &filter.instance {
@@ -1151,6 +1171,67 @@ mod tests {
                 assert_eq!(row["context"]["type_id"],"runtime.logon_session");
             }
             assert_eq!(store.conn.query_row("SELECT instance_id FROM object_actions WHERE action_id=?",[kind],|r|r.get::<_,i64>(0)).unwrap(),instance,"read verification preserves stored history");
+        }
+    }
+
+    #[test]
+    fn failed_logons_with_known_type_remain_in_category_search_without_claiming_identity() {
+        let mut store=seeded(1);
+        store.ingest(&presentation_events(vec![("identity.logon_failed",json!({
+            "TargetUserSid":"S-1-0-0","TargetUserName":"radiohide",
+            "SubjectUserSid":"S-1-5-18","Status":"0xc000006d","SubStatus":"0xc000006a"
+        }))])).unwrap();
+        store.project_pending("M","I",100).unwrap();
+        for prepared in [false,true] {
+            if prepared {
+                for _ in 0..100 {
+                    if store.prepare_display(32,std::time::Duration::from_millis(50)).unwrap()["pending"]==false {break;}
+                }
+                assert!(crate::display::published(&store.conn).unwrap());
+            }
+            for (category,typ) in [(None,None),(Some("account"),None),(None,Some("account.user")),(Some("account"),Some("account.user"))] {
+                for action in [None,Some("identity.logon_failed")] {
+                    let filter=ActionFilter{category:category.map(str::to_owned),type_id:typ.map(str::to_owned),action_id:action.map(str::to_owned),..Default::default()};
+                    let result=timeline(&store,filter.clone());
+                    let row=result.data.unwrap().as_array().unwrap().iter().find(|r|r["action_id"]=="identity.logon_failed").unwrap().clone();
+                    assert!(row["instance_id"].is_null());
+                    assert_eq!(row["context"]["type_id"],"account.user");
+                    assert_eq!(row["context"]["subject_label"],"radiohide");
+                    let hidden=timeline(&store,ActionFilter{include_unassigned:false,..filter});
+                    assert!(!action_ids(&hidden).contains(&"identity.logon_failed".into()));
+                }
+            }
+            for filter in [
+                ActionFilter{category:Some("hardware".into()),..Default::default()},
+                ActionFilter{category:Some("account".into()),type_id:Some("runtime.process".into()),..Default::default()},
+                ActionFilter{instance:Some("1".into()),..Default::default()},
+            ] {
+                assert!(!action_ids(&timeline(&store,filter)).contains(&"identity.logon_failed".into()));
+            }
+        }
+    }
+
+    #[test]
+    fn every_visible_typed_unassigned_action_remains_reachable_by_category_and_type() {
+        let store=Store::open(":memory:").unwrap();
+        let definitions:Vec<(String,String,String)>={
+            let mut q=store.conn.prepare("SELECT a.action_id,a.target_type,t.category FROM action_definitions a JOIN type_definitions t ON t.type_id=a.target_type").unwrap();
+            q.query_map([],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).unwrap().collect::<rusqlite::Result<_>>().unwrap()
+        };
+        for (action,typ,_) in &definitions {
+            add_action(&store,action,"2026-10-20T00:00:00Z",None,Some("fixture: event target identity absent"));
+            store.conn.execute("UPDATE object_actions SET target_type=? WHERE action_id=?",params![typ,action]).unwrap();
+        }
+        let visible=action_ids(&timeline(&store,ActionFilter{include_routine:true,limit:200,..Default::default()}));
+        assert!(visible.len()>40,"exercise the catalog, not only the four live examples");
+        for (action,typ,category) in &definitions {
+            if !visible.contains(action) {continue;}
+            for filter in [
+                ActionFilter{type_id:Some(typ.clone()),..Default::default()},
+                ActionFilter{category:Some(category.clone()),..Default::default()},
+            ] {
+                assert!(action_ids(&timeline(&store,ActionFilter{include_routine:true,limit:200,..filter})).contains(action),"{category}/{typ}/{action}");
+            }
         }
     }
 
@@ -1740,13 +1821,15 @@ mod tests {
             INSERT INTO object_actions(instance_id,action_id,result,precision,observed_at,rule_version)
             SELECT 2,'fixture.network','observed','observation_only','2026-10-20T00:00:00Z','test' FROM n;").unwrap();
         for _ in 0..9 {add_action(&store,"fixture.hardware","2020-01-01T00:00:00Z",Some(1),None);}
+        for _ in 0..9 {add_action(&store,"identity.logon_failed","2020-01-01T00:00:00Z",None,Some("unknown SID"));}
+        store.conn.execute("UPDATE object_actions SET target_type='account.user' WHERE action_id='identity.logon_failed'",[]).unwrap();
         // Keep this scale fixture independent of raw parsing; normal production builders
         // and revision invalidation have their own coverage in display_tests.
         store.conn.execute(&format!("INSERT INTO display_actions(action_row,revision,visible_main,visible_all,view,identity_guard,anchor,prepared_generation)
             SELECT a.action_row,?,1,1,json_object('action_id',a.action_id,'instance_id',a.instance_id,
-                'observed_at',a.observed_at,'precision',a.precision,'context',json_object('type_id',i.type_id)),
+                'observed_at',a.observed_at,'precision',a.precision,'context',json_object('type_id',coalesce(i.type_id,a.target_type))),
                 {},coalesce(a.interval_until,a.occurred_at,a.observed_at),1
-            FROM object_actions a JOIN object_instances i ON i.instance_id=a.instance_id",crate::display::identity_guard_sql()),[crate::display::revision()]).unwrap();
+            FROM object_actions a LEFT JOIN object_instances i ON i.instance_id=a.instance_id",crate::display::identity_guard_sql()),[crate::display::revision()]).unwrap();
         store.conn.execute_batch("DELETE FROM display_work;DELETE FROM display_identity_work;UPDATE display_build SET published=1,generation=1;").unwrap();
         let alias:String=store.conn.query_row(&format!("SELECT {ALIAS} FROM object_instances WHERE instance_id=1"),[],|r|r.get(0)).unwrap();
         let filters=[
@@ -1756,6 +1839,10 @@ mod tests {
             ActionFilter{instance:Some(alias),include_routine:true,..Default::default()},
             ActionFilter{category:Some("hardware".into()),type_id:Some("network.endpoint".into()),..Default::default()},
             ActionFilter{category:Some("hardware".into()),since:Some("2026".into()),..Default::default()},
+            ActionFilter{action_id:Some("identity.logon_failed".into()),..Default::default()},
+            ActionFilter{category:Some("account".into()),..Default::default()},
+            ActionFilter{type_id:Some("account.user".into()),..Default::default()},
+            ActionFilter{category:Some("account".into()),type_id:Some("account.user".into()),include_unassigned:false,..Default::default()},
         ];
         for mut filter in filters {
             filter.limit=3;filter.cards_only=true;

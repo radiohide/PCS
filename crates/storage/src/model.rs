@@ -137,7 +137,9 @@ pub fn create_schema(conn: &Connection) -> Result<()> {
 pub(crate) fn ensure_query_indexes(conn: &Connection) -> Result<()> {
     conn.execute_batch(&format!(
         "CREATE INDEX IF NOT EXISTS {OBSERVATION_ADDRESS_INDEX} ON evidence_refs(evidence_id,subject_id) WHERE subject_kind='observation';
-         CREATE INDEX IF NOT EXISTS evidence_refs_action_address ON evidence_refs(evidence_id,subject_id) WHERE subject_kind='action';"
+         CREATE INDEX IF NOT EXISTS evidence_refs_action_address ON evidence_refs(evidence_id,subject_id) WHERE subject_kind='action';
+         CREATE INDEX IF NOT EXISTS object_actions_kind ON object_actions(action_id,action_row);
+         CREATE INDEX IF NOT EXISTS object_actions_unassigned_type ON object_actions(target_type,action_row) WHERE instance_id IS NULL;"
     ))?;
     Ok(())
 }
