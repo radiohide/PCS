@@ -38,3 +38,11 @@
 这次读取的是数百至数千条完整组，不可与之前每次 200 条约 0.3 秒直接作同负载比较。分组计算的滚动中位耗时分别约 5.5/9.4/13.5 ms，主要时间仍在多次读取和批次页面更新。增强后台 PID 15404、权限和数据目录在测量前后保持一致。
 
 可复测脚本：`scripts/measure-timeline-group-performance.cjs --endpoint http://127.0.0.1:<专用测试窗口端口> --expected-pid <后台PID> --groups 2,4,6 --rounds 2 --pages 3`。脚本只允许查询/状态操作，输出写在 `target`。本次报告为忽略目录中的 `target/timeline-group-performance-0.2.19.json`。
+
+## 最终程序复核与发布
+
+补充稀疏分组触发保护后，重新构建最终 0.2.19。正常和 debug 入口校验一致：`C67CFA9FAECBC1852CEA5E9C36AC2947223CFEEB8D60E643D02FA4D3F3AC47F5`。既有路径配置保留；构建仍有 MinGW 资源清单合并警告，真实启动及全部实库交互复核成功。
+
+实际 `dist/dev` 入口另完成 4 次首屏/滚动复核：2 组首屏 492 条 1,031 ms、滚动 656 条 937 ms；6 组首屏 1,825 条 2,226 ms、滚动 2,899 条 3,687 ms。最终构建重新打开后确认默认 2 组、全部 2～6 组选项、两个完整计数以及后台仍为 PID 15404。两轮测量合计 28 次成功加载；变化中的历史导致不同轮次条数不同。
+
+专用测试窗口已退出，日常窗口重新打开；正式增强后台、原始历史和采集配置保持。最终复核报告位于 `target/timeline-group-performance-0.2.19-final.json`、`target/timeline-19-final-verification.json`，正常入口部署记录位于 `target/timeline-19-deployment.json`。
