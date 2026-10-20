@@ -69,6 +69,8 @@
 - 新测试覆盖未关联登录失败的真实字段形状、准备前/准备后展示、分类和类型组合、隐藏开关、对象范围隔离；稀疏分页与完整时间扫描结果逐页一致，并有 SQL 执行步数预算。
 - 正式库只读程序运行 13 种筛选、每种 2 轮，26 次均成功。登录失败在不指定类别、用户与账户类别、用户类型三种条件下都返回完整 206 条，耗时 142–210 ms；其他筛选耗时 24–477 ms。
 - 首次原生验收未设置工作区临时目录，部分排序报“unable to open database file”。指定既有 `target/native-state-build-temp` 后全部通过；未修改正式数据库或系统临时目录。
-- 0.2.25 桌面与优化后台构建成功。正式增强后台仍是 0.2.23，需要一次 Windows UAC 启动新后台后，分类修复才对日常界面生效。
+- 0.2.25 桌面与优化后台构建成功。经用户授权的 Windows UAC，正式增强后台已更新为 0.2.25，身份检查确认管理员权限及新进程；原始历史和配置保留。
+- 正式 WebView2 界面验收：无分类、账户类别、用户类型、类别与类型组合四种查询均返回相同的完整 206 条登录失败记录，耗时分别为 63.5、61.7、64.1、62.8 ms。
+- 实际操作“账户类别 → 用户类型 → 登录失败”，首次加载两个完整时间组，继续滚动可加载后续记录；记录详情可打开。“隐藏未关联日志”开关仍生效，验收无错误。
 
-本机详细只读结果保存在忽略目录 `target/login-visibility.json`、`target/event-attribution-audit.json`、`target/event-classification-audit.json`、`target/event-association-opportunities.json` 和 `target/login-25-readonly-benchmark.json`，不提交机器原始历史。
+本机详细只读结果保存在忽略目录 `target/login-visibility.json`、`target/event-attribution-audit.json`、`target/event-classification-audit.json`、`target/event-association-opportunities.json`、`target/login-25-readonly-benchmark.json` 和 `target/login-25-production-verification.json`，不提交机器原始历史。
