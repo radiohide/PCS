@@ -1137,6 +1137,22 @@ mod tests {
         }
     }
     #[test]
+    fn initial_inventory_queued_during_live_backlog_follows_its_snapshot_observations() {
+        let mut store=Store::open(":memory:").unwrap();
+        let source="pcscope.network.tcp";
+        store.ingest(&network_snapshot(source,"initial","2026-10-15T01:00:00Z",json!([tcp_item(50000,"Listen")]))).unwrap();
+        // The normal snapshot is still pending when maintenance appends inventory work.
+        assert_eq!(store.prepare_snapshot_baselines(32).unwrap()["queued"],1);
+        let first=store.project_pending(MACHINE,INSTALL,1).unwrap();
+        assert_eq!(first.projected,1);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_instances"),1);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions"),0);
+        let second=store.project_pending(MACHINE,INSTALL,1).unwrap();
+        assert_eq!(second.projected,1);
+        assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE json_extract(source_record,'$.snapshot_presence.baseline')=1"),1);
+    }
+
+    #[test]
     fn initial_inventory_is_backfilled_once_at_its_original_time_without_changing_current_state() {
         use pcscope_contracts::query::{ActionFilter,QueryRequest};
         let mut store=Store::open(":memory:").unwrap();let source="pcscope.network.tcp";

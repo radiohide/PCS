@@ -58,9 +58,10 @@ impl Worker {
                 // the two bounded transactions. Display work cannot be starved by raw backlog.
                 std::thread::yield_now();
                 let mut baseline_queued=false;
-                // Existing observations must establish bindings before initial inventories
-                // become timeline entries. One bounded batch; no extra polling process.
-                if result.as_ref().is_ok_and(|r|r.examined==0)&&Instant::now()>=baseline_retry_at {
+                // Snapshot observations and their raw records commit together. Appending
+                // inventory work to the same FIFO keeps those observations ahead of it,
+                // without waiting for a continuously fed collection queue to become empty.
+                if result.is_ok()&&Instant::now()>=baseline_retry_at {
                     baselines=baseline_timings.run(&store,|s|s.prepare_snapshot_baselines(32)).map_err(|e|e.to_string());
                     baseline_queued=baselines.as_ref().ok().is_some_and(|r|r["queued"].as_u64().unwrap_or(0)>0);
                     if baselines.is_err(){baseline_failures=baseline_failures.saturating_add(1);}
