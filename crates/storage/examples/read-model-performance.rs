@@ -72,7 +72,9 @@ fn measure(store:&Store,samples:usize)->Result<()> {
     let count_mode=std::env::var("PCSCOPE_PERFORMANCE_LIST_COUNTS").unwrap_or_else(|_|"full".into());
     ensure!(matches!(count_mode.as_str(),"full"|"objects"),"list counts mode must be full or objects");
     println!("{}",json!({"list_counts":count_mode,"includes_ipc":false}));
-    let first=query(store,&QueryRequest::InstanceList(InstanceFilter{limit:100,..Default::default()}))?;
+    let first=query(store,&QueryRequest::InstanceList(InstanceFilter{limit:100,
+        include_counts:count_mode=="full",include_instance_total:count_mode=="objects",..Default::default()}))
+        .context("preparing the initial object page for the selected count mode")?;
     let detail=first.data.as_ref().and_then(Value::as_array).and_then(|rows|rows.first()).and_then(|row|row["instance_id"].as_i64()).context("fixture has no objects")?.to_string();
     let first_actions=query(store,&QueryRequest::ActionTimeline(ActionFilter{limit:200,..Default::default()}))?;
     let mut cases=vec![

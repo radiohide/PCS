@@ -1,15 +1,19 @@
-param([string]$Destination,[switch]$SetRuntimeIntegrity)
+param([string]$Destination,[switch]$SetRuntimeIntegrity,[ValidateSet('debug','release')][string]$RuntimeProfile='debug')
 $ErrorActionPreference='Stop'
 $project=Split-Path $PSScriptRoot -Parent
 if(-not $Destination){$Destination=Join-Path $project 'dist/dev'}
+$runtimeOutput=Join-Path $project ('target/'+$RuntimeProfile)
+foreach($name in @('pcscope-service.exe','pcscope-software.exe','pcscope-powershell-adapter.exe','pcscope-eventlog.exe','pcscope-cli.exe','pcscope-usn.exe','examples/probe.exe')) {
+    if(-not(Test-Path -LiteralPath (Join-Path $runtimeOutput $name) -PathType Leaf)){throw "缺少 $RuntimeProfile 运行程序：$name；请先使用相同构建模式编译。"}
+}
 & (Join-Path $project 'plugins/eventlog-native/build.ps1')
 & (Join-Path $project 'plugins/platform-native/build.ps1')
 New-Item -ItemType Directory -Path $destination -Force | Out-Null
-foreach($file in @('pcscope-service.exe','pcscope-software.exe','pcscope-powershell-adapter.exe','pcscope-eventlog.exe','pcscope-cli.exe')){Copy-Item -LiteralPath (Join-Path $project "target/debug/$file") -Destination $destination -Force}
-Copy-Item -LiteralPath (Join-Path $project 'target/debug/pcscope-usn.exe') -Destination $destination -Force
+foreach($file in @('pcscope-service.exe','pcscope-software.exe','pcscope-powershell-adapter.exe','pcscope-eventlog.exe','pcscope-cli.exe')){Copy-Item -LiteralPath (Join-Path $runtimeOutput $file) -Destination $destination -Force}
+Copy-Item -LiteralPath (Join-Path $runtimeOutput 'pcscope-usn.exe') -Destination $destination -Force
 Copy-Item -LiteralPath (Join-Path $project 'target/debug/pcscope-eventlog-native.exe') -Destination $destination -Force
 Copy-Item -LiteralPath (Join-Path $project 'target/debug/pcscope-platform-native.exe') -Destination $destination -Force
-Copy-Item -LiteralPath (Join-Path $project 'target/debug/examples/probe.exe') -Destination (Join-Path $destination 'pcscope-probe.exe') -Force
+Copy-Item -LiteralPath (Join-Path $runtimeOutput 'examples/probe.exe') -Destination (Join-Path $destination 'pcscope-probe.exe') -Force
 foreach($file in @('pcscope-desktop.exe','WebView2Loader.dll')){Copy-Item -LiteralPath (Join-Path $project "apps/desktop/src-tauri/target/debug/$file") -Destination $destination -Force}
 Copy-Item -LiteralPath (Join-Path $project 'plugins/eventlog/channels.json') -Destination $destination -Force
 $taskMigration=Get-Content -LiteralPath (Join-Path $project 'model/native-migration.json') -Raw | ConvertFrom-Json
@@ -31,6 +35,6 @@ if($SetRuntimeIntegrity){
         if($LASTEXITCODE -ne 0){throw "Runtime integrity setup failed: $name"}
     }
 }
-Write-Output "Development bundle staged at $destination"
+Write-Output "Development bundle staged at $destination (Rust runtime: $RuntimeProfile)"
 
 
