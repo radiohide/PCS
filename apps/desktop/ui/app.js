@@ -405,6 +405,7 @@ setInterval(async()=>{
 // a bound on when a change took effect and not the moment it happened.
 const timelineFilters={action:'',category:'',type_id:'',period:'',unassigned:true,routine:false};
 let timelineCollapsed=localStorage.getItem('pcscope.timelineCollapsed')==='true';
+PCScopeTimelineTime.setMinutes(localStorage.getItem('pcscope.timelineGroupMinutes'));
 let timelineWalk={cursor:null,watermark:null};
 async function renderTimeline(){
   content.innerHTML=head('时间线','按时间查看系统变化。','<div class="operation-feedback"><button type="button" id="timeline-fold-all">全部折叠</button><button id="collect" class="primary">立即采集</button><span id="collect-feedback" role="status"></span></div>')+`<section class="panel"><div class="object-filters">
@@ -412,6 +413,7 @@ async function renderTimeline(){
     <label>类别<select id="timeline-category"><option value="">全部类别</option></select></label>
     <label>类型<select id="timeline-type"><option value="">全部类型</option></select></label>
     <label>时间范围<select id="timeline-period">${[['','全部时间'],['1','最近 24 小时'],['7','最近 7 天'],['30','最近 30 天']].map(([v,n])=>`<option value="${v}" ${v===timelineFilters.period?'selected':''}>${n}</option>`).join('')}</select></label>
+    <label>分组间隔<select id="timeline-group-minutes">${PCScopeTimelineTime.options.map(n=>`<option value="${n}" ${n===PCScopeTimelineTime.getMinutes()?'selected':''}>${n} 分钟</option>`).join('')}</select></label>
     <label>显示内容<select id="timeline-routine"><option value="false" ${timelineFilters.routine?'':'selected'}>主要变化</option><option value="true" ${timelineFilters.routine?'selected':''}>含日常更新</option></select></label>
     <label class="object-search">未对应到具体对象的日志<select id="timeline-unassigned"><option value="true" ${timelineFilters.unassigned?'selected':''}>也显示</option><option value="false" ${timelineFilters.unassigned?'':'selected'}>暂时隐藏</option></select></label>
     <button id="timeline-clear">清空筛选</button></div><div id="timeline-results" aria-live="polite"></div><div id="timeline-more"></div></section>`;
@@ -493,6 +495,7 @@ async function renderTimeline(){
   const reset=()=>{timelineWalk={cursor:null,watermark:null};};
   const schedule=(delay=250)=>{clearTimeout(timer);++requestId;pager.pause();reset();timer=setTimeout(()=>refresh(),delay);};
   content.querySelector('#timeline-action').oninput=e=>{timelineFilters.action=e.target.value;schedule();};
+  content.querySelector('#timeline-group-minutes').onchange=e=>{PCScopeTimelineTime.setMinutes(e.target.value);localStorage.setItem('pcscope.timelineGroupMinutes',String(PCScopeTimelineTime.getMinutes()));schedule(0);};
   content.querySelector('#timeline-period').onchange=e=>{timelineFilters.period=e.target.value;reset();schedule(0);};
   content.querySelector('#timeline-unassigned').onchange=e=>{timelineFilters.unassigned=e.target.value==='true';reset();schedule(0);};
   content.querySelector('#timeline-routine').onchange=e=>{timelineFilters.routine=e.target.value==='true';reset();schedule(0);};

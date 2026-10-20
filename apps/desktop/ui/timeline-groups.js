@@ -13,7 +13,7 @@ const PCScopeTimelineGroups=(()=>{
   }
   let sequence=0;
   function mount(root,{collapsed=false}={}){
-    const states=new Map(),unknownStates=new WeakMap(),metadata=new WeakMap(),pending=new WeakSet();
+    const states=new Map(),unknownStates=new WeakMap(),metadata=new WeakMap(),pending=new WeakSet(),bucketIndex=new Map(),categoryCounts=new WeakMap();
     let lastMoment=null;
     const read=group=>{if(!metadata.has(group))metadata.set(group,JSON.parse(group.dataset.timeMeta));return metadata.get(group);};
     function updateTime(group){
@@ -42,25 +42,25 @@ const PCScopeTimelineGroups=(()=>{
       const incoming=template.content.querySelector('.timeline-list'),list=root.querySelector('.timeline-list');
       if(!incoming){lastMoment=null;return;}
       if(!list){root.replaceChildren(template.content);sync();return;}
-      const groups=[...list.querySelectorAll('.timeline-group')].sort((a,b)=>read(a).order-read(b).order),changed=new Set();
+      const groups=[...list.querySelectorAll('.timeline-group')].sort((a,b)=>read(a).order-read(b).order),changed=new Map();
       let order=groups.reduce((n,group)=>Math.max(n,read(group).order),-1)+1;
       // Repartition individual rows in query order, rather than merging pre-grouped pages whole.
       const rows=[...incoming.querySelectorAll('.timeline-branch')].sort((a,b)=>Number(a.dataset.timelineOrder)-Number(b.dataset.timelineOrder));
       lastMoment=null;
       for(const row of rows){
-        const moment=JSON.parse(row.dataset.timelineMoment);let group=groups.find(node=>time.matches(read(node),moment));
+        const moment=JSON.parse(row.dataset.timelineMoment);let group=bucketIndex.get(moment.key);
         if(group)time.include(read(group),moment);
         else {
           const source=row.closest('.timeline-group');group=source.cloneNode(false);
           const body=source.querySelector(':scope > .timeline-branches').cloneNode(false);
           group.append(source.querySelector(':scope > .timeline-time-rail').cloneNode(true),body,source.querySelector(':scope > .timeline-group-empty').cloneNode(true));
-          metadata.set(group,{...time.seed(moment),order:order++});groups.push(group);
+          metadata.set(group,{...time.seed(moment),order:order++});groups.push(group);bucketIndex.set(moment.key,group);
         }
-        group.querySelector(':scope > .timeline-branches').append(row);changed.add(group);lastMoment=moment;
+        group.querySelector(':scope > .timeline-branches').append(row);if(!changed.has(group))changed.set(group,[]);changed.get(group).push(row);lastMoment=moment;
       }
-      for(const group of changed){updateTime(group);place(list,group);}
+      for(const group of changed.keys()){updateTime(group);place(list,group);}
       for(const day of [...list.children])if(!day.querySelector('.timeline-group'))day.remove();
-      sync(changed);
+      for(const [group,rows] of changed)update(group,rows);
     }
     function stateOf(group){
       const key=group.dataset.timeGroup,store=key?states:unknownStates,identity=key||group;
@@ -73,23 +73,27 @@ const PCScopeTimelineGroups=(()=>{
     }
     function markBoundary(hasMore){
       if(hasMore&&!lastMoment)return;
-      const last=lastMoment?time.rank(lastMoment):-Infinity;
+      const last=lastMoment?.key;
       for(const group of root.querySelectorAll('.timeline-group')){
-        const meta=read(group),open=hasMore&&meta.known&&last>=time.rank(meta)-time.tolerance;
+        const meta=read(group),open=hasMore&&meta.key===last;
         if(open)pending.add(group);else pending.delete(group);count(group);
       }
     }
-    function update(group){
+    function update(group,added){
       const state=stateOf(group),body=group.querySelector(':scope > .timeline-branches');
       const controls=group.querySelector('.timeline-category-controls');
-      const rows=[...body.children],counts=new Map();let visible=0;
+      const existing=categoryCounts.get(group),incremental=!!(added&&existing);
+      const rows=incremental?added:[...body.children],counts=incremental?existing:new Map();let visible=0;
       if(!body.id)body.id='timeline-group-records-'+(++sequence);
       for(const row of rows){
         const category=row.dataset.timelineCategory||'其他记录';
         row.dataset.timelineTone=toneOf(category);
         counts.set(category,(counts.get(category)||0)+1);
-        row.hidden=state.muted.has(category);if(!row.hidden)visible++;
+        row.hidden=state.muted.has(category);
       }
+      categoryCounts.set(group,counts);
+      for(const [category,total] of counts)if(!state.muted.has(category))visible+=total;
+      const total=body.children.length;
       const buttons=new Map([...controls.children].map(button=>[button.dataset.timelineCategoryToggle,button]));
       for(const [category,count] of counts){
         let button=buttons.get(category);
@@ -107,8 +111,8 @@ const PCScopeTimelineGroups=(()=>{
       }
       for(const [category,button] of buttons)if(!counts.has(category))button.remove();
       count(group);
-      group.querySelector('[data-timeline-visible]').textContent=visible===rows.length?'全部显示':'显示 '+visible+' / '+rows.length+' 条';
-      group.querySelector('.timeline-category-footer').hidden=visible===rows.length;
+      group.querySelector('[data-timeline-visible]').textContent=visible===total?'全部显示':'显示 '+visible+' / '+total+' 条';
+      group.querySelector('.timeline-category-footer').hidden=visible===total;
       for(const toggle of group.querySelectorAll('[data-timeline-toggle],[data-timeline-time-toggle]')){
         toggle.setAttribute('aria-controls',body.id);toggle.setAttribute('aria-expanded',String(!state.collapsed));
         toggle.title=state.collapsed?'展开本组记录':'收起本组记录';
@@ -136,7 +140,7 @@ const PCScopeTimelineGroups=(()=>{
     root.addEventListener('click',onClick);
     function sync(groups){
       if(!groups){
-        groups=root.querySelectorAll('.timeline-group');lastMoment=null;let order=-1;
+        groups=root.querySelectorAll('.timeline-group');bucketIndex.clear();for(const group of groups)bucketIndex.set(read(group).key,group);lastMoment=null;let order=-1;
         for(const row of root.querySelectorAll('.timeline-branch'))if(Number(row.dataset.timelineOrder)>order){order=Number(row.dataset.timelineOrder);lastMoment=JSON.parse(row.dataset.timelineMoment);}
       }
       for(const group of groups)update(group);

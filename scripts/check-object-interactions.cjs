@@ -22,7 +22,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
  fs.mkdirSync(output,{recursive:true});await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;const checks=[],errors=[];
  try{
   browser=await chromium.launch({...(process.env.PCSCOPE_CHROME_PATH?{executablePath:process.env.PCSCOPE_CHROME_PATH}:{}),headless:true});
-  const page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',e=>errors.push(e.message));
+  const page=await browser.newPage({viewport:{width:1440,height:1000},timezoneId:'Asia/Singapore'});page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(({samples,rows})=>{
    window.__qa={calls:[],revision:0,collecting:false,failNext:false,pending:false,intervals:[],listFailures:1,listError:'查询超时，已停止本次查询。请增加采集项或变化类型筛选后重试；历史数据保留。'};
    window.setInterval=(callback,delay)=>{window.__qa.intervals.push({callback,delay});return window.__qa.intervals.length;};
@@ -221,9 +221,9 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   const pointRows=pointTimes.map((occurred_at,index)=>({instance_id:index+1,action_id:index?'identity.logon':'identity.special_privileges',result:'observed',precision:'exact',time_derived:false,occurred_at,observed_at:'2026-10-15T08:09:24.616Z',context:{type_id:'runtime.logon_session',subject_label:'登录会话示例 '+index,attribution_status:'stored'}}));
   await page.evaluate(data=>window.__qa.timeline=data,pointRows);await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-entry').first().waitFor();
   assert.equal(await page.locator('.timeline-group').count(),1);assert.equal(await page.locator('.timeline-group-count').textContent(),'2 条记录');
-  assert.equal(await page.locator('.timeline-precision').textContent(),'发生时间');assert.equal(await page.locator('.timeline-time-end').count(),0);
+  assert.equal(await page.locator('.timeline-precision').textContent(),'时间段');assert.equal(await page.locator('.timeline-time-end').count(),1);
   assert.equal(await page.locator('.timeline-category-count').textContent(),'2');
-  assert.deepEqual(await page.locator('.timeline-branch').evaluateAll(rows=>rows.map(row=>JSON.parse(row.dataset.timelineMoment).start)),pointTimes);
+  assert.deepEqual(await page.locator('.timeline-branch').evaluateAll(rows=>rows.map(row=>JSON.parse(row.dataset.timelineMoment).originalStart)),pointTimes);
   checks.push('production logon and privilege timestamps differing by microseconds share one time card and retain both original times');
   await page.evaluate(async data=>{
     window.__qa.originalNow=Date.now;window.__qa.now=Date.now()+60000;Date.now=()=>window.__qa.now;
@@ -358,7 +358,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   // until the test scrolls, including when compilation makes browser steps slower.
   await page.setViewportSize({width:1440,height:640});
   const currentRange={precision:'interval',time_derived:true,interval_from:'2026-10-15T02:48:26Z',interval_until:'2026-10-15T02:50:18Z',observed_at:'2026-10-15T02:50:18Z',result:'observed'};
-  const currentEvents=Array.from({length:5},(_,index)=>({...currentRange,...(index>=3?{interval_from:'2026-10-15T02:48:00Z',interval_until:'2026-10-15T02:49:50Z'}:{}),instance_id:index+1,action_id:'startup.service_state_changed',field_id:'state',before:'Stopped',after:'Running',context:{type_id:'startup.service',subject_label:index?'示例服务 '+index:'Volume Shadow Copy',attribution_status:'stored'}}));
+  const currentEvents=Array.from({length:5},(_,index)=>({...currentRange,...(index>=3?{interval_from:'2026-10-15T02:48:00Z',interval_until:'2026-10-15T02:50:05Z'}:{}),instance_id:index+1,action_id:'startup.service_state_changed',field_id:'state',before:'Stopped',after:'Running',context:{type_id:'startup.service',subject_label:index?'示例服务 '+index:'Volume Shadow Copy',attribution_status:'stored'}}));
   const olderEvents=Array.from({length:3},(_,index)=>({...currentRange,instance_id:index+6,interval_from:'2026-10-15T02:42:10Z',interval_until:'2026-10-15T02:45:00Z',action_id:'observed.configuration_changed',field_id:'target',before:'C:\\Applications\\Old Version\\bin\\tool.exe',after:'C:\\Applications\\New Version\\bin\\tool.exe',context:{type_id:'desktop.shortcut',subject_label:'开发工具快捷方式 '+index,attribution_status:'stored'}}));
   await page.evaluate(({first,second})=>{window.__qa.holdOlderPage=true;window.__qa.timelinePages=[{status:'loaded',data:first,page:{has_more:true,next_cursor:'older-page'}},{status:'loaded',data:second,page:{has_more:false}}];},{first:currentEvents.slice(0,3),second:[...currentEvents.slice(3),...olderEvents]});
   await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-entry').first().waitFor();
@@ -371,7 +371,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.locator('#timeline-more').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===8);
   assert.equal(await page.locator('.timeline-list').count(),1);assert.equal(await page.locator('.timeline-group').count(),2);
   assert.equal(await page.locator('.timeline-group-count').first().textContent(),'5 条记录');
-  assert.match(await page.locator('.timeline-time-value').first().textContent(),/10:48:00.*10:50:18/,'merged header shows the union of original intervals');
+  assert.match(await page.locator('.timeline-time-value').first().textContent(),/10:50.*10:55/,'bucket header stays aligned after appending older records');
   const mergedGroup=page.locator('.timeline-group').first();
   assert.equal(await mergedGroup.locator('.timeline-category-toggle:visible').count(),1,'appended counts stay visible while folded');
   assert.equal(await mergedGroup.locator('[data-timeline-toggle]').getAttribute('aria-expanded'),'false','append retains the group fold');
@@ -396,16 +396,16 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.evaluate(({first,second})=>{window.__qa.timelinePages=[{status:'loaded',data:first,page:{has_more:true,next_cursor:'split-intervals'}},{status:'loaded',data:second,page:{has_more:false}}];},{first:currentEvents.slice(0,3),second:[shiftEvent(currentEvents[3],-20),shiftEvent(currentEvents[4],-40)]});
   await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-entry').first().waitFor();
   await page.locator('#timeline-more').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===5);
-  assert.deepEqual(await page.locator('.timeline-group-count').allTextContents(),['4 条记录','1 条记录'],'incoming pre-grouped rows split correctly against existing 30-second limits');
+  assert.deepEqual(await page.locator('.timeline-group-count').allTextContents(),['3 条记录','2 条记录'],'incoming records respect the fixed boundary across pages');
   const spans=await page.locator('.timeline-group').evaluateAll(groups=>groups.map(group=>JSON.parse(group.dataset.timeMeta)));
-  for(const span of spans){assert(span.maxStart-span.minStart<=30000);assert(span.maxEnd-span.minEnd<=30000);}
-  checks.push('30-second interval grouping is bounded across page breaks rather than joining whole incoming groups');
+  for(const span of spans){assert.equal(Date.parse(span.end)-Date.parse(span.start),300000);}
+  checks.push('fixed buckets remain stable across page breaks');
   const midnightEvents=[{...currentEvents[0],interval_from:'2026-10-14T15:58:00Z',interval_until:'2026-10-14T16:00:05Z'},{...currentEvents[1],interval_from:'2026-10-14T15:57:50Z',interval_until:'2026-10-14T15:59:55Z',context:{type_id:'network.dns_cache_entry',subject_label:'跨日示例',attribution_status:'stored'}}];
   await page.evaluate(data=>{window.__qa.timelinePages=[{status:'loaded',data:data.slice(0,1),page:{has_more:true,next_cursor:'across-midnight'}},{status:'loaded',data:data.slice(1),page:{has_more:false}}];},midnightEvents);
   await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===2);
-  assert.equal(await page.locator('.timeline-group').count(),1);assert.equal(await page.locator('.timeline-day').count(),1,'a midnight page boundary does not duplicate the card or day label');
-  assert.equal(await page.locator('.timeline-category-toggle').count(),2);assert.match(await page.locator('.timeline-time-value').textContent(),/2026-10-14.*2026-10-15/);
-  checks.push('overlapping intervals on either side of midnight merge across pages and retain full dates and both types');
+  assert.equal(await page.locator('.timeline-group').count(),2);assert.equal(await page.locator('.timeline-day').count(),2,'midnight separates dates and buckets');
+  assert.equal(await page.locator('.timeline-category-toggle').count(),2);assert.match(await page.locator('.timeline-time-value').last().textContent(),/23:55.*次日 00:00/);
+  checks.push('midnight buckets stay separate while record intervals retain full dates');
   const pagedPoints=[{...pointRows[0],occurred_at:'2026-10-15T08:10:00Z'},{...pointRows[1],occurred_at:'2026-10-15T08:09:40Z'},{...pointRows[1],instance_id:3,occurred_at:'2026-10-15T08:09:20Z'}];
   await page.evaluate(data=>{window.__qa.holdPointOlder=true;window.__qa.timelinePages=[{status:'loaded',data:data.slice(0,1),page:{has_more:true,next_cursor:'point-older'}},{status:'loaded',data:data.slice(1),page:{has_more:false}}];},pagedPoints);
   await page.locator('[data-page="timeline"]').click();await page.locator('.timeline-entry').first().waitFor();
@@ -413,10 +413,10 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.locator('.timeline-entry details summary').first().click();
   await page.evaluate(()=>{window.__qa.holdPointOlder=false;window.__qa.releasePointOlder?.();});
   await page.locator('#timeline-more').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===3);
-  assert.deepEqual(await page.locator('.timeline-group-count').allTextContents(),['2 条记录','1 条记录']);
-  assert.match(await page.locator('.timeline-time-value').first().textContent(),/16:09:40.*16:10:00/);
+  assert.deepEqual(await page.locator('.timeline-group-count').allTextContents(),['1 条记录','2 条记录']);
+  assert.match(await page.locator('.timeline-time-value').first().textContent(),/16:10.*16:15/);
   assert.equal(await page.locator('.timeline-entry details[open]').count(),1);
-  checks.push('point events merge across pages with an honest time range, preserve open details and cannot chain beyond 30 seconds');
+  checks.push('point events use fixed boundaries across pages and preserve open details');
   await page.setViewportSize({width:1440,height:1000});
   // Keep the initial page longer than the screen-ahead buffer until folding is exercised.
   const foldRows=Array.from({length:45},(_,index)=>({...timelineRows[0],instance_id:index+1,interval_from:'2026-10-15T0'+(3-Math.floor(index/15))+':00:00Z',interval_until:'2026-10-15T0'+(3-Math.floor(index/15))+':05:00Z',context:{type_id:index%3===0?'runtime.process':index%3===1?'startup.service':'file.watched_file',subject_label:'模式示例 '+index,attribution_status:'stored'}}));
@@ -491,6 +491,36 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.evaluate(rows=>{window.__qa.actionPages=[{status:'loaded',data:rows.slice(0,1),page:{has_more:true,next_cursor:'older-actions'}},{status:'loaded',data:rows.slice(1),page:{has_more:false}}];},actionRows);
   await page.locator('[data-page="compare"]').click();await page.locator('#compare-instance').selectOption(rows[0].alias);await page.locator('#compare-more').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelectorAll('#compare-results tbody>tr').length===4);
   checks.push('state comparison automatically reads beyond the first action-history page');
+  const bucketPerformance=await page.evaluate(base=>{
+    const input=Array.from({length:1000},(_,i)=>({...base,instance_id:i+1,occurred_at:'2026-10-15T08:09:'+String(i%60).padStart(2,'0')+'Z'}));
+    const root=document.createElement('div');root.style.display='none';document.body.append(root);
+    const controls=PCScopeTimelineGroups.mount(root),start=performance.now();
+    for(const {html} of PCScopeModelView.timelineBatches({data:input}))controls.append(html);
+    controls.markBoundary(false);
+    const result={rows:input.length,batches:20,append_ms:performance.now()-start,groups:root.querySelectorAll('.timeline-group').length,count:root.querySelector('.timeline-category-count').textContent};
+    const grouping=[];for(let i=0;i<30;i++){const before=performance.now();PCScopeTimelineTime.groupRows(input);grouping.push(performance.now()-before);}
+    grouping.sort((a,b)=>a-b);result.grouping_p95_ms=grouping[Math.ceil(grouping.length*0.95)-1];
+    controls.dispose();root.remove();return result;
+  },pointRows[0]);
+  assert.equal(bucketPerformance.groups,1);assert.equal(bucketPerformance.count,'1000');
+  fs.writeFileSync(path.join(output,'timeline-bucket-performance.json'),JSON.stringify(bucketPerformance,null,2));
+  checks.push('1,000 records appended in 20 batches retain one bucket and exact incremental category totals');
+  const preferenceRows=Array.from({length:6},(_,index)=>({...pointRows[0],instance_id:index+1,occurred_at:'2026-10-15T08:'+String(index*10).padStart(2,'0')+':30Z'})).reverse();
+  await page.evaluate(data=>{window.__qa.timelinePages=[{status:'loaded',data,page:{has_more:false}}];},preferenceRows);
+  await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===6);
+  assert.deepEqual(await page.locator('#timeline-group-minutes option').evaluateAll(nodes=>nodes.map(n=>n.value)),['1','5','10','15','30','60']);
+  for(const [minutes,count] of [['1',6],['5',6],['10',6],['15',4],['30',2],['60',1]]){
+    await page.locator('#timeline-group-minutes').selectOption(minutes);
+    await page.waitForFunction(({minutes,count})=>document.querySelectorAll('.timeline-entry').length===6&&document.querySelectorAll('.timeline-group').length===count&&[...document.querySelectorAll('.timeline-group')].every(g=>JSON.parse(g.dataset.timeMeta).minutes===Number(minutes)),{minutes,count});
+    assert.equal(await page.evaluate(()=>localStorage.getItem('pcscope.timelineGroupMinutes')),minutes);
+  }
+  await page.locator('#timeline-clear').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===6);
+  assert.equal(await page.locator('#timeline-group-minutes').inputValue(),'60','clearing filters preserves the grouping preference');
+  await page.reload();await page.locator('#timeline-group-minutes').waitFor();
+  assert.equal(await page.locator('#timeline-group-minutes').inputValue(),'60','full reload remembers the selected interval');
+  await page.evaluate(()=>localStorage.setItem('pcscope.timelineGroupMinutes','7'));await page.reload();await page.locator('#timeline-group-minutes').waitFor();
+  assert.equal(await page.locator('#timeline-group-minutes').inputValue(),'5','invalid saved selection falls back to five minutes');
+  checks.push('all six grouping intervals regroup correctly; selection survives navigation, clear filters and reload, with invalid-value fallback');
   assert.deepEqual(errors,[]);assert.deepEqual(await page.evaluate(()=>[...new Set(window.__qa.calls.map(c=>c.operation))].filter(op=>!['status','query','monitoring_settings'].includes(op))),[]);
   fs.writeFileSync(path.join(output,'object-interactions-result.json'),JSON.stringify({passed:true,checks,page_errors:errors,basis:'Actual index.html and app.js in headless Chrome; fixed read-only IPC; no native collection or UAC.'},null,2));console.log('PASS: '+checks.length+' real app interaction scenarios; no collection calls or browser errors.');
  }finally{if(browser)await browser.close();await new Promise(r=>server.close(r));}
