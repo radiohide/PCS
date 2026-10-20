@@ -425,7 +425,8 @@ async function renderTimeline(){
   const foldAll=content.querySelector('#timeline-fold-all');
   const showFoldMode=()=>{foldAll.textContent=timelineCollapsed?'全部展开':'全部折叠';foldAll.setAttribute('aria-controls',results.id);};
   showFoldMode();
-  let pagingReady=!timelineCollapsed;
+  let pagingReady=false;
+  const scrolling=content.closest?.('main')||content;
   const pagingInput=new AbortController();
   results.addEventListener('click',event=>{if(event.target.closest('[data-timeline-toggle],[data-timeline-time-toggle],[data-timeline-category-toggle],[data-timeline-show-all],[data-timeline-invert]'))pagingReady=false;},{capture:true,signal:pagingInput.signal});
   state.disposePage=()=>{clearTimeout(timer);++requestId;pagingInput.abort();groupControls.dispose();};
@@ -487,18 +488,19 @@ async function renderTimeline(){
       if(!renderedRows){results.innerHTML=PCScopeModelView.timeline(response);groupControls.sync();}
       // Every logical page finishes on a bucket boundary, even when more history exists.
       groupControls.markBoundary(false);loading.hidden=true;results.setAttribute('aria-busy','false');
-      if(append&&(timelineCollapsed||results.querySelector('.timeline-group.is-collapsed,[data-timeline-category-toggle][aria-pressed=false]')))pagingReady=false;
+      // Completing a short batch can expose the sentinel. Require continued scroll intent.
+      pagingReady=false;
     },
     onError:error=>{results.setAttribute('aria-busy','false');loading.hidden=true;if(!renderedRows)results.innerHTML=`<div class="empty">${errorHtml(error)}</div>`;}
   });
-  const refresh=()=>{++requestId;reader=null;renderedRows=0;pagingReady=!timelineCollapsed;return pager.reset();};
+  const refresh=()=>{++requestId;reader=null;renderedRows=0;pagingReady=false;return pager.reset();};
   const allowPaging=event=>{
     if(event.type==='keydown'&&(!['ArrowDown','PageDown','End',' '].includes(event.key)||event.target.closest('input,select,textarea,[contenteditable]')||event.key===' '&&event.target.closest('button,summary')))return;
     if(event.type==='wheel'&&event.deltaY<=0)return;
-    if(event.type==='pointerdown'&&(event.target!==content||event.offsetX<content.clientWidth))return;
+    if(event.type==='pointerdown'&&(event.target!==scrolling||event.offsetX<scrolling.clientWidth))return;
     pagingReady=true;pager.resume();
   };
-  for(const event of ['wheel','touchmove','keydown','pointerdown'])content.addEventListener(event,allowPaging,{passive:true,signal:pagingInput.signal});
+  for(const event of ['wheel','touchmove','keydown','pointerdown'])scrolling.addEventListener(event,allowPaging,{passive:true,signal:pagingInput.signal});
   foldAll.onclick=()=>{
     timelineCollapsed=!timelineCollapsed;pagingReady=false;
     localStorage.setItem('pcscope.timelineCollapsed',String(timelineCollapsed));

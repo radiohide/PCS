@@ -373,7 +373,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').length),readsBeforeStartup+2,'opening completes two groups and buffers only the transport lookahead');
   assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').at(-1).limit),200);
   await page.screenshot({path:path.join(output,'timeline-first-200-grouped.png'),fullPage:false});
-  await page.locator('#timeline-more').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===201);
+  await page.locator('#timeline-more').scrollIntoViewIfNeeded();await page.locator('#timeline-more').hover();await page.mouse.wheel(0,240);await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===201);
   assert.equal(await page.evaluate(()=>window.__qa.calls.filter(c=>c.query==='action_timeline').at(-1).limit),200,'subsequent scrolling uses the measured 200-row batch');
   assert.equal(await page.locator('.timeline-group-count').nth(1).textContent(),'117 条记录','reading past the cutoff confirms and relabels the completed group');
   checks.push('startup completes two groups using bounded transport, merges categories, and reuses the buffered next group on scroll');
@@ -488,6 +488,14 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   assert.equal(await page.locator('.timeline-group.is-collapsed').count(),0);
   assert.equal(await page.evaluate(()=>localStorage.getItem('pcscope.timelineCollapsed')),'false');
   checks.push('bulk fold mode survives refresh and reload, restores one initial page only, and switches back to expanded mode');
+  const sparseRows=Array.from({length:10},(_,i)=>({...pointRows[0],instance_id:i+1,occurred_at:new Date(Date.UTC(2026,9,15,8,55)-i*300000).toISOString()}));
+  await page.evaluate(data=>window.__qa.timelineDataset=data,sparseRows);await page.locator('[data-page="timeline"]').click();
+  await page.waitForFunction(()=>document.querySelectorAll('.timeline-group').length===2&&document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
+  await page.waitForTimeout(400);assert.equal(await page.locator('.timeline-group').count(),2,'short initial groups must not auto-drain history');
+  await page.locator('#timeline-more').hover();await page.mouse.wheel(0,240);
+  await page.waitForFunction(()=>document.querySelectorAll('.timeline-group').length===4&&document.querySelector('#timeline-results').getAttribute('aria-busy')==='false');
+  await page.waitForTimeout(400);assert.equal(await page.locator('.timeline-group').count(),4,'one scroll loads only the selected groups even when the sentinel remains near');
+  checks.push('sparse timelines stop at the requested group count on startup and each scrolling intent');
   const groupSizes=[230,260,50,300,40,70];
   const completeRows=groupSizes.flatMap((count,g)=>Array.from({length:count},(_,i)=>({...pointRows[0],instance_id:g*1000+i+1,occurred_at:new Date(Date.UTC(2026,9,15,8,55)-g*300000).toISOString(),context:{type_id:i%2?'startup.service':'runtime.process',subject_label:'完整组 '+g+' / '+i,attribution_status:'stored'}})));
   await page.evaluate(data=>{window.__qa.timelineDataset=data;window.__qa.failGroupAt=200;},completeRows);
