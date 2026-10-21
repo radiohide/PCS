@@ -79,11 +79,11 @@ impl Worker {
                         display_retry_at=Instant::now()+Duration::from_secs((1u64<<display_failures.min(6)).min(60));
                     }else{display_failures=0;display_retry_at=Instant::now();}
                 }
-                if Instant::now()>=association_retry_at && associations.as_ref().map_or(true,|v|v["pending"]==true) {
+                if Instant::now()>=association_retry_at {
                     std::thread::yield_now();
-                    associations=association_timings.run(&store,|s|s.repair_event_associations(512,Duration::from_millis(40))).map_err(|e|e.to_string());
+                    associations=association_timings.run(&store,|s|{let tasks=s.repair_event_associations(512,Duration::from_millis(40))?;if tasks["pending"]==true {Ok(tasks)}else{let mut context=s.repair_event_context(512,Duration::from_millis(40))?;context["tasks"]=tasks;Ok(context)}}).map_err(|e|e.to_string());
                     if associations.is_err(){association_failures=association_failures.saturating_add(1)}else{association_failures=0}
-                    association_retry_at=Instant::now()+if association_failures>0 {Duration::from_secs((1u64<<association_failures.min(6)).min(60))}else{Duration::from_millis(250)};
+                    association_retry_at=Instant::now()+if association_failures>0 {Duration::from_secs((1u64<<association_failures.min(6)).min(60))}else if associations.as_ref().is_ok_and(|v|v["pending"]==false||v["waiting"].is_string()){Duration::from_secs(10)}else{Duration::from_millis(250)};
                 }
                 let delay = match result {
                     Ok(report) => {

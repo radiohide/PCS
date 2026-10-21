@@ -183,7 +183,7 @@ partial class Platform {
                 Emit("pcscope.system.update-history",UpdateHistory);
                 Emit("pcscope.execution.resources",Resources);
                 Emit("pcscope.identity.assigned-rights",()=>PCScopeIdentity.Rights().Select(x=>Item(x.Sid,D("sid",x.Sid,"rights",x.Rights,"basis","LSA account right assignment; not effective access on every resource"))).ToList());
-                Emit("pcscope.identity.interactive-sessions",()=>PCScopeIdentity.Sessions().Select(x=>Item(x.Id.ToString(),D("session_id",x.Id,"station",x.Station,"state_code",x.State,"user",x.User,"domain",x.Domain,"identity_query_error",x.QueryError,"basis","WTS snapshot; logon/logoff times are supplied by event evidence"))).ToList());break;
+                Emit("pcscope.identity.interactive-sessions",()=>BootSessionItems(PCScopeIdentity.Sessions().Select(x=>Item(x.Id.ToString(),D("session_id",x.Id,"station",x.Station,"state_code",x.State,"user",x.User,"domain",x.Domain,"identity_query_error",x.QueryError,"basis","WTS snapshot; logon/logoff times are supplied by event evidence"))).ToList()));break;
             case "storage": CollectStorageState();Emit("pcscope.hardware.driver-packages",Drivers);break;
             case "network":CollectNetworkState();break;
             case "startup":CollectTaskState();break;

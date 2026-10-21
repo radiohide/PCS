@@ -75,22 +75,20 @@ fn identity_fields(type_id: &str) -> &'static [(&'static str, &'static [&'static
     }
 }
 
-fn event_field<'a>(payload: &'a Value, names: &[&str]) -> Option<String> {
-    let fields = payload.get("fields")?;
-    for name in names {
-        if let Some(value) = fields.get(*name).filter(|value| !value.is_null()) {
-            return Some(match value {
-                Value::String(text) => text.clone(),
-                other => other.to_string(),
-            });
-        }
+fn event_field(payload: &Value, names: &[&str]) -> Option<String> {
+    let fields=payload.get("fields")?;
+    let value=names.iter().find_map(|name|fields.get(*name))?;
+    if crate::semantics::is_mask_sentinel(value){return None}
+    match value {
+        Value::String(text)=>Some(text.trim().to_owned()).filter(|v|!v.is_empty()),
+        Value::Number(number) if number.is_i64()||number.is_u64()=>Some(number.to_string()),
+        _=>None,
     }
-    None
 }
 
 /// A null SID means the account was not identified; it is not a real user account. Keep this
 /// validation local to account-event attribution so unrelated identity namespaces are unchanged.
-pub(crate) fn is_account_sid(value: &str) -> bool {
+pub fn is_account_sid(value: &str) -> bool {
     let value = value.trim();
     if value.eq_ignore_ascii_case("S-1-0-0") { return false; }
     let parts: Vec<&str> = value.split('-').collect();
@@ -104,7 +102,7 @@ fn explicit_text(payload: &Value, names: &[&str], legacy_names: &[&str]) -> Opti
     // An explicit protected/invalid value cannot be bypassed by falling back to a different name.
     let value = names.iter().find_map(|name|payload.get("fields").and_then(|fields|fields.get(*name)))
         .or_else(||legacy_names.iter().find_map(|name|payload.get(*name)))?;
-    value.as_str().map(str::trim).filter(|value|!value.is_empty()).map(str::to_owned)
+    value.as_str().map(str::trim).filter(|text|!text.is_empty()&&!crate::semantics::is_mask_sentinel(value)).map(str::to_owned)
 }
 
 /// TaskScheduler writes TaskName inside fields; older fixtures used task_name at the root.
@@ -141,9 +139,9 @@ pub(crate) fn logon_scope(context: &AdapterContext) -> String {
     }
 }
 
-fn normalized_logon_id(value: &str) -> Option<String> {
+pub(crate) fn normalized_logon_id(value: &str) -> Option<String> {
     value.strip_prefix("0x").or_else(||value.strip_prefix("0X"))
-        .and_then(|hex|u64::from_str_radix(hex,16).ok())
+        .map(|hex|u64::from_str_radix(hex,16).ok()).unwrap_or_else(||value.parse::<u64>().ok())
         .filter(|number|*number!=0).map(|number|format!("0x{number:x}"))
 }
 
@@ -256,7 +254,7 @@ impl SourceAdapter for EventAdapter {
             return SecurityEventAdapter.adapt(input, context);
         };
         let scope = if target_type.starts_with("account.") { installation_scope(&context.collected_scope) }
-            else if target_type=="runtime.logon_session" { logon_scope(context) }
+            else if matches!(target_type,"runtime.logon_session"|"runtime.terminal_session") { logon_scope(context) }
             else { context.collected_scope.clone() };
         // The keys come from the type, not from this table: a key the event has no field for must
         // still be listed, so that the identity says it is missing instead of quietly dropping it.
@@ -317,6 +315,14 @@ mod tests {
     use super::*;
     use crate::adapter::{AdapterOutcome, EvidenceKind};
     use serde_json::json;
+
+    #[test]
+    fn malformed_or_protected_identity_does_not_fall_back_to_an_alias() {
+        for value in [serde_json::Value::Null,json!({"sensitive":true,"ciphertext":"secret"}),json!(["id"]),json!(true),json!(crate::sensitive::MASK)] {
+            assert!(event_field(&json!({"fields":{"ServiceName":value,"DriverName":"fallback"}}),&["ServiceName","DriverName"]).is_none());
+        }
+        assert_eq!(event_field(&json!({"fields":{"SessionID":12}}),&["SessionID"]),Some("12".into()));
+    }
 
     const CHANNEL: &str = "pcscope.eventlog.security";
 

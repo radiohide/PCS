@@ -112,6 +112,7 @@ partial class Platform {
             if(args.Length==1 && args[0]=="hyperv-vm-contract-test") {HypervVmContractTest();return;}
             if(args.Length==1 && args[0]=="hyperv-snapshot-contract-test") {HypervSnapshotContractTest();return;}
             if(args.Length==1 && args[0]=="hyperv-disk-contract-test") {HypervDiskContractTest();return;}
+            if(args.Length==1 && args[0]=="boot-identity-assess") {BootIdentityAssessment();return;}
             if(args.Length==1 && args[0]=="state-test") {StateContractTest();return;}
             if(args.Length>0 && args[0]=="assess") {Assessment(args);return;}
             if(args.Length>0 && args[0]=="migration-assess") {MigrationAssessment(args);return;}

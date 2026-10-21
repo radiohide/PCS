@@ -1,5 +1,7 @@
 mod self_activity;
 mod association_repair;
+mod event_association;
+mod event_association_repair;
 mod timeline_policy;
 mod display;
 mod display_counts;
@@ -245,6 +247,7 @@ impl Store {
             display::ensure(&tx)?;
             display_counts::ensure(&tx)?;
             association_repair::ensure(&tx)?;
+            event_association::ensure(&tx)?;
             tx.execute_batch("PRAGMA user_version=10;")?;
             tx.commit()?;
         }
@@ -765,6 +768,12 @@ impl Store {
         tx.commit()?;
         Ok(report)
     }
+    pub fn repair_event_context(&self,limit:usize,budget:std::time::Duration)->Result<Value> {
+        anyhow::ensure!((1..=1024).contains(&limit),"association repair limit must be 1..1024");
+        let tx=self.conn.unchecked_transaction()?;
+        let report=event_association_repair::advance(&tx,limit,budget)?;tx.commit()?;Ok(report)
+    }
+
     pub fn repair_event_associations(&self,limit:usize,budget:std::time::Duration)->Result<Value> {
         let tx=self.conn.unchecked_transaction()?;
         let report=association_repair::advance(&tx,limit,budget)?;

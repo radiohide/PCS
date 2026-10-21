@@ -368,7 +368,9 @@ fn counts_for(conn: &Connection, clauses: &[String], args: &[Box<dyn rusqlite::T
 fn counts_sql(where_clause: &str, indexed: bool) -> String {
     let by_subject = "SELECT count(DISTINCT r.evidence_id) FROM evidence_refs r
         WHERE r.subject_kind='observation' AND r.subject_id IN (SELECT subject_id FROM matched)";
-    let (addresses, evidence) = if indexed {
+    // One object's detail already has an exact primary key. Counting all citations merely
+    // to choose a broad-query strategy caused cold detail reads to time out on large stores.
+    let (addresses, evidence) = if indexed && where_clause != "i.instance_id = ?" {
         let index = crate::model::OBSERVATION_ADDRESS_INDEX;
         // UNION ALL carries at most one next address. MIN with a strict indexed lower bound
         // skips all repeated citations without an in-memory set or a temporary DISTINCT tree.
@@ -1345,7 +1347,7 @@ mod tests {
         store.conn.execute("UPDATE evidence SET pruned_at='2026-10-12T03:00:00Z'",[]).unwrap();
         let context=&timeline(&store,ActionFilter::default()).data.unwrap()[0]["context"];
         assert_eq!(context["subject_basis"],"unavailable");
-        assert_eq!(context["attribution_status"],"unverified");
+        assert_eq!(context["attribution_status"],"unassigned");
         assert!(context["identity_status"].is_null());
     }
 
@@ -1608,6 +1610,17 @@ mod tests {
         let indexed_steps = steps.swap(0, Ordering::Relaxed);
         let legacy = store.conn.query_row(&counts_sql("i.category='startup'", false), [], |row| row.get::<_, i64>(3));
         assert!(legacy.is_err(), "301k citations must exceed the same bounded budget without address skipping; indexed used {indexed_steps} steps");
+    }
+
+    #[test]
+    fn single_object_counts_never_probe_global_reference_volume() {
+        let store=broad_reference_store();
+        let sql=counts_sql("i.instance_id = ?",true);
+        assert!(!sql.contains("route_scale"));assert!(!sql.contains("addresses(evidence_id)"));
+        assert!(sql.contains("subject_id IN (SELECT subject_id FROM matched)"));
+        let expected=store.conn.query_row(&counts_sql("i.instance_id = ?",false),[1],|r|Ok((r.get::<_,i64>(0)?,r.get::<_,i64>(1)?,r.get::<_,i64>(2)?,r.get::<_,i64>(3)?))).unwrap();
+        let actual=counts_for(&store.conn,&["i.instance_id = ?".into()],&[Box::new(1i64)]).unwrap();
+        assert_eq!((actual.instances as i64,actual.actions as i64,actual.source_records as i64,actual.evidence as i64),expected);
     }
 
     #[test]

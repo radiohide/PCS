@@ -118,8 +118,9 @@ fn modules(input: &EvidenceInput, context: &AdapterContext) -> AdapterResult {
 /// configuration fact here; the end of the session is not in this material at all — the collector
 /// says logon and logoff times come from event evidence — so nothing here reports one.
 fn logon_sessions(input: &EvidenceInput, context: &AdapterContext) -> AdapterResult {
-    let scope = &installation_scope(&context.collected_scope);
+    let scope = &super::event::logon_scope(context);
     let logon_id = text(&input.payload, "LogonId").unwrap_or_else(|| input.item_id.clone());
+    let logon_id = if context.boot_id.is_some() {super::event::normalized_logon_id(&logon_id).unwrap_or(logon_id)} else {logon_id};
     let identity = identity("runtime.logon_session", scope, &input.evidence.id, &[("native_id", Some(logon_id.clone()))]);
     let fields = vec![
         field(&input.payload, "logon_id", "LogonId", FieldKind::Identity),
@@ -136,7 +137,7 @@ fn logon_sessions(input: &EvidenceInput, context: &AdapterContext) -> AdapterRes
 /// sends `identity_query_error` rather than leaving the fields blank, so a session with no user is
 /// shown as one whose user could not be read. Nothing here turns that into "no user".
 fn terminal_sessions(input: &EvidenceInput, context: &AdapterContext) -> AdapterResult {
-    let scope = &installation_scope(&context.collected_scope);
+    let scope = &super::event::logon_scope(context);
     let session_id = text(&input.payload, "session_id").unwrap_or_else(|| input.item_id.clone());
     let identity = identity("runtime.terminal_session", scope, &input.evidence.id, &[("native_id", Some(session_id))]);
     let mut fields = vec![

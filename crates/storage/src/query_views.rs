@@ -175,7 +175,10 @@ pub(super) fn action_context(conn: &Connection, action_row: i64, instance: Optio
          ORDER BY e.seq LIMIT 8"
     )?;
     let has_event:bool=conn.query_row("SELECT EXISTS(SELECT 1 FROM evidence_refs WHERE subject_kind='action' AND subject_id=? AND evidence_kind='event')",[action_row.to_string()],|row|row.get(0))?;
-    if has_event {context["attribution_status"]=json!("unverified");context["attribution_reason"]=json!("尚不能确认这条记录属于哪个对象。");}
+    let persisted=crate::event_association::stored(conn,action_row,instance)?;
+    if let Some(proof)=&persisted {
+        context["attribution_status"]=proof["status"].clone();context["attribution_reason"]=proof["reason"].clone();
+    } else if has_event {context["attribution_status"]=json!("unverified");context["attribution_reason"]=json!("尚不能确认这条记录属于哪个对象。");}
     // Snapshot changes cannot have event labels or event-attribution checks. Avoid stepping the
     // event join for them: one snapshot address can refer to thousands of independent items.
     if has_event {
@@ -190,6 +193,7 @@ pub(super) fn action_context(conn: &Connection, action_row: i64, instance: Optio
     })?;
     for input in rows {
         let input=input?;
+        if persisted.is_none() {
         let scope=if input.source_scope.trim().is_empty(){format!("machine:{}",current.as_ref().and_then(|object|object["machine_id"].as_str()).unwrap_or_default())}else{pcscope_contracts::semantics::business_scope(&input.source_scope)};
         let adapter_context=pcscope_contracts::adapter::AdapterContext{
             catalog_version:pcscope_contracts::model::catalog_version().into(),rule_version:String::new(),
@@ -236,6 +240,7 @@ pub(super) fn action_context(conn: &Connection, action_row: i64, instance: Optio
                     context["attribution_status"]=json!("verified");context["attribution_reason"]=Value::Null;
                 }
             }
+        }
         }
         let fields=&input.payload["fields"];
         let first = |keys: &[&str]| keys.iter().find_map(|key|readable_text(&fields[*key]));

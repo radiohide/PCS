@@ -79,7 +79,7 @@ pub fn project_pending(tx: &Connection, machine_id: &str, installation_id: &str,
             rule_version: rule_version.clone(),
             machine_id: machine_id.into(),
             installation_id: installation_id.into(),
-            boot_id: None,
+            boot_id: crate::event_association::boot_identifier(&input.payload).or_else(||crate::event_association::boot_identifier(&input.payload["after"])).or_else(||crate::event_association::boot_identifier(&input.payload["before"])),
             // Adapters take the identity scope from here, so it is the object's scope rather than
             // the collection's: two sources that cut the same object up differently must land on
             // one instance, and they only do that if this drops the cutting.
@@ -95,6 +95,7 @@ pub fn project_pending(tx: &Connection, machine_id: &str, installation_id: &str,
             },
             complete: true,
         };
+        crate::event_association::observe_boot(tx,&input,&context)?;
         if input.evidence.kind==pcscope_contracts::adapter::EvidenceKind::Record && input.evidence.id.starts_with("snapshot-absence:") {
             let wrote=apply_snapshot_absence(tx,&input,&context,&disabled)?;
             finish(tx,queue_id,"done",None)?;
@@ -326,6 +327,13 @@ fn apply(tx: &Connection, input: &EvidenceInput, context: &AdapterContext, resul
         let outcome = if expanded { identity::apply_expanded(tx, &request)? } else { identity::apply(tx, &request)? };
         let Some(instance_id) = outcome.instance_id else { continue };
         crate::display::bind_scope(tx,instance_id,input)?;
+        if context.boot_id.is_some() && input.evidence.kind==pcscope_contracts::adapter::EvidenceKind::Snapshot
+            && matches!(observation.identity.type_id.as_str(),"runtime.logon_session"|"runtime.terminal_session") {
+            // Retire the old unscoped snapshot alias. Keep all history on it; it may contain
+            // reused identifiers from multiple boots and cannot be renamed wholesale.
+            tx.execute("UPDATE object_instances SET lifecycle='not_observed',last_absent_at=? WHERE type_id=? AND machine_id=? AND installation_id=? AND scope=? AND lifecycle='active' AND last_observed_at<? AND EXISTS(SELECT 1 FROM source_bindings b WHERE b.instance_id=object_instances.instance_id AND b.source=? AND b.item_id=?)",
+                params![input.observed_at,observation.identity.type_id,context.machine_id,context.installation_id,pcscope_contracts::adapters::installation_scope(&context.collected_scope),input.observed_at,input.source,input.item_id])?;
+        }
         // A COM snapshot can contain the root, InprocServer32 and LocalServer32 for one
         // instance. Its evidence address names the whole snapshot, so claim each item before
         // applying its distinct fields. Keep the normal instance-level reference for evidence
@@ -753,7 +761,7 @@ pub(crate) fn service_state_target(tx: &Connection, input: &EvidenceInput, conte
              JOIN object_facts d ON d.instance_id=i.instance_id AND d.field_id='display_name' AND d.value_status='known'
              JOIN object_facts n ON n.instance_id=i.instance_id AND n.field_id='name' AND n.value_status='known'
              WHERE i.type_id='startup.service' AND i.machine_id=? AND i.installation_id=? AND i.scope=?
-               AND i.identity_status='confirmed' AND i.lifecycle NOT IN ('removed','ended') AND d.value=? LIMIT 2")?;
+               AND i.identity_status='confirmed' AND d.value=? LIMIT 2")?;
         let names=statement.query_map(params![context.machine_id,context.installation_id,scope,json!(found.display_name).to_string()],|row|row.get::<_,String>(0))?
             .collect::<rusqlite::Result<Vec<_>>>()?;
         if names.len()==1 {
@@ -767,6 +775,8 @@ pub(crate) fn service_state_target(tx: &Connection, input: &EvidenceInput, conte
 
 fn record_action(tx: &Connection, input: &EvidenceInput, context: &AdapterContext, action: &ActionCandidate) -> Result<bool> {
     let mut qualified = action.clone();
+    let resolved_context=crate::event_association::qualify(tx,input,context,&mut qualified)?;
+    let context=&resolved_context;
     let service_intent=if let Some((identity,intent))=service_state_target(tx,input,context)? {
         qualified.target=ActionTarget::Assigned {identity};Some(intent)
     } else {None};
@@ -839,6 +849,7 @@ fn record_action(tx: &Connection, input: &EvidenceInput, context: &AdapterContex
                 params![existing.to_string(), kind_name(reference), reference.id],
             )?;
         }
+        if input.evidence.kind==pcscope_contracts::adapter::EvidenceKind::Event {crate::event_association::save(tx,existing,instance_id,context,action)?;}
         return Ok(false);
     }
     tx.execute(
@@ -868,6 +879,7 @@ fn record_action(tx: &Connection, input: &EvidenceInput, context: &AdapterContex
         ],
     )?;
     let row = tx.last_insert_rowid();
+    if input.evidence.kind==pcscope_contracts::adapter::EvidenceKind::Event {crate::event_association::save(tx,row,instance_id,context,action)?;}
     for reference in &action.evidence {
         tx.execute(
             "INSERT INTO evidence_refs(subject_kind,subject_id,evidence_kind,evidence_id) VALUES('action',?,?,?) ON CONFLICT DO NOTHING",

@@ -270,7 +270,7 @@ partial class Platform {
         CollectShellRegistrations();
         EmitBase("pcscope.startup.logon",LogonStartup);
         EmitBase("pcscope.system.version",()=>ReadWmi("root\\cimv2","Win32_OperatingSystem",row=>Item("operating-system",D("caption",row["Caption"],"version",row["Version"],"build",row["BuildNumber"],"architecture",row["OSArchitecture"],"install_time",WmiProperty(row,"InstallDate"),"install_time_basis","Win32_OperatingSystem.InstallDate","computer_name",row["CSName"]))));
-        EmitBase("pcscope.system.boot-state",()=>ReadWmi("root\\cimv2","Win32_OperatingSystem",row=>Item("boot-state",D("last_boot_time",WmiProperty(row,"LastBootUpTime"),"basis","snapshot","timezone",TimeZoneInfo.Local.Id))));
+        EmitBase("pcscope.system.boot-state",()=>ReadWmi("root\\cimv2","Win32_OperatingSystem",row=>Item("boot-state",BootMetadata(D("last_boot_time",WmiProperty(row,"LastBootUpTime"),"basis","snapshot","timezone",TimeZoneInfo.Local.Id)))));
         EmitBase("pcscope.startup.services",()=>ReadWmi("root\\cimv2","Win32_Service",row=>Item(Text(row["Name"]).ToLowerInvariant(),D("name",row["Name"],"display_name",row["DisplayName"],"state",row["State"],"start_mode",row["StartMode"],"start_account",row["StartName"],"service_type",row["ServiceType"],"description",row["Description"],"command",EvidenceText(Text(row["PathName"])),"pid",row["ProcessId"],"exit_code",row["ExitCode"],"service_specific_exit_code",row["ServiceSpecificExitCode"]))));
         EmitBase("pcscope.startup.tasks",Tasks);
         EmitBase("pcscope.storage.volumes",()=>ReadWmi("root\\cimv2","Win32_Volume",row=>Item(Text(row["DeviceID"]),D("device_id",row["DeviceID"],"drive_letter",row["DriveLetter"],"label",row["Label"],"file_system",row["FileSystem"],"capacity",row["Capacity"],"drive_type",row["DriveType"]))));
@@ -289,7 +289,7 @@ partial class Platform {
             return Item(Text(row["ProcessId"])+"/"+Text(start),D("pid",row["ProcessId"],"parent_pid",row["ParentProcessId"],"name",row["Name"],"path",row["ExecutablePath"],"start_time",start,"session_id",row["SessionId"],"command_line",EvidenceText(command),"command_line_collected",command!=null,"command_line_status",command!=null?"available_redaction_applied":"not_returned_system_process_access_or_exit","basis","snapshot; short-lived processes may be missed"));
         }));
         Emit("pcscope.identity.profiles",()=>WmiItems("Win32_UserProfile","SID",new[]{"SID","LocalPath","Loaded","Special","Status","LastUseTime"}));
-        Emit("pcscope.identity.logon-sessions",()=>WmiItems("Win32_LogonSession","LogonId",new[]{"LogonId","LogonType","StartTime","AuthenticationPackage","Caption"}));
+        Emit("pcscope.identity.logon-sessions",()=>BootSessionItems(WmiItems("Win32_LogonSession","LogonId",new[]{"LogonId","LogonType","StartTime","AuthenticationPackage","Caption"})));
         Emit("pcscope.identity.machine",()=>{var rows=WmiItems("Win32_ComputerSystem","Name",new[]{"Name","Domain","PartOfDomain","DomainRole","Manufacturer","Model","SystemType"});rows.AddRange(WmiItems("Win32_ComputerSystemProduct","UUID",new[]{"UUID","Vendor","Name","Version"}));return rows;});
         Emit("pcscope.system.restore-points",()=>WmiItems("SystemRestore","SequenceNumber",new[]{"SequenceNumber","Description","CreationTime","RestorePointType","EventType"},"root\\default"));
     }

@@ -80,7 +80,8 @@ const PCScopeReadableEvents=(()=>{
     return '';
   }
   const uncertainAssociation=row=>['unverified','mismatch'].includes(row.context?.attribution_status)||row.context?.classification_status==='unverified';
-  const attribution=row=>row.context?.classification_status==='unverified'?'日志内容尚未识别，已保留原始记录。':uncertainAssociation(row)?'日志未能对应到具体对象。':'';
+  // Association controls the object link; the event itself remains readable.
+  const attribution=row=>'';
   // A timeline card has one conclusion. Missing/protected values are reading states, not changes.
   function card(row){
     const note=impact(row),id=type(row),field=row.field_id,context={...row.context,type_id:id};
