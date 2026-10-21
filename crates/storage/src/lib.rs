@@ -1,4 +1,5 @@
 mod self_activity;
+mod association_repair;
 mod timeline_policy;
 mod display;
 mod display_counts;
@@ -243,6 +244,7 @@ impl Store {
             let tx=conn.unchecked_transaction()?;
             display::ensure(&tx)?;
             display_counts::ensure(&tx)?;
+            association_repair::ensure(&tx)?;
             tx.execute_batch("PRAGMA user_version=10;")?;
             tx.commit()?;
         }
@@ -762,6 +764,11 @@ impl Store {
         let report=display::advance(&tx,limit,budget)?;
         tx.commit()?;
         Ok(report)
+    }
+    pub fn repair_event_associations(&self,limit:usize,budget:std::time::Duration)->Result<Value> {
+        let tx=self.conn.unchecked_transaction()?;
+        let report=association_repair::advance(&tx,limit,budget)?;
+        tx.commit()?;Ok(report)
     }
     /// Explicit resumable compatibility repair. The caller controls each bounded batch.
     pub fn repair_snapshot_absence(&self,limit:usize)->Result<Value> {

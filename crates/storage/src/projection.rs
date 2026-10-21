@@ -885,7 +885,7 @@ fn record_action(tx: &Connection, input: &EvidenceInput, context: &AdapterContex
 }
 
 /// The identity of one occurrence, used to keep a replay from writing it twice.
-fn action_key(instance_id: Option<u64>, action: &ActionCandidate) -> String {
+pub(crate) fn action_key(instance_id: Option<u64>, action: &ActionCandidate) -> String {
     if let Some(key) = &action.occurrence_key { return key.clone() }
     format!(
         "{}|{}|{}|{}|{}",

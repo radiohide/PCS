@@ -107,6 +107,20 @@ fn explicit_text(payload: &Value, names: &[&str], legacy_names: &[&str]) -> Opti
     value.as_str().map(str::trim).filter(|value|!value.is_empty()).map(str::to_owned)
 }
 
+/// TaskScheduler writes TaskName inside fields; older fixtures used task_name at the root.
+/// A protected or malformed explicit value must not be bypassed through a legacy alias.
+pub(crate) fn task_path(payload: &Value) -> Option<String> {
+    explicit_text(payload, &["TaskName"], &["task_name"])
+}
+
+pub(crate) fn task_event_target(input: &EvidenceInput, context: &AdapterContext) -> ActionTarget {
+    match task_path(&input.payload) {
+        Some(path) => ActionTarget::Assigned { identity: identity("startup.scheduled_task",
+            &installation_scope(&context.collected_scope), &input.evidence.id, &[("path",Some(path))]) },
+        None => ActionTarget::Unassigned { reason: "事件未提供任务路径。".into() },
+    }
+}
+
 pub(crate) fn account_event_sid(payload: &Value) -> Option<String> {
     explicit_text(payload,&["TargetUserSid","TargetSid"],&["target_user_sid","target_sid"])
         .filter(|value|is_account_sid(value))
@@ -266,6 +280,7 @@ impl SourceAdapter for EventAdapter {
         let identity = identity(target_type, &scope, &input.evidence.id, &keys);
         let target = if action_id=="identity.special_privileges" { special_logon_target(input,context) }
             else if target_type=="account.user" { account_event_target(input,context) }
+            else if target_type=="startup.scheduled_task" { task_event_target(input,context) }
             else { ActionTarget::Assigned { identity } };
         let mut result = AdapterResult::adapted();
         result.actions.push(ActionCandidate {
@@ -349,6 +364,16 @@ mod tests {
             boot_id: None,
             collected_scope: "machine:M/install:I".into(),
             complete: true,
+        }
+    }
+
+    #[test]
+    fn task_paths_accept_native_and_legacy_shapes_without_bypassing_protection() {
+        for payload in [json!({"fields":{"TaskName":"\\Folder\\Task"}}),json!({"task_name":"\\Folder\\Task"})] {
+            assert_eq!(task_path(&payload).as_deref(),Some("\\Folder\\Task"));
+        }
+        for value in [Value::Null,json!(" "),json!({"protected":true}),json!(["\\Task"])] {
+            assert!(task_path(&json!({"fields":{"TaskName":value},"task_name":"\\DoNotUse"})).is_none());
         }
     }
 

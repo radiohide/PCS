@@ -51,6 +51,9 @@ impl Worker {
             let mut baseline_timings=StageTimings::default();
             let mut baselines:std::result::Result<Value,String>=Ok(json!({"pending":true}));
             let mut baseline_retry_at=Instant::now();let mut baseline_failures=0u32;
+            let mut association_timings=StageTimings::default();
+            let mut associations:std::result::Result<Value,String>=Ok(json!({"pending":true}));
+            let mut association_retry_at=Instant::now();let mut association_failures=0u32;
             while !worker_stop.load(Ordering::SeqCst) {
                 // Release the shared writer after every small atomic batch.
                 let result = projection_timings.run(&store,|store|store.project_pending(&machine, &installation, 64));
@@ -76,6 +79,12 @@ impl Worker {
                         display_retry_at=Instant::now()+Duration::from_secs((1u64<<display_failures.min(6)).min(60));
                     }else{display_failures=0;display_retry_at=Instant::now();}
                 }
+                if Instant::now()>=association_retry_at && associations.as_ref().map_or(true,|v|v["pending"]==true) {
+                    std::thread::yield_now();
+                    associations=association_timings.run(&store,|s|s.repair_event_associations(512,Duration::from_millis(40))).map_err(|e|e.to_string());
+                    if associations.is_err(){association_failures=association_failures.saturating_add(1)}else{association_failures=0}
+                    association_retry_at=Instant::now()+if association_failures>0 {Duration::from_secs((1u64<<association_failures.min(6)).min(60))}else{Duration::from_millis(250)};
+                }
                 let delay = match result {
                     Ok(report) => {
                         if report.examined == 0 && !baseline_queued { worker_ready.store(true, Ordering::SeqCst); }
@@ -84,7 +93,8 @@ impl Worker {
                             "rejected":report.rejected,"unadapted":report.unadapted,
                             "display":display.as_ref().ok(),"display_error":display.as_ref().err().map(ToString::to_string),
                             "initial_inventory":baselines.as_ref().ok(),"initial_inventory_error":baselines.as_ref().err(),
-                            "timing":{"projection":projection_timings.view(),"display":display_timings.view(),"initial_inventory":baseline_timings.view()},
+                            "association_repair":associations.as_ref().ok(),"association_repair_error":associations.as_ref().err(),
+                            "timing":{"projection":projection_timings.view(),"display":display_timings.view(),"initial_inventory":baseline_timings.view(),"association_repair":association_timings.view()},
                             "at":chrono::Utc::now().to_rfc3339()});
                         if report.examined == 0 {
                             if display.as_ref().ok().is_some_and(|d|d["history_pending"]==true||d["built"].as_u64().unwrap_or(0)>0||d["linked"].as_u64().unwrap_or(0)>0) {Duration::from_millis(10)}else{Duration::from_millis(250)}

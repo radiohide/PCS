@@ -188,6 +188,7 @@ pub fn event_identity(type_id: &str, scope: &str, payload: &Value, evidence: &Ev
             "native_id" => string("target_user_sid").or_else(|| string("subject_user_sid")),
             "sid" if type_id=="account.user" => crate::adapters::event::account_event_sid(payload),
             "sid" => string("target_user_sid"),
+            "path" if type_id=="startup.scheduled_task" => crate::adapters::event::task_path(payload),
             "path" => string("task_name"),
             _ => None,
         };
@@ -243,6 +244,7 @@ impl SourceAdapter for SecurityEventAdapter {
         let identity = event_identity(target_type, &scope, &input.payload, &input.evidence);
         let target = if action_id=="identity.special_privileges" { crate::adapters::event::special_logon_target(input,context) }
             else if target_type=="account.user" { crate::adapters::event::account_event_target(input,context) }
+            else if target_type=="startup.scheduled_task" { crate::adapters::event::task_event_target(input,context) }
             else { ActionTarget::Assigned { identity } };
         let outcome = declared_outcome(action_id);
         let mut result = AdapterResult::adapted();

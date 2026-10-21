@@ -191,6 +191,24 @@ pub(crate) fn apply_event(tx: &Connection, request: &IdentityRequest) -> Result<
     Ok(Outcome { resolution, instance_id: Some(instance_id), transition, created })
 }
 
+/// Corrects a historical association without observing or changing a live object's state.
+/// Incomplete identities are deliberately left independent instead of sharing a missing key.
+pub(crate) fn attribute_history(tx: &Connection, request: &IdentityRequest) -> Result<Option<u64>> {
+    let lookup = DbLookup { conn: tx, request, require_native_key: true };
+    let IdentityResolution::Confirmed(value) = resolve(request, &lookup) else { return Ok(None) };
+    let at = request.evidence_time.source_time.as_deref()
+        .and_then(|v|pcscope_contracts::semantics::canonical_time(v).ok());
+    let Some(at) = at else {return Ok(None)};
+    let id=if let Some(id)=value.instance_id {id} else {
+        let id=allocate(tx,&value.identity,"confirmed",&at,request)?;
+        // Only a historical event is known. A future inventory supplies current presence.
+        tx.execute("UPDATE object_instances SET lifecycle='not_observed' WHERE instance_id=?",[id])?;
+        id
+    };
+    bind(tx,id,request,&at)?;
+    Ok(Some(id))
+}
+
 fn apply_using(tx: &Connection, request: &IdentityRequest, lookup: &dyn InstanceLookup, _expanded: bool) -> Result<Outcome> {
     let resolution = resolve(request, lookup);
     let observed_at = request.evidence_time.observed_at.clone();
