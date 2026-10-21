@@ -428,6 +428,15 @@ fn dispatch_raw(state: &Arc<State>, request: Request) -> Result<Value> {
             Ok(json!({"show_sensitive":show_sensitive}))
         },
         Request::Plugins => Ok(state.schedule.lock().unwrap().view()),
+        Request::GlobalCollectionSchedule => Ok(state.schedule.lock().unwrap().global_view()),
+        Request::SetGlobalCollectionSchedule { seconds } => {
+            let store = state.store.lock().map_err(|_| anyhow::anyhow!("storage lock poisoned"))?;
+            let mut schedule = state.schedule.lock().unwrap();
+            let config = schedule.global_candidate(seconds)?;
+            store.save_plugin_settings(&config)?;
+            schedule.configure_global(seconds);
+            Ok(json!({"settings":schedule.global_view(),"jobs":schedule.view()}))
+        }
         Request::SetPlugin {
             id,
             enabled,
@@ -437,10 +446,19 @@ fn dispatch_raw(state: &Arc<State>, request: Request) -> Result<Value> {
             // must not inherit a collector's long writer wait.
             let store=state.store.lock().map_err(|_| anyhow::anyhow!("storage lock poisoned"))?;
             let mut schedule = state.schedule.lock().unwrap();
-            let config = schedule.candidate(&id, enabled, seconds)?;
-            store.save_plugin_settings(&config)?;
-            schedule.configure(&id, enabled, seconds);
-            Ok(json!({"saved":true}))
+            let job = schedule.jobs.iter().find(|job|job.id==id).ok_or_else(||anyhow::anyhow!("未知插件"))?;
+            let enabled = enabled.unwrap_or(job.enabled);
+            if let Some(seconds) = seconds {
+                let config = schedule.candidate(&id, enabled, seconds)?;
+                store.save_plugin_settings(&config)?;
+                schedule.configure(&id, enabled, seconds);
+            } else {
+                let mut config = schedule.config();
+                config[&id]["enabled"] = json!(enabled);
+                store.save_plugin_settings(&config)?;
+                schedule.set_enabled(&id, enabled);
+            }
+            Ok(json!({"saved":true,"jobs":schedule.view()}))
         }
         Request::CollectPlugin { id } => {
             if !state

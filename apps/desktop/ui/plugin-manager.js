@@ -46,7 +46,7 @@ function mountModuleMonitorSettings(panel){
   const load=async()=>{
     try{
       const config=await api('runtime_watch_settings');if(!section.isConnected)return;
-      body.innerHTML=`<label><input data-module-enabled type="checkbox" ${config.enabled?'checked':''}>启用模块文件监控</label><details><summary>监控范围</summary><label>程序文件名（逗号分隔）<input data-module-names maxlength="4096" value="${esc((config.module_process_names||[]).join(', '))}"></label><p>仅监控当前账户和会话。Windows 桌面程序的文件名是 sihost.exe。</p></details><p class="muted">由后台独立跟踪；只覆盖曾成功发现的模块文件。首次就无法加载的组件可能遗漏。</p><button data-module-save>保存监控范围</button><span data-module-feedback role="status"></span><p class="muted">检查记录在时间线查看，读取问题在采集健康查看。</p>`;
+      body.innerHTML=`<label><input data-module-enabled type="checkbox" ${config.enabled?'checked':''}>启用模块文件监控</label><details><summary>监控范围</summary><label>程序文件名（逗号分隔）<input data-module-names maxlength="4096" value="${esc((config.module_process_names||[]).join(', '))}"></label><p>仅监控当前账户和会话。Windows 桌面程序的文件名是 sihost.exe。</p></details><p class="muted">定期检查随“指定文件与运行中的程序”的周期调整，文件变化仍及时检查。只覆盖曾成功发现的模块文件。首次就无法加载的组件可能遗漏。</p><button data-module-save>保存监控范围</button><span data-module-feedback role="status"></span><p class="muted">检查记录在时间线查看，读取问题在采集健康查看。</p>`;
       body.querySelector('[data-module-save]').onclick=async event=>{
         const button=event.currentTarget,feedback=body.querySelector('[data-module-feedback]');button.disabled=true;feedback.textContent='正在保存…';
         try{
@@ -63,7 +63,13 @@ async function renderPluginManager(){
   await sourceTypesReady;
   const [jobs,watch,controls,directoryWatch]=await Promise.all([api('plugins'),api('file_watch_settings'),api('item_controls'),api('directory_watch_settings')]);collectionItemControls=controls.items;if(state.page!=='plugins')return;
   content.innerHTML=head('采集插件','选择要监控的项目。暂停后保留记录，但可能漏记后续变化。')+`<details><summary>采集周期与执行方式</summary><p class="plugin-plan-note">状态采集最低 30 秒，日志采集最低 10 秒，最长 7 天。状态任务与日志任务各自依次执行；繁忙时单次触发会提示重试。已在执行的任务会完成，尚未开始的自动任务可被停用。</p></details><div id="plugin-manager">${jobs.map((job,i)=>{const d=pluginDescriptions[job.id]||{title:'扩展采集',data:'由插件提供',meaning:'采集范围尚未说明，请展开查看来源。',limit:'未知来源需核对原始记录'};return `<section class="panel plugin-card" data-plugin-index="${i}"><div class="plugin-heading"><h2>${esc(d.title)}</h2><span class="badge" data-enabled-state></span><button data-toggle></button><button data-details aria-expanded="false" aria-controls="plugin-details-${i}">详细</button></div><p data-status-impact role="status"></p><p class="muted">${esc(d.meaning)}</p><div data-toggle-feedback role="status" hidden></div><div id="plugin-details-${i}" class="plugin-details" hidden><div class="plugin-detail-meta"><small>${esc(job.id)}</small><span class="badge" data-phase></span></div><dl class="plugin-description"><dt>会产生哪些数据</dt><dd>${esc(d.data)}</dd><dt>记录代表什么</dt><dd>${esc(d.meaning)}</dd><dt>覆盖范围与限制</dt><dd>${esc(d.limit)}</dd></dl><div class="plugin-controls"><label>采集周期（秒）<input data-seconds type="number" min="${job.minimum_seconds}" max="604800" step="1" value="${job.seconds}"></label><button data-save>保存周期</button><button class="primary" data-run>采集一次</button><span data-feedback role="status"></span></div><div class="plugin-runtime" data-runtime></div>${fileWatchEditor(job.id,watch)}${pluginSourceTable(job.id)}<details class="plugin-run-detail"><summary>最近执行结果</summary><div data-result></div></details></div></section>`;}).join('')}</div>`;
-  const panel=content.querySelector('#plugin-manager');let polling=false;
+  const panel=content.querySelector('#plugin-manager');let polling=false, scheduleSaving=false, scheduleEpoch=0;
+  panel.insertAdjacentHTML('beforebegin','<section class="panel status-panel" id="global-collection-schedule"><h2>全局采集周期</h2><p>应用到所有采集项；之后单独修改某一项，以该项最新设置为准。</p><div class="plugin-controls"><label>采集周期（秒）<input data-global-seconds type="number" min="30" max="604800" step="1" placeholder="尚未统一设置"></label><button data-global-save disabled>应用到全部</button><span data-global-feedback role="status">正在读取…</span></div><p class="muted">范围：30 秒至 7 天。保留各项开关，正在执行的采集完成后使用新周期。</p></section>');
+  const globalPanel=content.querySelector('#global-collection-schedule'),globalInput=globalPanel.querySelector('[data-global-seconds]'),globalButton=globalPanel.querySelector('[data-global-save]'),globalFeedback=globalPanel.querySelector('[data-global-feedback]');
+  let globalSeconds=null, globalReady=false;
+  const globalSummary=()=>{const count=globalSeconds==null?0:jobs.filter(job=>job.seconds!==globalSeconds).length;globalFeedback.textContent=globalSeconds==null?'尚未统一设置，使用各项周期':count?'上次统一设置：'+globalSeconds+' 秒 · '+count+' 项已单独调整':'全部采集项：'+globalSeconds+' 秒';};
+  const scheduleBusy=value=>{scheduleSaving=value;globalButton.disabled=value||!globalReady;panel.querySelectorAll('[data-save],[data-toggle]').forEach(button=>button.disabled=value);};
+  api('global_collection_schedule').then(settings=>{if(!panel.isConnected)return;globalSeconds=settings.seconds;globalInput.value=globalSeconds??'';globalReady=true;globalButton.disabled=scheduleSaving;globalSummary();}).catch(error=>{if(panel.isConnected)globalFeedback.textContent='全局周期暂时无法读取：'+errorText(error);});
   mountModuleMonitorSettings(panel);
   const draw=rows=>{if(!panel.isConnected)return;for(const [i,job] of rows.entries()){
     const card=panel.querySelector(`[data-plugin-index="${i}"]`);if(!card||jobs[i].id!==job.id)continue;
@@ -81,10 +87,20 @@ async function renderPluginManager(){
     const result=card.querySelector('[data-result]');
     result.innerHTML=last?`<p>${last.ok?'本次采集完成':'部分信息未取得，相关异常可能漏报'}${last.changes!=null?` · 新增 ${last.changes} 条记录`:''}</p><pre>${esc(JSON.stringify(last,null,2))}</pre>`:'<p>当前后台启动后尚未执行。</p>';
   }};
-  const refresh=async(automatic=false)=>{if(polling){if(automatic)return;await polling;}if(!panel.isConnected)return;const epoch=state.refreshEpoch;polling=(async()=>{try{const [rows,controls]=await Promise.all([api('plugins'),api('item_controls')]);if(!automatic||(state.autoRefresh&&epoch===state.refreshEpoch)){draw(rows);drawItems(controls.items);notice('');}}catch(error){if(panel.isConnected&&(!automatic||(state.autoRefresh&&epoch===state.refreshEpoch)))notice(errorText(error));}})();try{await polling;}finally{polling=false;}};
+  const refresh=async(automatic=false)=>{if(polling){if(automatic)return;await polling;}if(!panel.isConnected)return;if(scheduleSaving)return;const epoch=state.refreshEpoch, capturedScheduleEpoch=scheduleEpoch;polling=(async()=>{try{const [rows,controls]=await Promise.all([api('plugins'),api('item_controls')]);if(capturedScheduleEpoch===scheduleEpoch&&(!automatic||(state.autoRefresh&&epoch===state.refreshEpoch))){draw(rows);drawItems(controls.items);notice('');}}catch(error){if(panel.isConnected&&(!automatic||(state.autoRefresh&&epoch===state.refreshEpoch)))notice(errorText(error));}})();try{await polling;}finally{polling=false;}};
   const drawItems=items=>{collectionItemControls=items;panel.querySelectorAll('[data-item-id]').forEach(button=>{const item=items.find(i=>i.id===button.dataset.itemId);if(!item)return;button.setAttribute('aria-checked',String(item.enabled));button.querySelector('[data-item-state]').textContent=item.enabled?'开':'关';});};
   panel.querySelectorAll('[data-item-id]').forEach(button=>{button.onclick=async()=>{button.disabled=true;const feedback=button.closest('.plugin-card').querySelector('[data-feedback]');try{const result=await api('set_item_enabled',{plugin:button.dataset.itemPlugin,id:button.dataset.itemId,enabled:button.getAttribute('aria-checked')!=='true'});drawItems(result.items);feedback.textContent='采集项设置已保存';}catch(error){feedback.textContent=errorText(error);}finally{button.disabled=false;}};});
   draw(jobs);
+  globalInput.oninput=()=>{globalFeedback.textContent='有未保存修改';};
+  globalButton.onclick=async()=>{
+    const seconds=Number(globalInput.value);
+    if(!Number.isInteger(seconds)||seconds<30||seconds>604800){globalFeedback.textContent='请输入 30–604800 之间的整数秒数';return;}
+    if(scheduleSaving)return;scheduleEpoch++;scheduleBusy(true);globalFeedback.textContent='正在保存…';
+    try{const result=await api('set_global_collection_schedule',{seconds});if(!panel.isConnected)return;
+      panel.querySelectorAll('[data-plugin-index]').forEach(card=>{card.dataset.dirty='false';card.querySelector('[data-feedback]').textContent='';});
+      globalSeconds=result.settings.seconds;globalInput.value=globalSeconds;draw(result.jobs);globalSummary();
+    }catch(error){globalFeedback.textContent=errorText(error);}finally{scheduleBusy(false);}
+  };
   panel.querySelectorAll('.file-watch-editor').forEach(editor=>{
     // Only the scoped collector reads directories; USN's explicit file list remains separate.
     const card=editor.closest('[data-plugin-index]');
@@ -116,20 +132,20 @@ async function renderPluginManager(){
       card.querySelector('.plugin-details').hidden=!expanded;
     };
     card.querySelector('[data-toggle]').onclick=async e=>{
-      const button=e.currentTarget,save=card.querySelector('[data-save]'),message=card.querySelector('[data-toggle-feedback]');
-      button.disabled=true;save.disabled=true;message.hidden=true;
+      const message=card.querySelector('[data-toggle-feedback]');
+      if(scheduleSaving)return;scheduleEpoch++;scheduleBusy(true);message.hidden=true;
       try{
         const enabled=!job.enabled;
-        await api('set_plugin',{id:job.id,enabled,seconds:job.seconds});
-        job.enabled=enabled;draw(jobs);await refresh();
+        const result=await api('set_plugin',{id:job.id,enabled});
+        draw(result.jobs);globalSummary();
       }catch(error){message.textContent=errorText(error);message.hidden=false;}
-      finally{button.disabled=false;save.disabled=false;}
+      finally{scheduleBusy(false);}
     };
     card.querySelectorAll('input').forEach(input=>input.oninput=()=>{card.dataset.dirty='true';feedback.textContent='有未保存修改';});
     card.querySelector('[data-save]').onclick=async e=>{
-      const seconds=Number(card.querySelector('[data-seconds]').value),enabled=job.enabled;
+      const seconds=Number(card.querySelector('[data-seconds]').value);
       if(!Number.isInteger(seconds)||seconds<job.minimum_seconds||seconds>604800){feedback.textContent=`请输入 ${job.minimum_seconds}–604800 之间的整数秒数`;return;}
-      e.target.disabled=true;card.querySelector('[data-toggle]').disabled=true;try{await api('set_plugin',{id:job.id,enabled,seconds});card.dataset.dirty='false';feedback.textContent='已保存，自动计划已重新计时';await refresh();}catch(error){feedback.textContent=errorText(error);}finally{e.target.disabled=false;card.querySelector('[data-toggle]').disabled=false;}
+      if(scheduleSaving)return;scheduleEpoch++;scheduleBusy(true);try{const result=await api('set_plugin',{id:job.id,seconds});card.dataset.dirty='false';draw(result.jobs);globalSummary();feedback.textContent='已保存，使用此项新周期';}catch(error){feedback.textContent=errorText(error);}finally{scheduleBusy(false);}
     };
     card.querySelector('[data-run]').onclick=async e=>{e.target.disabled=true;try{await api('collect_plugin',{id:job.id});feedback.textContent='已提交单次采集';await refresh();}catch(error){feedback.textContent=errorText(error);e.target.disabled=false;}};
   });

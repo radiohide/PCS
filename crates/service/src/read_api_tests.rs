@@ -22,6 +22,31 @@ fn fixture() -> Arc<State> {
 }
 
 #[test]
+fn collection_period_writes_are_persisted_atomically_and_patch_only_requested_fields() {
+    let state=fixture();
+    *state.schedule.lock().unwrap()=schedule::Schedule::new(vec!["scoped".into(),"network".into()],&json!({})).unwrap();
+    dispatch(&state,Request::SetPlugin{id:"network".into(),enabled:Some(false),seconds:None}).unwrap();
+    dispatch(&state,Request::SetGlobalCollectionSchedule{seconds:60}).unwrap();
+    dispatch(&state,Request::SetPlugin{id:"scoped".into(),enabled:None,seconds:Some(120)}).unwrap();
+    dispatch(&state,Request::SetPlugin{id:"network".into(),enabled:Some(true),seconds:None}).unwrap();
+    let saved=state.store.lock().unwrap().plugin_settings().unwrap();
+    let restored=schedule::Schedule::new(vec!["scoped".into(),"network".into()],&saved).unwrap();
+    assert_eq!(restored.config(),state.schedule.lock().unwrap().config());
+    assert_eq!(saved["scoped"]["seconds"],120);
+    assert_eq!(saved["network"]["seconds"],60);
+    assert_eq!(saved["_runtime_seconds"],120);
+    assert_eq!(dispatch(&state,Request::GlobalCollectionSchedule).unwrap()["seconds"],60);
+    // A disk/write rejection cannot leave half of the jobs changed in memory or on disk.
+    state.store.lock().unwrap().reader().execute_batch("CREATE TEMP TRIGGER reject_schedule BEFORE UPDATE ON settings WHEN NEW.key='plugin_schedule' BEGIN SELECT RAISE(ABORT,'test write failure'); END;").unwrap();
+    assert!(dispatch(&state,Request::SetGlobalCollectionSchedule{seconds:90}).is_err());
+    assert_eq!(state.schedule.lock().unwrap().config(),saved);
+    assert_eq!(state.store.lock().unwrap().plugin_settings().unwrap(),saved);
+    state.store.lock().unwrap().reader().execute_batch("DROP TRIGGER reject_schedule;").unwrap();
+    dispatch(&state,Request::SetGlobalCollectionSchedule{seconds:60}).unwrap();
+    assert_eq!(state.store.lock().unwrap().plugin_settings().unwrap()["scoped"]["seconds"],60);
+}
+
+#[test]
 fn settings_status_and_plugins_read_committed_values_while_writer_is_busy() {
     let state=fixture();
     let writer=state.store.lock().unwrap();
@@ -29,7 +54,7 @@ fn settings_status_and_plugins_read_committed_values_while_writer_is_busy() {
     let (send,receive)=mpsc::channel(); let client=state.clone();
     let thread=std::thread::spawn(move || {
         let requests=[Request::Status,Request::MonitoringSettings,Request::PrivacySettings,Request::FileWatchSettings,
-            Request::DirectoryWatchSettings,Request::RuntimeWatchSettings,Request::ItemControls,Request::Plugins,Request::Retention];
+            Request::DirectoryWatchSettings,Request::RuntimeWatchSettings,Request::ItemControls,Request::Plugins,Request::Retention,Request::GlobalCollectionSchedule];
         send.send(requests.into_iter().map(|request|dispatch(&client,request)).collect::<Result<Vec<_>>>()).unwrap();
     });
     let result=receive.recv_timeout(Duration::from_secs(2));

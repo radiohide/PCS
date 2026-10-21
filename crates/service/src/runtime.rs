@@ -140,17 +140,26 @@ fn work(state:Arc<State>)->Result<()> {
     let mut revision=Value::Null;let mut active=false;
     let mut modules_due=Instant::now();let mut poll_due=Instant::now();let mut integrity_due=Instant::now()+Duration::from_secs(3600);let mut summary_due=Instant::now();
     let mut module_failures=0u32;
+    let mut period = None;
     while !state.stopping.load(std::sync::atomic::Ordering::SeqCst) {
         std::thread::sleep(Duration::from_millis(200));
         let (config,selection,item_revision)={let store=state.store.lock().unwrap();(store.runtime_watch_settings()?,store.collection_selection("scoped")?,store.item_settings()?["revision"].clone())};
         let job_enabled=state.schedule.lock().unwrap().jobs.iter().any(|j|j.id=="scoped"&&j.enabled);
+        let next_period = state.schedule.lock().unwrap().runtime_seconds;
+        if period != next_period {
+            period = next_period;
+            let now = Instant::now();
+            modules_due = now + Duration::from_secs(period.unwrap_or(60));
+            poll_due = now + Duration::from_secs(period.unwrap_or(300));
+            integrity_due = now + Duration::from_secs(period.unwrap_or(3600));
+        }
         let names:BTreeSet<String>=config["module_process_names"].as_array().context("runtime target names missing")?.iter().filter_map(|n|n.as_str().map(str::to_owned)).collect();
         let disabled=selection["disabled_sources"].as_array().context("runtime source selection missing")?;
         let enabled=config["enabled"]==true&&!names.is_empty()&&job_enabled&&!disabled.contains(&json!(SOURCES[0]));
         let file_enabled=enabled&&!disabled.contains(&json!(SOURCES[2]));
         let current_revision=json!([config["revision"],item_revision,enabled,file_enabled]);
         if revision!=current_revision {
-            revision=current_revision;manager.watchers.clear();manager.pending.clear();manager.failed_dirs.clear();manager.move_candidates.clear();manager.rename_old.clear();active=enabled;modules_due=Instant::now();poll_due=Instant::now();integrity_due=Instant::now()+Duration::from_secs(3600);summary_due=Instant::now();
+            revision=current_revision;manager.watchers.clear();manager.pending.clear();manager.failed_dirs.clear();manager.move_candidates.clear();manager.rename_old.clear();active=enabled;modules_due=Instant::now();poll_due=Instant::now();integrity_due=Instant::now()+Duration::from_secs(period.unwrap_or(3600));summary_due=Instant::now();
             summary(&state,&manager,active,file_enabled,if active{"monitoring scope started or revised; gap before this observation remains unknown"}else{"monitoring stopped by configuration/source/plugin; history retained"})?;
         }
         if !active||!state.projection_ready.load(std::sync::atomic::Ordering::SeqCst) {continue;}
@@ -165,7 +174,8 @@ fn work(state:Arc<State>)->Result<()> {
                 },
                 Err(error)=>{module_failures=module_failures.saturating_add(1);persist_collector_failure(&state,SOURCES[0],&error);}
             }}
-            modules_due=Instant::now()+Duration::from_secs((60u64.saturating_mul(1u64<<module_failures.min(4))).min(900));
+            let seconds=period.unwrap_or(60);
+            modules_due=Instant::now()+Duration::from_secs((seconds.saturating_mul(1u64<<module_failures.min(4))).min(900).max(seconds));
         }
         if !file_enabled {continue;}
         for directory in manager.directories(&names,&state.data_dir) {
@@ -181,7 +191,7 @@ fn work(state:Arc<State>)->Result<()> {
             let integrity=Instant::now()>=integrity_due;
             let keys:Vec<_>=manager.saved.files.keys().filter(|k|manager.eligible(k,&names,&state.data_dir)).cloned().collect();
             for key in keys{manager.queue(&key,if integrity{"periodic_integrity"}else{"periodic_metadata"},integrity,true);}
-            poll_due=Instant::now()+Duration::from_secs(300);if integrity{integrity_due=Instant::now()+Duration::from_secs(3600);}
+            poll_due=Instant::now()+Duration::from_secs(period.unwrap_or(300));if integrity{integrity_due=Instant::now()+Duration::from_secs(period.unwrap_or(3600));}
         }
         let dispatch=Instant::now();
         for _ in 0..4 {

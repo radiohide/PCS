@@ -100,8 +100,8 @@ async fn main() -> Result<()> {
             .clone();
         call(Request::SetPlugin {
             id: "scoped".into(),
-            enabled: false,
-            seconds: 777,
+            enabled: Some(false),
+            seconds: Some(777),
         })
         .await?;
         let verification: Result<()> = async {
@@ -119,8 +119,8 @@ async fn main() -> Result<()> {
             ensure!(
                 call(Request::SetPlugin {
                     id: "scoped".into(),
-                    enabled: true,
-                    seconds: 0
+                    enabled: Some(true),
+                    seconds: Some(0)
                 })
                 .await
                 .is_err(),
@@ -187,8 +187,8 @@ async fn main() -> Result<()> {
         .await;
         let restore = call(Request::SetPlugin {
             id: "scoped".into(),
-            enabled: saved["enabled"].as_bool().unwrap(),
-            seconds: saved["seconds"].as_u64().unwrap(),
+            enabled: saved["enabled"].as_bool(),
+            seconds: saved["seconds"].as_u64(),
         })
         .await;
         verification?;

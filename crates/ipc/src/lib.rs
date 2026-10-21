@@ -57,10 +57,12 @@ pub enum Request {
     Collect,
     RepairSnapshotAppearance { limit: usize },
     Plugins,
+    GlobalCollectionSchedule,
+    SetGlobalCollectionSchedule { seconds: u64 },
     SetPlugin {
         id: String,
-        enabled: bool,
-        seconds: u64,
+        enabled: Option<bool>,
+        seconds: Option<u64>,
     },
     CollectPlugin {
         id: String,
@@ -340,5 +342,19 @@ mod tests {
         // request that simply carried no arguments.
         let line = r#"{"operation":"instances_list"}"#;
         assert!(serde_json::from_str::<Request>(line).is_err());
+    }
+    #[test]
+    fn schedule_wire_accepts_legacy_full_updates_and_new_field_patches() {
+        for line in [r#"{"operation":"set_plugin","id":"network","enabled":false,"seconds":60}"#,
+            r#"{"operation":"set_plugin","id":"network","enabled":false}"#,
+            r#"{"operation":"set_plugin","id":"network","seconds":60}"#,
+            r#"{"operation":"set_global_collection_schedule","seconds":60}"#,
+            r#"{"operation":"global_collection_schedule"}"#] {
+            let request:Request=serde_json::from_str(line).unwrap();
+            serde_json::from_str::<Request>(&serde_json::to_string(&request).unwrap()).unwrap();
+        }
+        for value in ["-1","1.5","null","\"60\""] {
+            assert!(serde_json::from_str::<Request>(&format!("{{\"operation\":\"set_global_collection_schedule\",\"seconds\":{value}}}")).is_err());
+        }
     }
 }
