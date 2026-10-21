@@ -83,6 +83,20 @@ impl InstanceLookup for DbLookup<'_> {
         let native_key = if self.require_native_key {
             pcscope_contracts::identity::normalise(&self.request.strategy, &self.request.candidate).0
         } else { String::new() };
+        if self.require_native_key {
+            // Start at the complete object key, then the binding's existing unique prefix.
+            // The optional-key OR below cannot use that full identity index and becomes a
+            // scan over many logon-event bindings during historical reconciliation.
+            return self.conn.query_row(
+                "SELECT b.instance_id,i.incarnation FROM object_instances i
+                 CROSS JOIN source_bindings b ON b.instance_id=i.instance_id
+                 WHERE i.type_id=? AND i.machine_id=? AND i.installation_id=? AND i.scope=? AND i.native_key=?
+                   AND b.source=? AND b.item_id=? AND b.scope=? AND b.native_record_id=? AND b.valid_to IS NULL
+                 ORDER BY b.binding_id DESC LIMIT 1",
+                params![self.request.candidate.type_id,self.request.machine_id,self.request.installation_id,
+                    self.request.candidate.scope,native_key,source,item_id,self.request.candidate.scope,native_record_id],
+                |r|Ok((r.get(0)?,r.get(1)?))).optional().ok().flatten();
+        }
         self.conn
             .query_row(
                 "SELECT b.instance_id,i.incarnation FROM source_bindings b

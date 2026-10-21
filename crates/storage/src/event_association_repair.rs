@@ -89,8 +89,8 @@ fn repair(conn:&Connection,row:i64,old:Option<u64>,action_id:&str)->Result<Optio
         parsed.push((input,context,action));
     }
     if parsed.is_empty(){audit(conn,row,old,old,"unresolved",json!({"reason":"material_or_rule_missing"}))?;return Ok(None)}
-    // A missing identity does not veto an independently verified complete identity.
-    if expected.is_some(){parsed.retain(|(_,_,a)|matches!(a.target,ActionTarget::Assigned{..}));}
+    // Missing identity does not veto complete evidence. Keep the incomplete inputs too:
+    // their independent replay claims and any old bindings still need reconciliation.
     let mut target=None;
     for (input,context,action) in &parsed {
         if let ActionTarget::Assigned{identity}=&action.target {
@@ -102,15 +102,21 @@ fn repair(conn:&Connection,row:i64,old:Option<u64>,action_id:&str)->Result<Optio
             anyhow::ensure!(target.is_none_or(|prior|prior==id),"historical evidence resolved to different objects");target=Some(id);crate::display::bind_scope(conn,id,input)?;
         }
     }
-    let (_,context,action)=&parsed[0];
+    let (_,context,action)=parsed.iter().find(|(_,_,a)|target.is_none()||matches!(a.target,ActionTarget::Assigned{..})).expect("parsed evidence is nonempty");
     let reason=if target.is_none(){match &action.target{ActionTarget::Unassigned{reason}=>Some(reason.clone()),_=>None}}else{None};
     let changed=old!=target;
     if changed {
         conn.execute("UPDATE object_actions SET instance_id=?,unassigned_reason=? WHERE action_row=?",params![target,reason,row])?;
-        conn.execute("UPDATE source_bindings SET valid_to=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE instance_id=? AND valid_to IS NULL AND native_record_id IN (SELECT evidence_id FROM evidence_refs WHERE subject_kind='action' AND subject_id=? AND evidence_kind='event')",params![old,row.to_string()])?;
+        if let Some(old)=old {
+            let scope:String=conn.query_row("SELECT scope FROM object_instances WHERE instance_id=?",[old],|r|r.get(0))?;
+            for (input,_,_) in &parsed {
+                conn.execute("UPDATE source_bindings SET valid_to=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE instance_id=? AND source=? AND item_id=? AND scope=? AND native_record_id=? AND valid_to IS NULL",params![old,input.source,input.item_id,scope,input.evidence.id])?;
+            }
+        }
     }
     for (input,_,action) in &parsed {
-        conn.execute("INSERT OR IGNORE INTO evidence_refs(subject_kind,subject_id,evidence_kind,evidence_id) VALUES('action',?,'event',?)",params![crate::projection::action_key(target,action),input.evidence.id])?;
+        let claim_target=if matches!(action.target,ActionTarget::Assigned{..}){target}else{None};
+        conn.execute("INSERT OR IGNORE INTO evidence_refs(subject_kind,subject_id,evidence_kind,evidence_id) VALUES('action',?,'event',?)",params![crate::projection::action_key(claim_target,action),input.evidence.id])?;
     }
     crate::event_association::save(conn,row,target,context,action)?;
     audit(conn,row,old,target,if changed{"repaired"}else if target.is_none(){"independent"}else{"verified"},json!({"identity":expected,"reason":reason,"boot_id":context.boot_id}))?;

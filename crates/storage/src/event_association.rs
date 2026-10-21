@@ -120,7 +120,10 @@ pub(crate) fn save(conn:&Connection,row:i64,instance:Option<u64>,context:&Adapte
     } else {conn.execute("DELETE FROM event_association_waiting WHERE action_row=?",[row])?;}
     conn.execute("INSERT INTO event_associations VALUES(?,?,?,?,?,?,?) ON CONFLICT(action_row) DO UPDATE SET
         instance_id=excluded.instance_id,identity_guard=excluded.identity_guard,decision=excluded.decision,
-        reason=excluded.reason,context=excluded.context,rule=excluded.rule",
+        reason=excluded.reason,context=excluded.context,rule=excluded.rule
+        WHERE event_associations.instance_id IS NOT excluded.instance_id OR event_associations.identity_guard<>excluded.identity_guard
+          OR event_associations.decision<>excluded.decision OR event_associations.reason IS NOT excluded.reason
+          OR event_associations.context<>excluded.context OR event_associations.rule<>excluded.rule",
         params![row,instance,guard(conn,instance)?,decision,reason,json!({"machine_id":context.machine_id,"installation_id":context.installation_id,"boot_id":context.boot_id,"scope":context.collected_scope}).to_string(),"event-association-v1"])?;Ok(())
 }
 

@@ -134,3 +134,17 @@ fn conflicting_tenth_evidence_revokes_proof_without_moving_the_historical_link()
     assert_eq!(c.query_row("SELECT instance_id FROM object_actions WHERE action_row=1",[],|r|r.get::<_,i64>(0)).unwrap(),original);
     assert_eq!(stored(c,1,Some(original)).unwrap().unwrap()["status"],"mismatch");
 }
+
+#[test]
+fn incomplete_secondary_evidence_keeps_its_replay_claim_after_repair() {
+    let mut store=Store::open(":memory:").unwrap();boot(&store,A,"2026-10-21T00:00:00Z","2026-10-21T23:00:00Z");
+    event(&mut store,1,"identity.special_privileges",json!({"SubjectLogonId":"0x11"}),"2026-10-21T07:00:00Z");
+    event(&mut store,2,"identity.special_privileges",json!({}),"2026-10-21T07:00:00Z");
+    let c=store.reader();c.execute_batch("INSERT OR IGNORE INTO evidence_refs SELECT 'action','1',evidence_kind,evidence_id,pruned_at FROM evidence_refs WHERE subject_kind='action' AND subject_id='2';
+      DELETE FROM object_actions WHERE action_row=2;
+      DELETE FROM evidence_refs WHERE subject_kind='action' AND subject_id NOT IN ('1','2');").unwrap();
+    assert_eq!(store.repair_event_context(100,Duration::from_secs(1)).unwrap()["unresolved"],0);
+    c.execute("UPDATE projection_queue SET state='pending'",[]).unwrap();
+    while store.project_pending("M","I",64).unwrap().examined>0{}
+    assert_eq!(store.reader().query_row("SELECT count(*) FROM object_actions",[],|r|r.get::<_,i64>(0)).unwrap(),1);
+}
