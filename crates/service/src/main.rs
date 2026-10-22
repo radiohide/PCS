@@ -126,14 +126,8 @@ fn start_event_collection(state: Arc<State>, manual: Option<&str>) -> Result<()>
                 serde_json::from_str(include_str!("../../../plugins/eventlog/channels.json"))
                     .expect("bundled channel manifest");
             let cursor = state.channel_cursor.fetch_add(1, Ordering::SeqCst);
-            // Always service the primary logs; rotate secondary logs without starting 23 processes per tick.
-            for channel in [
-                &channels[0],
-                &channels[1],
-                &channels[2],
-                &channels[3],
-                &channels[4 + cursor % (channels.len() - 4)],
-            ] {
+            let channel_indices=state.schedule.lock().unwrap().event_channel_indices(channels.len(),cursor);
+            for channel in channel_indices.iter().map(|index|&channels[*index]) {
                 if state.stopping.load(Ordering::SeqCst) {
                     break;
                 }

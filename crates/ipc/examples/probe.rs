@@ -46,6 +46,15 @@ fn paged(value: &serde_json::Value) -> Result<()> {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Explicit directory selection comes from PCSCOPE_DATA_DIR; never use a saved pipe or
+    // fall back to another instance. Useful for fresh-instance configuration and acceptance.
+    if std::env::args().nth(1).as_deref()==Some("request") {
+        let text=std::env::args().nth(2).ok_or_else(||anyhow::anyhow!("JSON request required"))?;
+        ensure!(text.len()<=65536,"request exceeds limit");
+        let request:Request=serde_json::from_str(&text)?;
+        println!("{}",serde_json::to_string(&call(request).await?)?);
+        return Ok(());
+    }
     if std::env::args().nth(1).as_deref()==Some("item-controls") {
         let value=call(Request::ItemControls).await?;let rows=value["items"].as_array().unwrap();
         ensure!(rows.len()==221,"unexpected control count");

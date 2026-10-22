@@ -97,6 +97,13 @@ impl Schedule {
     pub fn global_view(&self) -> Value {
         json!({"seconds":self.global_seconds,"minimum_seconds":30,"maximum_seconds":604800})
     }
+    pub fn event_channel_indices(&self, total: usize, cursor: usize) -> Vec<usize> {
+        // Explicit global periods cover every channel in one bounded, serial run. Retain
+        // legacy short polling rotation only for instances without a global setting.
+        let long_poll=self.jobs.iter().any(|job|job.id=="eventlog"&&job.seconds>=300);
+        if total<=4 || self.global_seconds.is_some() || long_poll { return (0..total).collect(); }
+        (0..4).chain(std::iter::once(4+cursor%(total-4))).collect()
+    }
     pub fn global_candidate(&self, seconds: u64) -> Result<Value> {
         Self::validate(false, seconds)?;
         let mut config = self.config();
@@ -214,12 +221,26 @@ mod tests {
         assert!(schedule.jobs.iter().all(|job|job.seconds==600));
         assert_eq!(schedule.runtime_seconds,Some(600));
         assert_eq!(schedule.global_view()["seconds"],600);
+        assert_eq!(schedule.event_channel_indices(23,0),(0..23).collect::<Vec<_>>());
+        assert_eq!(schedule.event_channel_indices(23,19),(0..23).collect::<Vec<_>>());
         let mut config=schedule.candidate("network",true,900).unwrap();
         let restored=Schedule::new(ids.clone(),&config).unwrap();
         assert_eq!(restored.jobs[1].seconds,900);
         assert_eq!(restored.jobs[2].seconds,600);
         config=restored.global_candidate(600).unwrap();
         assert!(Schedule::new(ids,&config).unwrap().jobs.iter().all(|job|job.seconds==600));
+    }
+    #[test]
+    fn legacy_short_event_poll_rotation_is_bounded_but_explicit_periods_cover_all_channels() {
+        let mut legacy=Schedule::new(vec![],&json!({})).unwrap();
+        assert_eq!(legacy.event_channel_indices(23,0),vec![0,1,2,3,4]);
+        assert_eq!(legacy.event_channel_indices(23,18),vec![0,1,2,3,22]);
+        assert_eq!(legacy.event_channel_indices(23,19),vec![0,1,2,3,4]);
+        assert!(legacy.event_channel_indices(0,0).is_empty());
+        legacy.configure("eventlog",true,600);
+        assert_eq!(legacy.event_channel_indices(23,0).len(),23);
+        legacy.configure_global(60);
+        assert_eq!(legacy.event_channel_indices(23,0).len(),23);
     }
     #[test]
     fn global_and_individual_periods_follow_save_order_and_survive_restart() {
