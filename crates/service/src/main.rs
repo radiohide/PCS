@@ -151,7 +151,8 @@ fn start_event_collection(state: Arc<State>, manual: Option<&str>) -> Result<()>
                         .source_resume(&format!("pcscope.eventlog.{}", channel.to_lowercase()))?;
                     let watch=state.store.lock().unwrap().file_watch_settings()?;
                     let item_revision=state.store.lock().unwrap().item_settings()?["revision"].clone();
-                    let input = serde_json::to_vec(&json!({"channel":channel,"resume":resume,"watch":watch}))?;
+                    let started_at=state.store.lock().unwrap().collection_started_at()?;
+                    let input = serde_json::to_vec(&json!({"channel":channel,"resume":resume,"watch":watch,"started_at":started_at}))?;
                     let collected = collect_owned(
                         &state, &state.event_collector,
                         &[],

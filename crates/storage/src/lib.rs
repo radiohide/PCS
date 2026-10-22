@@ -1,4 +1,5 @@
 mod self_activity;
+mod baseline;
 mod association_repair;
 mod event_association;
 mod event_association_repair;

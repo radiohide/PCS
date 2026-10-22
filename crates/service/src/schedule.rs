@@ -207,6 +207,21 @@ impl Schedule {
 mod tests {
     use super::*;
     #[test]
+    fn fresh_baseline_applies_ten_minutes_to_every_periodic_collector() {
+        let saved=json!({"_global_seconds":600,"_runtime_seconds":600});
+        let ids=vec!["scoped".into(),"network".into(),"new_collector".into()];
+        let schedule=Schedule::new(ids.clone(),&saved).unwrap();
+        assert!(schedule.jobs.iter().all(|job|job.seconds==600));
+        assert_eq!(schedule.runtime_seconds,Some(600));
+        assert_eq!(schedule.global_view()["seconds"],600);
+        let mut config=schedule.candidate("network",true,900).unwrap();
+        let restored=Schedule::new(ids.clone(),&config).unwrap();
+        assert_eq!(restored.jobs[1].seconds,900);
+        assert_eq!(restored.jobs[2].seconds,600);
+        config=restored.global_candidate(600).unwrap();
+        assert!(Schedule::new(ids,&config).unwrap().jobs.iter().all(|job|job.seconds==600));
+    }
+    #[test]
     fn global_and_individual_periods_follow_save_order_and_survive_restart() {
         let ids=vec!["scoped".into(),"network".into()];
         let mut schedule=Schedule::new(ids.clone(),&json!({})).unwrap();

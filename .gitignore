@@ -1,6 +1,7 @@
 .tools/
 target/
 node_modules/
+__pycache__/
 data/
 *.db
 *.db-wal

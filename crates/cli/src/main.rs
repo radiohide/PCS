@@ -3,10 +3,18 @@ use std::io::{self, BufRead, Read, Write};
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
     if args.len() < 3 {
-        bail!("usage: pcscope-cli <ingest|timeline|collect|install-read-indexes> <database-path> [collector-exe]");
+        bail!("usage: pcscope-cli <init-baseline|ingest|timeline|collect|install-read-indexes> <database-path> [collector-exe|seconds]");
     }
     if args[1]=="install-read-indexes" {
         println!("{}",pcscope_storage::Store::install_read_indexes(&args[2])?);
+        return Ok(());
+    }
+    if args[1]=="init-baseline" {
+        anyhow::ensure!(!std::path::Path::new(&args[2]).exists(), "请指定新数据库路径；不会重置已有数据库");
+        let seconds: u64 = args.get(3).context("采集周期（秒）必填")?.parse()?;
+        anyhow::ensure!((30..=604800).contains(&seconds), "采集周期应为 30–604800 秒");
+        let mut store = pcscope_storage::Store::open_program(&args[2])?;
+        println!("{}", store.initialize_collection_baseline(seconds)?);
         return Ok(());
     }
     let mut store = if matches!(args[1].as_str(),"timeline"|"reconcile") {
