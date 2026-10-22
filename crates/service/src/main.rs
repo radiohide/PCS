@@ -19,6 +19,7 @@ mod runtime_environment;
 mod device_notify;
 mod read_api;
 mod replacement;
+mod startup_report;
 #[cfg(all(test, windows))]
 mod read_api_tests;
 
@@ -515,16 +516,22 @@ fn main() -> Result<()> {
     std::fs::create_dir_all(&data)?;
     let endpoint = pcscope_ipc::Endpoint::for_directory(&data)?;
     let data = endpoint.data_dir.clone();
+    let mut report=startup_report::Report::new(&data);
+    let result=(||->Result<()> {
+    report.phase("preparing_temporary_directory");
     let temp=runtime_environment::prepare_temp_directory(&data)?;
     // Set process-local paths before creating worker threads. SQLite's Windows VFS and
     // child collectors must not depend on an inaccessible inherited system temp directory.
     std::env::set_var("TEMP",&temp);
     std::env::set_var("TMP",&temp);
-    tokio::runtime::Builder::new_multi_thread().enable_all().build()?.block_on(run(data,endpoint))
+    tokio::runtime::Builder::new_multi_thread().enable_all().build()?.block_on(run(data,endpoint,&mut report))
+    })();
+    report.finish(&result);result
 }
 
 #[cfg(windows)]
-async fn run(data:PathBuf,endpoint:pcscope_ipc::Endpoint)->Result<()> {
+async fn run(data:PathBuf,endpoint:pcscope_ipc::Endpoint,report:&mut startup_report::Report)->Result<()> {
+    report.phase("reserving_connection");
     let await_previous = if std::env::args().nth(2).as_deref()==Some("--replace") {
         let expected=std::env::args().nth(3).context("replacement requires original user SID")?;
         anyhow::ensure!(pcscope_ipc::user_sid()?==expected,"请使用同一 Windows 账户提权，不能切换账户访问加密历史");
@@ -563,12 +570,15 @@ async fn run(data:PathBuf,endpoint:pcscope_ipc::Endpoint)->Result<()> {
             domain: Some(domain.into()),
         });
     }
-    let store = pcscope_storage::Store::open_program(data.join("history.db"))?;
+    report.phase("opening_history");
+    let store = pcscope_storage::Store::open_program(data.join("history.db")).context("opening history database")?;
+    report.phase("reading_schedule");
     let schedule = schedule::Schedule::new(
         collectors.iter().map(Collector::name).collect(),
         &store.plugin_settings()?,
     )?;
     let store = Arc::new(Mutex::new(store));
+    report.phase("starting_projection");
     let projector = projection::Worker::start(store.clone(), projection::machine_identity()?)?;
     let state = Arc::new(State {
         endpoint: endpoint.clone(),
@@ -598,11 +608,12 @@ async fn run(data:PathBuf,endpoint:pcscope_ipc::Endpoint)->Result<()> {
         event_backoff: Mutex::new(event_backoff::Backoff::default()),
         check_after: Mutex::new(std::time::Instant::now()),
     });
+    report.phase("recording_session");
     state
         .store
         .lock()
         .unwrap()
-        .begin_session(&chrono::Utc::now().to_rfc3339())?;
+        .begin_session(&chrono::Utc::now().to_rfc3339()).context("recording service startup")?;
     check_monitoring(state.clone());
     let runtime_state=state.clone();
     let runtime_worker=std::thread::spawn(move ||runtime::run(runtime_state));
@@ -647,6 +658,7 @@ async fn run(data:PathBuf,endpoint:pcscope_ipc::Endpoint)->Result<()> {
             }
         }
     });
+    report.phase("ready");
     eprintln!("PCScope development user daemon ready");
     loop {
         tokio::select! {
@@ -690,6 +702,7 @@ async fn run(data:PathBuf,endpoint:pcscope_ipc::Endpoint)->Result<()> {
             let _ = tokio::time::timeout(Duration::from_secs(10), operation).await;
         });
     }
+    report.phase("stopping");
     state.stopping.store(true, Ordering::SeqCst);
     // Stop derived work before waiting for collectors that may be queued on the same writer.
     // The worker cancels only its own SQL lease; collector transactions keep their normal path.

@@ -45,6 +45,19 @@ fn list(store:&Store)->Value {store.query(&QueryRequest::InstanceList(InstanceFi
 fn timeline(store:&Store)->Value {store.query(&QueryRequest::ActionTimeline(ActionFilter{include_routine:true,..Default::default()})).unwrap().data.unwrap()}
 
 #[test]
+fn a_reader_does_not_treat_an_old_published_revision_as_current() {
+    let store=material();finish(&store);
+    let expected=timeline(&store);assert!(!expected.as_array().unwrap().is_empty());
+    store.reader().execute_batch("UPDATE display_build SET revision='previous-build'; UPDATE display_actions SET revision='previous-build'; UPDATE display_objects SET revision='previous-build';").unwrap();
+    let before=store.reader().total_changes();
+    assert_eq!(timeline(&store),expected,"an upgrade reader must use the fallback until matching views are prepared");
+    assert_eq!(store.reader().total_changes(),before,"reading must not migrate or rebuild the cache");
+    assert!(!published(store.reader()).unwrap());
+    ensure(store.reader()).unwrap();finish(&store);
+    assert!(published(store.reader()).unwrap());assert_eq!(timeline(&store),expected);
+}
+
+#[test]
 fn stored_views_match_queries_reads_do_not_build_and_timestamp_polls_do_not_invalidate() {
     let mut store=material();let before=list(&store);let actions=timeline(&store);
     let pending:i64=store.reader().query_row("SELECT count(*) FROM display_work",[],|r|r.get(0)).unwrap();

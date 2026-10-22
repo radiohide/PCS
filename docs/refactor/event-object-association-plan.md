@@ -145,3 +145,5 @@ L 包还要检查原始材料到动作的遗漏：现有 `NotAnObject`/`Skipped`
 - 本机忽略目录中的只读证据：`target/object-association-audit-2026-10-21.json`、`target/association-followup.json`、`target/object-association-samples-2026-10-21.json`。原始名称与机器信息不提交 Git。
 
 既有 [0.2.25 分类筛选修复验收](acceptance/event-category-visibility-0.2.25.md) 解决了未关联日志被分类过滤的问题；本方案继续修正主体关联和原始材料到动作的遗漏。
+
+2026-10-22：正式 0.2.29 启动后退出，再次诊断启动被 Windows 取消，正式性能仍待验收。0.2.32 补充启动错误持久化、修复跨版本缓存返回空列表，并阻止无效性能测量；详见 [启动与缓存验收](acceptance/startup-and-cache-0.2.32.md)。这不改变尚未交付项目的状态。

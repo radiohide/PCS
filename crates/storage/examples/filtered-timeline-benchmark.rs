@@ -1,5 +1,5 @@
 //! Bounded, read-only checks of sparse and dense filters against the actual history.
-use anyhow::{ensure,Result};
+use anyhow::{ensure,Context,Result};
 use pcscope_contracts::query::{ActionFilter,QueryRequest};
 use pcscope_storage::Store;
 use serde_json::json;
@@ -7,6 +7,12 @@ use std::time::{Duration,Instant};
 fn main()->Result<()> {
     let args:Vec<_>=std::env::args().collect();
     ensure!(args.len()==3,"filtered-timeline-benchmark <read-only-db> <metrics-output>");
+    let preflight=Store::open_reader(&args[1],Duration::from_secs(6))?;
+    let state=preflight.query(&QueryRequest::ProjectionStatus)?.data.context("projection status missing")?;
+    let display=state.as_array().and_then(|rows|rows.iter().find(|row|row["projection"]=="display")).context("prepared display state missing")?;
+    let (stored,published):(String,bool)=preflight.reader().query_row("SELECT revision,published FROM display_build WHERE id=1",[],|r|Ok((r.get(0)?,r.get(1)?)))?;
+    ensure!(display["rule_version"].as_str()==Some(stored.as_str())&&published,"benchmark reader and published display revisions differ or preparation is incomplete; refusing misleading empty/partial timings");
+    drop(preflight);
     let cases=[
         ("hardware",Some("hardware"),None,None,false),
         ("hardware_all_updates",Some("hardware"),None,None,true),
@@ -35,7 +41,7 @@ fn main()->Result<()> {
             println!("{result}");metrics.push(result);
         }
     }
-    std::fs::write(&args[2],serde_json::to_vec_pretty(&json!({"read_only":true,"budget_ms":6000,"metrics":metrics}))?)?;
+    std::fs::write(&args[2],serde_json::to_vec_pretty(&json!({"version":env!("CARGO_PKG_VERSION"),"display_revision":stored,"read_only":true,"budget_ms":6000,"metrics":metrics}))?)?;
     ensure!(metrics.iter().all(|r|r.get("error").is_none()),"one or more filtered queries failed");
     Ok(())
 }

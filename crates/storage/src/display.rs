@@ -302,7 +302,10 @@ pub(crate) fn advance(conn:&Connection,limit:usize,budget:Duration)->Result<Valu
 
 pub(crate) fn published(conn:&Connection)->Result<bool> {
     if !available(conn)?{return Ok(false);}
-    Ok(conn.query_row("SELECT published FROM display_build WHERE id=1",[],|r|r.get(0))?)
+    // A standalone reader or an upgrading frontend can meet the previous writer's cache.
+    // Its published flag only applies to that revision; otherwise the revision predicate in
+    // the prepared query excludes every row and turns existing history into an empty page.
+    Ok(conn.query_row("SELECT EXISTS(SELECT 1 FROM display_build WHERE id=1 AND published=1 AND revision=?)",[revision()],|r|r.get(0))?)
 }
 
 pub(crate) fn generation(conn:&Connection)->Result<i64> {
