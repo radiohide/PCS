@@ -1,0 +1,30 @@
+{
+  "version": "0.2.36",
+  "backend_version": "0.2.35",
+  "feature": "State comparison changes-only switch",
+  "behavior": [
+    "Enabled by default; remembered locally across navigation and restarts",
+    "Filter entire paired object rows, preserving left/right alignment and expansion",
+    "Show changes, first records and objects leaving the inventory; hide unchanged objects",
+    "Unavailable comparisons are counted in their branch with a way to inspect them",
+    "Reuse loaded results when switching; keep lazy branches, fixed watermark and serialized paging",
+    "Read subsequent pages even when earlier pages contain only unchanged objects"
+  ],
+  "tests": {
+    "check-state-compare.cjs": "passed: default, persistence, synchronized alignment, retained expansion, five-page filtering, unavailable records, no-change empty state, no duplicate query on toggle, dates, retries, quiet refresh, navigation, light/dark and minimum width",
+    "check-auto-page.cjs": "passed: preloading, nesting, terminal pages, retry, repeated cursor, empty-page bound, hidden lists, disposal, serialization, stale results",
+    "check-front-refresh.cjs": "passed"
+  },
+  "deployment": "Desktop-only update; backend and data model unchanged. No UAC required.",
+  "scope": "Branches remain lazy. No-change conclusion appears only after that branch has finished reading. Branch headings retain historical totals.",
+  "live_verification": {
+    "source": "configured native-v2 instance",
+    "desktop_version": "0.2.36",
+    "backend_pid": 13268,
+    "service_objects_checked": 281,
+    "service_objects_displayed": 5,
+    "paired_rows_aligned": true,
+    "default_filter_enabled": true,
+    "desktop_build": "passed"
+  }
+}

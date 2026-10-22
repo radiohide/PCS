@@ -75,7 +75,8 @@
         if(!alive()||revision!==generation)return;
         loaded=true;requested.add(previous);
         more=!!response.page?.has_more;cursor=response.page?.next_cursor||null;
-        emptyPages=Array.isArray(response.data)&&response.data.length?0:emptyPages+1;
+        const items=Array.isArray(response.data)?response.data:response.data?.objects;
+        emptyPages=Array.isArray(items)&&items.length?0:emptyPages+1;
         if(more&&(!cursor||requested.has(cursor)||emptyPages>=3)){restartOnRetry=true;throw Error('分页未能继续，已停止自动读取。');}
       }catch(error){
         if(alive()&&revision===generation){fault=error;onError(error,{append:append||loaded});}

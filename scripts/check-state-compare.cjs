@@ -20,11 +20,13 @@ try{
    const envelope=data=>({status:'loaded',data});
    if(!q.type_id)return envelope({watermark:'fixed',branches:[{type_id:'startup.service',category:'startup',count:2},{type_id:'network.adapter',category:'network',count:1}]});
    function side(state){const fields=[{field_id:'display_name',label:'名称',value:'Volume Shadow Copy',status:'known'},{field_id:'state',label:'运行状态',value:state,status:'known'},{field_id:'start_mode',label:'启动方式',value:'Manual',status:'known'}];return {availability:'recorded',checked_at:'2026-10-22T05:00:00Z',fields,summary:{type_id:q.type_id,identity_status:'confirmed',display_name:'Volume Shadow Copy',lifecycle:'active',record_basis:'observation',key_facts:fields}};}
+   if(qa.filterPages){const n=Number(q.cursor||1);const result=envelope({objects:[{instance_id:n,type_id:q.type_id,left:side('Stopped'),right:qa.same?side('Stopped'):n===5?{availability:'unavailable'}:side(n===4?'Running':'Stopped')}]});result.page={has_more:n<5,next_cursor:n<5?String(n+1):null};return result;}
    const result=envelope({objects:[{instance_id:q.cursor?2:1,type_id:q.type_id,left:side('Stopped'),right:side('Running')}]});result.page={has_more:!q.cursor,next_cursor:q.cursor?null:'next'};return result;
   }}};
  },samples);
  await page.goto('http://127.0.0.1:'+server.address().port+'/index.html');await page.locator('[data-page="compare"]').click();await page.locator('.compare-category').first().waitFor();
  assert.equal(await page.locator('[data-compare-from]').inputValue(),'2026-10-22T13:00');
+ assert.equal(await page.locator('[data-compare-only-changes]').isChecked(),true,'changes only is enabled by default');
  assert.equal(await page.evaluate(()=>qa.calls.filter(q=>q.type_id).length),0,'collapsed branches are lazy');
  await page.locator('.compare-category-row button').first().click();await page.locator('.compare-type-row button').first().click();await page.locator('[data-compare-object="1"]').waitFor();
  assert.equal(await page.evaluate(()=>qa.calls.find(q=>q.type_id).watermark),'fixed');
@@ -39,6 +41,18 @@ try{
  await page.locator('[data-compare-object="1"] button').first().click();await page.screenshot({path:path.join(root,'target/state-compare-dark.png')});
  await page.locator('#theme').click();await page.screenshot({path:path.join(root,'target/state-compare-light.png')});
  await page.setViewportSize({width:960,height:640});assert.equal(await page.evaluate(()=>document.querySelector('main').scrollWidth>document.querySelector('main').clientWidth),false,'minimum desktop size fits');
+ await page.evaluate(()=>qa.filterPages=true);await page.locator('[data-compare-run]').click();await page.waitForFunction(()=>!document.querySelector('[data-compare-run]').disabled);await page.locator('.compare-category-row button').first().click();await page.locator('.compare-type-row button').first().click();
+ await page.locator('[data-compare-object="4"]').waitFor();await page.waitForFunction(()=>document.querySelector('[data-compare-object="5"]'));
+ assert.equal(await page.locator('.compare-object:visible').count(),1,'unchanged pages do not hide later changes or stop paging');
+ assert.equal(await page.locator('[data-compare-object="1"]').isVisible(),false);
+ assert.match(await page.locator('.compare-filter-note:visible').innerText(),/1 个对象缺少可对比记录/);
+ const changed=page.locator('[data-compare-object="4"]');await changed.locator('button').first().click();
+ const filterCalls=await page.evaluate(()=>qa.calls.length);await page.locator('[data-compare-only-changes]').uncheck();assert.equal(await page.locator('.compare-object:visible').count(),5);assert.equal(await changed.locator('.compare-fields').isVisible(),true,'filter preserves expansion');
+ await page.locator('[data-compare-only-changes]').check();assert.equal(await page.locator('.compare-object:visible').count(),1);assert.equal(await page.evaluate(()=>qa.calls.length),filterCalls,'filter reuses already loaded pairs');
+ const filteredPositions=await changed.locator('.compare-object-row .compare-cell').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().y));assert.equal(filteredPositions[0],filteredPositions[1],'filtered columns stay aligned');
+ await page.locator('[data-compare-only-changes]').uncheck();await page.locator('[data-page="overview"]').click();await page.locator('[data-page="compare"]').click();await page.locator('.compare-category').first().waitFor();assert.equal(await page.locator('[data-compare-only-changes]').isChecked(),false,'filter preference survives navigation');
+ await page.locator('[data-compare-only-changes]').check();await page.evaluate(()=>qa.same=true);await page.locator('[data-compare-run]').click();await page.waitForFunction(()=>!document.querySelector('[data-compare-run]').disabled);await page.locator('.compare-category-row button').first().click();await page.locator('.compare-type-row button').first().click();await page.waitForFunction(()=>document.querySelector('[data-compare-object="5"]'));assert.equal(await page.locator('.compare-object:visible').count(),0);assert.equal(await page.locator('.compare-filter-note:visible').innerText(),'没有变化','complete unchanged branch has a clear empty state');
+ await page.locator('[data-compare-from]').fill('2026-10-22T15:00');await page.evaluate(()=>qa.filterPages=false);
  await page.evaluate(()=>qa.delay=100);await page.locator('[data-compare-run]').click();await page.locator('[data-page="overview"]').click();await page.waitForTimeout(200);assert.equal(await page.locator('#state-compare').count(),0,'late reply does not replace destination');
  assert.deepEqual(errors,[]);
  const {changes,equal}=require('../apps/desktop/ui/state-compare.js');assert(equal({b:2,a:1},{a:1,b:2}));assert.equal(changes({left:{availability:'not_recorded'},right:{availability:'recorded'}}),'added');assert.equal(changes({left:{availability:'unavailable'},right:{availability:'recorded'}}),'unavailable');
