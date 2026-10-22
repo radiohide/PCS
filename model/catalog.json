@@ -1,5 +1,5 @@
 {
-  "version": "1.2.7",
+  "version": "1.2.8",
   "generated_by": "scripts/check-model-catalog.cjs",
   "note": "中立对象模型目录。ID 唯一来源是 model/vocabulary.cjs、model/types.cjs、model/source-map.cjs；本文件为展开结果，请勿手工编辑。",
   "categories": [
@@ -337,7 +337,21 @@
       "name": "Windows 更新操作记录",
       "nature": "source_recorded",
       "result": "unknown",
-      "target_type": "software.system_update"
+      "target_type": "software.update_history_subject"
+    },
+    {
+      "id": "security.threat_detected",
+      "name": "检测到威胁",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "security.detection_history"
+    },
+    {
+      "id": "security.threat_status_recorded",
+      "name": "威胁处理记录",
+      "nature": "source_recorded",
+      "result": "observed",
+      "target_type": "security.detection_history"
     },
     {
       "id": "identity.logon",
@@ -1445,6 +1459,46 @@
           "value": {
             "label": "说明",
             "kind": "configuration"
+          }
+        }
+      ],
+      "actions": []
+    },
+    {
+      "id": "software.update_history_subject",
+      "category": "software",
+      "name": "更新历史",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "update_id",
+          "revision"
+        ],
+        "scope": "安装作用域；历史操作主体，安装状态由组件清单另行维护",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "更新名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "update_id",
+          "value": {
+            "label": "更新标识",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "revision",
+          "value": {
+            "label": "修订号",
+            "kind": "identity"
           }
         }
       ],
@@ -4346,6 +4400,49 @@
       "actions": []
     },
     {
+      "id": "security.detection_history",
+      "category": "security",
+      "name": "安全检测记录",
+      "identity": {
+        "strategy": "composite_native",
+        "keys": [
+          "detection_id",
+          "threat_id"
+        ],
+        "scope": "安装作用域；保留检测与处理历史，清单消失不改变处理结果",
+        "normalization": "各组成部分按各自字段规则规范化。",
+        "reuse_rule": "组合键相同的对象在来源中消失后重现时，需要生命周期证据。",
+        "insufficient": "任一组成部分缺失时标记暂定身份或歧义。"
+      },
+      "fields": [
+        {
+          "id": "name",
+          "value": {
+            "label": "检测名称",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "detection_id",
+          "value": {
+            "label": "检测标识",
+            "kind": "identity"
+          }
+        },
+        {
+          "id": "threat_id",
+          "value": {
+            "label": "威胁标识",
+            "kind": "identity"
+          }
+        }
+      ],
+      "actions": [
+        "security.threat_detected",
+        "security.threat_status_recorded"
+      ]
+    },
+    {
       "id": "security.exclusion",
       "category": "security",
       "name": "防护排除项",
@@ -6364,9 +6461,9 @@
       "source": "pcscope.security.detections",
       "destination": "action_evidence",
       "types": [
-        "security.protection"
+        "security.detection_history"
       ],
-      "note": "来源保留的检测记录；检测动作与其结果语义保留，非主动扫描"
+      "note": "按检测标识和威胁标识保留检测与处理历史，非主动扫描"
     },
     {
       "source": "pcscope.security.deviceguard",
@@ -6875,9 +6972,9 @@
       "source": "pcscope.system.update-history",
       "destination": "action_evidence",
       "types": [
-        "software.system_update"
+        "software.update_history_subject"
       ],
-      "note": "更新动作的证据，不直接等同于当前仍安装的组件"
+      "note": "更新 ID 与修订号建立历史主体，当前安装状态独立维护"
     },
     {
       "source": "pcscope.hardware.battery",

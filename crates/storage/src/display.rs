@@ -175,8 +175,8 @@ fn historical_scopes(conn:&Connection,limit:usize,budget:Duration)->Result<usize
     let started=Instant::now();
     let (cursor,bound):(i64,i64)=conn.query_row("SELECT evidence_cursor,evidence_bound FROM display_build WHERE id=1",[],|r|Ok((r.get(0)?,r.get(1)?)))?;
     if cursor>=bound{return Ok(0);}
-    let rows={let mut q=conn.prepare("SELECT seq,evidence_id,source,item_id,native_record_id,source_scope FROM evidence WHERE seq>? AND seq<=? ORDER BY seq LIMIT ?")?;
-        let rows=q.query_map(params![cursor,bound,limit as i64],|r|Ok((r.get::<_,i64>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?,r.get::<_,String>(3)?,r.get::<_,String>(4)?,r.get::<_,String>(5)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;rows};
+    let rows={let mut q=conn.prepare("SELECT seq,evidence_id,source,item_id,native_record_id,source_scope,kind FROM evidence WHERE seq>? AND seq<=? ORDER BY seq LIMIT ?")?;
+        let rows=q.query_map(params![cursor,bound,limit as i64],|r|Ok((r.get::<_,i64>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?,r.get::<_,String>(3)?,r.get::<_,String>(4)?,r.get::<_,String>(5)?,r.get::<_,String>(6)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;rows};
     let mut insert=conn.prepare_cached("INSERT OR IGNORE INTO object_collection_scopes(instance_id,source,scope)
             SELECT DISTINCT b.instance_id,?,? FROM source_bindings b
             WHERE b.source=? AND b.item_id=? AND b.native_record_id IN (?,?) AND (b.scope IN (?,?) OR ?='')
@@ -186,8 +186,21 @@ fn historical_scopes(conn:&Connection,limit:usize,budget:Duration)->Result<usize
               OR EXISTS(SELECT 1 FROM object_actions a JOIN evidence_refs r ON r.subject_kind='action'
                 AND r.subject_id=CAST(a.action_row AS TEXT) WHERE a.instance_id=b.instance_id AND r.evidence_id=?))")?;
     let mut last=cursor;let mut examined=0;
-    for (seq,evidence,source,item,native,scope) in &rows {
+    // Event item IDs are action categories, often shared by hundreds of thousands of events.
+    // Start with this event's citations, then use the full binding key for each cited object.
+    let mut event_insert=conn.prepare_cached("INSERT OR IGNORE INTO object_collection_scopes(instance_id,source,scope)
+        SELECT DISTINCT a.instance_id,?1,?2 FROM evidence_refs r INDEXED BY evidence_refs_action_address
+        CROSS JOIN object_actions a ON r.subject_id=CAST(a.action_row AS TEXT) AND a.action_row=CAST(r.subject_id AS INTEGER)
+        CROSS JOIN object_instances i ON i.instance_id=a.instance_id
+        WHERE r.subject_kind='action' AND r.evidence_id=?3 AND r.evidence_kind='event'
+          AND EXISTS(SELECT 1 FROM source_bindings b WHERE b.instance_id=i.instance_id AND b.source=?1 AND b.item_id=?4 AND b.scope=i.scope AND b.native_record_id IN (?3,?5))
+          AND NOT EXISTS(SELECT 1 FROM object_collection_scopes c WHERE c.instance_id=i.instance_id AND c.source=?1 AND c.scope=?2)")?;
+    for (seq,evidence,source,item,native,scope,kind) in &rows {
         if examined>0&&started.elapsed()>=budget{break;}
+        if kind=="event" {
+            event_insert.execute(params![source,scope,evidence,item,native])?;
+            last=*seq;examined+=1;continue;
+        }
         let business=pcscope_contracts::semantics::business_scope(scope);
         let machine=pcscope_contracts::adapters::installation_scope(&business);
         insert.execute(

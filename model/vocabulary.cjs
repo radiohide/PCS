@@ -143,7 +143,9 @@ const forbidden_identity_terms=['shard','batch_seq','request_id','run_id','plugi
 //
 // row = id | name | nature | result | target type
 const actions=[
-  'software.update_history|Windows 更新操作记录|source_recorded|unknown|software.system_update',
+  'software.update_history|Windows 更新操作记录|source_recorded|unknown|software.update_history_subject',
+  'security.threat_detected|检测到威胁|source_recorded|observed|security.detection_history',
+  'security.threat_status_recorded|威胁处理记录|source_recorded|observed|security.detection_history',
   // 账户与身份
   // 登录事件创建的是登录会话，账户的参与由会话的用户字段体现；一个动作只有一个目标对象。
   'identity.logon|登录|source_recorded|succeeded|runtime.logon_session',
@@ -245,4 +247,4 @@ const result_semantics=[
   ['unknown','未知','来源未提供结果'],
 ];
 
-module.exports={version:'1.2.7',categories,field_kinds,value_status,derivations,time_precisions,identity_strategies,name_key_terms,scope_only_keys,forbidden_identity_terms,actions,result_semantics};
+module.exports={version:'1.2.8',categories,field_kinds,value_status,derivations,time_precisions,identity_strategies,name_key_terms,scope_only_keys,forbidden_identity_terms,actions,result_semantics};

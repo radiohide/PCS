@@ -211,7 +211,7 @@ pub fn ensure_catalog(conn: &mut Connection) -> Result<()> {
     // A type is fed when at least one observation mapping names it.
     tx.execute(
         "UPDATE type_definitions SET supplied_by_source=EXISTS(
-            SELECT 1 FROM source_map m WHERE m.destination='observation' AND m.types LIKE '%\"'||type_id||'\"%')",
+            SELECT 1 FROM source_map m WHERE m.destination IN ('observation','action_evidence') AND m.types LIKE '%\"'||type_id||'\"%')",
         [],
     )?;
     tx.execute(

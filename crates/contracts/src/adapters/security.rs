@@ -31,16 +31,8 @@
 //! the per-type narrowing shared change 0005 left open, and it is the reason the two stores of the
 //! same certificate are two registrations rather than one object.
 //!
-//! **One source is action evidence, not object material.** `pcscope.security.detections` carries
-//! the catalog's `action_evidence` destination: a Defender detection is a detection *action* with a
-//! result, not a property of any declared object, and no declared type describes one — none of
-//! `ThreatID`, `ThreatStatusID`, `ActionSuccess` or the times is a field of any security type, and
-//! the one type the source map points it at (`security.protection`) is a product's configuration
-//! and state. Minting a protection product named after a detection id would be an object this
-//! material never described, so this adapter states that it leaves the stream to the action path
-//! rather than adapting it. The collector's own caveat travels with it: these are the detections the
-//! source still retains, so a snapshot that no longer lists one is not that threat having been
-//! resolved.
+//! Detection material produces timestamped actions and a historical detection subject.
+//! Detection-list retention never changes the threat response or a protection product's state.
 //!
 //! **Two fields are assembled or decoded, and both say so.** `scan_time` is the later of the two
 //! scan end times the status source states, and the policy source's `real_time` is read from its
@@ -396,27 +388,10 @@ fn exclusion(input: &EvidenceInput, context: &AdapterContext, scope: &str, produ
 
 /// `Get-MpThreatDetection` — the detection records the source still retains.
 ///
-/// Nothing here becomes an object. The catalog gives this source the `action_evidence` destination,
-/// and that is what its material is: each item is a detection action with its result
-/// (`ActionSuccess`, `ThreatStatusID`, the execution status), keyed by a detection id. No declared
-/// type describes a detection — `security.protection` is a product's configuration and state, and
-/// none of this item's keys is one of its fields — and no registered action carries it either. The
-/// outcome says so rather than minting a protection product named after a detection id, which is an
-/// object the source never described.
-///
-/// The source's own limit is part of the material and is not contradicted here: this is the
-/// detection list as the source retains it, so a later snapshot that no longer lists a detection is
-/// not that threat having been resolved.
-fn detections(_input: &EvidenceInput, _context: &AdapterContext) -> AdapterResult {
-    AdapterResult {
-        outcome: AdapterOutcome::Skipped {
-            reason: "a Defender detection record is action evidence, not an object: the catalog gives this source the \
-                     action_evidence destination, no declared type describes a detection, and none of its keys is a field \
-                     of the one type it points at"
-                .into(),
-        },
-        ..AdapterResult::adapted()
-    }
+/// One retained item yields the original detection and, when timestamped, its latest response.
+/// No current-presence observation is produced for this historical subject.
+fn detections(input: &EvidenceInput, context: &AdapterContext) -> AdapterResult {
+    super::retained_history::detections(input,context)
 }
 
 // ---------- pcscope.security.products ----------
@@ -1083,7 +1058,7 @@ mod tests {
     }
 
     #[test]
-    fn a_defender_detection_record_becomes_no_object_and_says_why() {
+    fn a_defender_detection_record_keeps_detection_and_response_separate() {
         let payload = json!({
             "DetectionID": "{00000000-0000-0000-0000-000000000005}",
             "ThreatID": 2147720000i64,
@@ -1096,16 +1071,12 @@ mod tests {
             "source_properties": {}
         });
         let result = detections(&input("pcscope.security.detections", "{00000000-0000-0000-0000-000000000005}", payload), &context());
-        assert!(matches!(result.outcome, AdapterOutcome::Skipped { .. }), "{:?}", result.outcome);
+        assert_eq!(result.outcome, AdapterOutcome::Adapted);
         assert!(result.observations.is_empty(), "no protection product is invented for a detection");
-        assert!(result.actions.is_empty());
-        match result.outcome {
-            AdapterOutcome::Skipped { reason } => {
-                assert!(reason.contains("action evidence"), "{reason}");
-                assert!(reason.contains("no declared type describes a detection"), "{reason}");
-            }
-            other => panic!("expected a skipped outcome, got {other:?}"),
-        }
+        assert_eq!(result.actions.len(),2);
+        assert_eq!(result.actions[0].action_id,"security.threat_detected");
+        assert_eq!(result.actions[1].result,ActionOutcome::Succeeded);
+        assert_ne!(result.actions[0].occurrence_key,result.actions[1].occurrence_key);
     }
 
     /// A sample of every source in the category, so the mapping can be checked against the catalog
@@ -1149,9 +1120,7 @@ mod tests {
                 assert_eq!(of_type(&result, "security.protection").len(), 1, "{source}");
                 assert_eq!(of_type(&result, "security.exclusion").len(), 4, "{source}");
             }
-            if source == "pcscope.security.detections" {
-                assert!(matches!(result.outcome, AdapterOutcome::Skipped { .. }), "{source}");
-            } else {
+            {
                 assert_eq!(result.outcome, AdapterOutcome::Adapted, "{source}");
                 assert!(result.complete(), "{source} produced an incomplete result");
             }

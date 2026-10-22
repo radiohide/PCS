@@ -5148,6 +5148,42 @@
         }
       },
       "fallback": "有登记记录"
+    },
+    "software.update_history_subject": {
+      "name": "更新历史",
+      "summary_fields": [
+        "name"
+      ],
+      "state_fields": [],
+      "labels": {
+        "name": "更新名称",
+        "update_id": "更新标识",
+        "revision": "修订号"
+      },
+      "formats": {
+        "name": {
+          "kind": "text"
+        }
+      },
+      "fallback": "历史记录"
+    },
+    "security.detection_history": {
+      "name": "安全检测记录",
+      "summary_fields": [
+        "name"
+      ],
+      "state_fields": [],
+      "labels": {
+        "name": "检测名称",
+        "detection_id": "检测标识",
+        "threat_id": "威胁标识"
+      },
+      "formats": {
+        "name": {
+          "kind": "text"
+        }
+      },
+      "fallback": "历史记录"
     }
   }
 }

@@ -1,6 +1,6 @@
 //! Sources completed after the N01 baseline. Non-object readings retain their own query path.
 use super::*;
-use crate::adapter::{ActionCandidate, ActionOutcome, ActionTarget, TimePrecision};
+use crate::adapter::{ActionCandidate, ActionOutcome, TimePrecision};
 use serde_json::json;
 
 pub static SOURCES: &[SourceSpec] = &[
@@ -97,7 +97,7 @@ fn runtimes(input: &EvidenceInput, context: &AdapterContext) -> AdapterResult {
     observations(candidates)
 }
 
-fn update_history(input: &EvidenceInput, _: &AdapterContext) -> AdapterResult {
+fn update_history(input: &EvidenceInput, context: &AdapterContext) -> AdapterResult {
     // A retained operation is not evidence that an update component is currently installed.
     let occurred_at = text(&input.payload, "date").and_then(|date| crate::semantics::canonical_time(&date).ok().map(|_| date));
     let result = match input.payload["result"].as_i64() { Some(1) => ActionOutcome::Started, Some(2) => ActionOutcome::Succeeded, Some(3) => ActionOutcome::Observed, Some(4) => ActionOutcome::Failed, Some(5) => ActionOutcome::Ended, _ => ActionOutcome::Unknown };
@@ -106,7 +106,7 @@ fn update_history(input: &EvidenceInput, _: &AdapterContext) -> AdapterResult {
     adapted.actions.push(ActionCandidate {
         occurrence_key: Some(format!("{}|{}|{}", input.source, crate::semantics::business_scope(&input.source_scope), input.item_id)),
         source_record: Some(input.payload.clone()),
-        target: ActionTarget::Unassigned { reason: "保留的更新操作记录不证明组件当前仍安装；原始证据保留更新 ID、修订号、标题与错误码".into() },
+        target: super::retained_history::update_target(input,context),
         action_id: "software.update_history".into(), phase: Some(phase.into()), result,
         precision: if occurred_at.is_some() { TimePrecision::Exact } else { TimePrecision::ObservationOnly }, occurred_at,
         interval_from: None, interval_until: None, observed_at: input.observed_at.clone(), field_id: None,

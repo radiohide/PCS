@@ -2,6 +2,7 @@ mod self_activity;
 mod association_repair;
 mod event_association;
 mod event_association_repair;
+mod retained_history;
 mod timeline_policy;
 mod display;
 mod display_counts;
@@ -82,6 +83,16 @@ const DEFAULT_QUOTA: u64 = 5_000_000_000;
 const MIN_QUOTA: u64 = 32 * 1024 * 1024;
 
 impl Store {
+    /// Cancellation belongs to this maintenance lease, never to collector writes that use the
+    /// same connection later. Interrupted derived transactions roll back and retain their cursor.
+    pub fn cancellable_maintenance<T>(&self, stop: std::sync::Arc<std::sync::atomic::AtomicBool>, action: impl FnOnce(&Self)->Result<T>)->Result<T> {
+        struct Reset<'a>(&'a Connection);
+        impl Drop for Reset<'_> { fn drop(&mut self) { self.0.progress_handler(0,None::<fn()->bool>); } }
+        anyhow::ensure!(!stop.load(std::sync::atomic::Ordering::SeqCst),"maintenance stopped");
+        self.conn.progress_handler(1000,Some(move ||stop.load(std::sync::atomic::Ordering::SeqCst)));
+        let _reset=Reset(&self.conn);
+        action(self)
+    }
     /// Online additive maintenance for an existing native database. Does not migrate, ingest,
     /// reset display cursors or rewrite history. SQLite maintains these indexes for old writers.
     pub fn install_read_indexes(path: impl AsRef<Path>) -> Result<Value> {
@@ -773,6 +784,11 @@ impl Store {
         let tx=self.conn.unchecked_transaction()?;
         let report=event_association_repair::advance(&tx,limit,budget)?;tx.commit()?;Ok(report)
     }
+    pub fn repair_retained_history(&self,limit:usize,budget:std::time::Duration)->Result<Value> {
+        anyhow::ensure!((1..=1024).contains(&limit),"history repair limit must be 1..1024");
+        let tx=self.conn.unchecked_transaction()?;
+        let report=retained_history::advance(&tx,limit,budget)?;tx.commit()?;Ok(report)
+    }
 
     pub fn repair_event_associations(&self,limit:usize,budget:std::time::Duration)->Result<Value> {
         let tx=self.conn.unchecked_transaction()?;
@@ -1358,6 +1374,26 @@ impl Store {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn cancelled_maintenance_rolls_back_and_does_not_cancel_later_writes() {
+        use std::sync::{Arc,atomic::{AtomicBool,Ordering}};
+        let store=super::Store::open(":memory:").unwrap();
+        let stop=Arc::new(AtomicBool::new(false));
+        let (entered,wait)=std::sync::mpsc::channel();let flag=stop.clone();
+        let signal=std::thread::spawn(move ||{wait.recv().unwrap();flag.store(true,Ordering::SeqCst);});
+        let result=store.cancellable_maintenance(stop.clone(),|store| {
+            let tx=store.conn.unchecked_transaction()?;
+            tx.execute("INSERT INTO settings VALUES('cancel_test','uncommitted')",[])?;
+            entered.send(()).unwrap();
+            tx.query_row("WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<1000000000) SELECT sum(x) FROM n",[],|r|r.get::<_,i64>(0))?;
+            tx.commit()?;Ok(())
+        });
+        signal.join().unwrap();assert!(result.is_err());
+        assert_eq!(store.conn.query_row("SELECT count(*) FROM settings WHERE key='cancel_test'",[],|r|r.get::<_,i64>(0)).unwrap(),0);
+        store.conn.execute("INSERT INTO settings VALUES('cancel_test','committed')",[]).unwrap();
+        assert_eq!(store.conn.query_row("WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<10000) SELECT max(x) FROM n",[],|r|r.get::<_,i64>(0)).unwrap(),10000);
+        assert!(store.cancellable_maintenance::<()>(stop,|_|panic!("stopped work must not enter")).is_err());
+    }
     #[test]
     fn committed_collection_does_not_wait_for_an_active_history_reader() {
         let directory=std::env::temp_dir().join(format!("pcscope-reader-writer-{}-{}",std::process::id(),

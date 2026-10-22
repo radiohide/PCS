@@ -47,6 +47,7 @@ const PCScopeReadableEvents=(()=>{
     }
     // Update history names its own operation; it does not need an installed-update instance.
     if(row.action_id==='software.update_history'&&readable(row.source_record?.title))return row.source_record.title.trim();
+    if(row.action_id?.startsWith('security.threat_'))return readable(row.source_record?.ThreatName)?row.source_record.ThreatName.trim():'Microsoft Defender 检测';
     if(row.action_id?.startsWith('coverage.')||row.action_id==='collector.item_configured')return 'PCScope 采集监控';
     const c=row.context;if(c&&(c.display_name||(c.key_facts||[]).length))return objects.name(c);
     return row.instance_id?'未取得对象名称':'日志未提供可识别的对象';
@@ -54,6 +55,7 @@ const PCScopeReadableEvents=(()=>{
   function fieldLabel(row){const context={...row.context,type_id:type(row)};return ({module_base:'模块加载位置',sha256:'文件内容',dacl:'访问权限',dacl_sddl:'访问权限'})[row.field_id]||objects.presentation.label(context,row.field_id)||(readable(row.context?.field_label)&&/[\u4e00-\u9fff]/.test(row.context.field_label)?row.context.field_label:objects.fieldLabel(context,{field_id:row.field_id}));}
   function change(row){if(historicalMappingIssue(row)||!row.field_id)return '';const context={...row.context,type_id:type(row)},before=objects.valueLabel(row.before,row.field_id,context,row.before_status||'known'),after=objects.valueLabel(row.after,row.field_id,context,row.after_status||'known');if(row.action_id==='startup.service_state_changed'&&row.before==null)return fieldLabel(row)+'：'+after;if(before===after)return fieldLabel(row)+'：详细变化可展开查看';return fieldLabel(row)+'：'+before+' → '+after;}
   function impact(row){
+    if(row.action_id==='software.update_history'||row.action_id?.startsWith('security.threat_'))return '';
     if(historicalMappingIssue(row))return '旧版混用了组件说明和文件路径，这条比较暂不能用于判断系统变化。';
     if(row.field_id&&(row.after_status&&row.after_status!=='known'||objects.presentation.hidden(row.after)))return '本次未取得变化后的属性值。';
     if(!uncertainAssociation(row)&&type(row)==='policy.power_plan'&&row.field_id==='active'&&typeof row.after==='boolean')return row.after?'当时切换为此电源方案。':'当时已不再使用此电源方案。';
@@ -134,6 +136,12 @@ const PCScopeReadableEvents=(()=>{
       if(!['succeeded','success','failed','failure','cancelled'].includes(row.result))result.note='日志未提供运行结果。';
     }
     if(row.action_id==='software.update_history')result.label=({failed:'更新失败',failure:'更新失败',succeeded:'更新成功',success:'更新成功',partial:'部分完成',cancelled:'已取消'})[row.result]||result.label;
+    if(row.action_id==='software.update_history'){
+      const verb=row.phase==='uninstallation'?'卸载':row.phase==='installation'?'安装':'更新';
+      const code=row.source_record?.result;
+      result.label=({1:verb+'已开始',2:verb+'成功',3:verb+'部分完成',4:verb+'失败',5:verb+'已取消'})[code]||result.label;
+    }
+    if(row.action_id==='security.threat_status_recorded')result.label=({2:'威胁已清理',3:'威胁已隔离',4:'威胁已移除',5:'已允许此项',6:'威胁已阻止',101:'威胁清理失败',102:'威胁隔离失败',103:'威胁移除失败',104:'允许操作失败',105:'处理已放弃',107:'阻止失败'})[row.source_record?.ThreatStatusID]||'威胁处理状态已更新';
     if(['succeeded','success'].includes(row.result))result.tone='positive';
     if(['failed','failure'].includes(row.result)){result.tone='negative';result.note=note;}
     if(row.action_id?.startsWith('coverage.')&&row.action_id!=='coverage.recovered')result.tone='attention';

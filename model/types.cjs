@@ -25,7 +25,8 @@ const types=[
 'software.optional_feature|Windows 可选组件|named_entity|-|name:组件名称:c,state:状态:s|-|scope=本机作用域 + 组件名称',
 'software.runtime|运行时|composite_native|runtime_family,runtime_version|family:运行时家族:i,version:版本:i,install_path:安装路径:c|-|scope=安装作用域（含 32/64 位视图）',
 'software.portable_registration|便携程序登记|file_identity|-|path:文件路径:i,version:版本:c,company:公司:c,size:大小:s,sha256:内容摘要:s|-|scope=配置的便携程序根目录；路径文件登记不证明程序已安装',
-'software.system_update|系统更新组件|native_identifier|-|hotfix_id:更新编号:i,installed_on:安装日期:c,description:说明:c|software.update_history|scope=安装作用域；仅 QFE 范围，不等于完整更新历史',
+'software.system_update|系统更新组件|native_identifier|-|hotfix_id:更新编号:i,installed_on:安装日期:c,description:说明:c|-|scope=安装作用域；仅 QFE 范围，不等于完整更新历史',
+'software.update_history_subject|更新历史|composite_native|update_id,revision|name:更新名称:c,update_id:更新标识:i,revision:修订号:i|software.update_history|scope=安装作用域；历史操作主体，安装状态由组件清单另行维护',
 'software.language_package|语言包登记|composite_native|package_manager,package_name,package_version|manager:包管理器:i,name:包名称:i,version:版本:i,path:安装路径:c|-|scope=安装作用域 + 包管理器；自定义前缀目录不覆盖',
 // ---------- 运行实例 ----------
 'runtime.process|进程|process_instance|-|pid:进程 ID:i,name:程序名称:c,image:程序路径:c,parent_pid:父进程 ID:c,session:会话:c,created_at:创建时间:i,command_line:命令行:c|execution.process_started,execution.process_stopped,execution.remote_thread,execution.process_access,execution.process_tampering,execution.pipe_created,execution.pipe_connected|-',
@@ -86,6 +87,7 @@ const types=[
 'security.certificate_registration|证书登记|composite_native|store_scope,store_name,thumbprint|store:存储区:i,location:存储位置:i,thumbprint:指纹:i,subject:主题:c,issuer:颁发者:c,not_before:生效时间:c,not_after:失效时间:c,has_private_key:是否有私钥:c|-|scope=存储区作用域 + 证书指纹；同一证书在不同存储区的登记分别存在',
 'security.key_metadata|密钥元数据对象|native_identifier|-|provider:提供程序:i,name:密钥名称:i,algorithm:算法:c,legacy_key_spec:旧式密钥类别:c|-|scope=提供程序及用户或机器作用域；仅 CNG 身份与元数据，不读取私钥内容',
 'security.protection|防护配置与状态|named_entity|-|name:产品名称:i,engine_version:引擎版本:s,signature_version:特征库版本:s,real_time:实时防护:s,real_time_configured:实时防护设置:c,tamper_protected:防篡改:s,scan_time:最近扫描时间:s|-|scope=安装作用域 + 产品；不修改防护配置',
+'security.detection_history|安全检测记录|composite_native|detection_id,threat_id|name:检测名称:c,detection_id:检测标识:i,threat_id:威胁标识:i|security.threat_detected,security.threat_status_recorded|scope=安装作用域；保留检测与处理历史，清单消失不改变处理结果',
 'security.exclusion|防护排除项|composite_native|product,exclusion_type,value|product:产品:i,exclusion_type:排除类型:i,value:排除值:i|-|scope=产品作用域；排除项变化保留前后证据',
 'security.security_product|安全产品登记|native_identifier|-|name:产品名称:i,instance_id:实例 ID:i,product_state:产品状态码:s|-|scope=安装作用域；依赖系统提供安全中心命名空间',
 'security.bitlocker_configuration|BitLocker 配置|native_identifier|-|mount_point:装载点:i,volume_status:卷状态:s,protection_status:保护状态:s,encryption_method:加密方法:c,protector_types:保护器类型:c|-|scope=卷作用域；不采集恢复材料',

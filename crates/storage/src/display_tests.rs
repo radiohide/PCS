@@ -9,6 +9,24 @@ fn snapshot(store:&mut Store,run:&str,at:&str,name:&str,enabled:bool,scope:&str)
     store.project_pending("M","I",100).unwrap();
 }
 const SCOPE:&str="machine:M/schema:1/context:/shard:0";
+
+#[test]
+fn event_scope_backfill_cost_is_independent_of_other_events_with_the_same_item() {
+    let mut store=Store::open(":memory:").unwrap();
+    store.ingest(&pcscope_contracts::parse(&json!({"protocol_version":1,"request_id":"event","type":"event_batch","source":"pcscope.eventlog.microsoft-windows-taskscheduler/operational","epoch":"e","batch_seq":1,"checkpoint":"1","events":[{"id":"1","kind":"startup.task_ended","object_id":"1","occurred_at":"2026-10-21T00:00:00Z","data":{"provider":"Microsoft-Windows-TaskScheduler","event_id":102,"fields":{"TaskName":"\\Task"}}}]}).to_string()).unwrap()).unwrap();
+    store.project_pending("M","I",64).unwrap();let c=store.reader();
+    c.execute_batch("WITH RECURSIVE n(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM n WHERE x<20000)
+        INSERT INTO source_bindings(instance_id,source,item_id,scope,native_record_id,valid_from)
+        SELECT b.instance_id,b.source,b.item_id,b.scope,'noise-'||n.x,b.valid_from FROM (SELECT * FROM source_bindings LIMIT 1) b CROSS JOIN n;
+        DELETE FROM object_collection_scopes;
+        UPDATE display_build SET evidence_cursor=0,evidence_bound=(SELECT max(seq) FROM evidence);") .unwrap();
+    let calls=std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));let capture=calls.clone();
+    c.progress_handler(100,Some(move||capture.fetch_add(1,std::sync::atomic::Ordering::Relaxed)>100));
+    let result=historical_scopes(c,1,Duration::from_secs(1));
+    c.progress_handler(0,None::<fn()->bool>);
+    assert_eq!(result.unwrap(),1,"one cited event must not walk 20,000 unrelated bindings");
+    assert_eq!(c.query_row("SELECT count(*) FROM object_collection_scopes",[],|r|r.get::<_,i64>(0)).unwrap(),1);
+}
 fn material()->Store {
     let mut store=Store::open(":memory:").unwrap();
     snapshot(&mut store,"first","2026-10-16T01:00:00Z","原来的名称",true,SCOPE);

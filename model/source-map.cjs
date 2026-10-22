@@ -38,7 +38,7 @@ const rows=[
 'pcscope.policy.configuration|observation|policy.uac_policy,policy.software_restriction_policy|注册表策略快照；未设置与显式关闭必须区分',
 'pcscope.security.certificates.currentuser|observation|security.certificate_registration|存储区作用域与指纹；不导出私钥，不做信任评估',
 'pcscope.security.certificates.localmachine|observation|security.certificate_registration|存储区作用域与指纹；同一证书在不同存储区的登记分别存在',
-'pcscope.security.detections|action_evidence|security.protection|来源保留的检测记录；检测动作与其结果语义保留，非主动扫描',
+'pcscope.security.detections|action_evidence|security.detection_history|按检测标识和威胁标识保留检测与处理历史，非主动扫描',
 'pcscope.security.deviceguard|observation|security.device_guard_configuration|能力与配置编号快照',
 'pcscope.security.encryption|observation|security.bitlocker_configuration|卷加密配置与状态；不采集恢复材料',
 'pcscope.security.products|observation|security.security_product|依赖系统提供安全中心命名空间；缺失报告缺口',
@@ -104,7 +104,7 @@ const rows=[
 'pcscope.system.clock|observation|policy.time_sync_configuration|时间同步配置与时区；不修改系统时间',
 'pcscope.system.reboot-pending|observation|policy.os_configuration|待重启标志是运行状态字段',
 'pcscope.system.restore-points|observation|policy.system_restore_point|不创建还原点',
-'pcscope.system.update-history|action_evidence|software.system_update|更新动作的证据，不直接等同于当前仍安装的组件',
+'pcscope.system.update-history|action_evidence|software.update_history_subject|更新 ID 与修订号建立历史主体，当前安装状态独立维护',
 // ---------- storage ----------
 'pcscope.hardware.battery|observation|hardware.battery|来源提供的容量与估算时间；不是完整电池健康历史',
 'pcscope.hardware.disk-health|observation|hardware.disk|健康与操作状态是运行状态字段；不是完整 SMART 原始属性',

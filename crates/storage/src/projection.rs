@@ -773,7 +773,27 @@ pub(crate) fn service_state_target(tx: &Connection, input: &EvidenceInput, conte
     Ok(None)
 }
 
-fn record_action(tx: &Connection, input: &EvidenceInput, context: &AdapterContext, action: &ActionCandidate) -> Result<bool> {
+fn retained_target(tx:&Connection,input:&EvidenceInput,context:&AdapterContext,action:&ActionCandidate)->Result<Option<u64>> {
+    let ActionTarget::Assigned{identity}=&action.target else{return Ok(None)};
+    let request=pcscope_contracts::identity::IdentityRequest{
+        candidate:identity.clone(),strategy:pcscope_contracts::identity::TypeStrategy::for_type(&identity.type_id).unwrap(),
+        binding:pcscope_contracts::identity::SourceRecordRef{source:input.source.clone(),item_id:input.item_id.clone(),native_record_id:input.native_record_id.clone()},
+        machine_id:context.machine_id.clone(),installation_id:context.installation_id.clone(),
+        evidence_time:pcscope_contracts::identity::EvidenceTime{source_time:action.occurred_at.clone().or_else(||Some(input.observed_at.clone())),observed_at:input.observed_at.clone()},
+        hints:pcscope_contracts::identity::LifecycleHints{complete_observation:false,collected_scope:context.collected_scope.clone(),configured:true,history_retained_from:None,states_object_ended:false,boot_id:None},rule_version:context.rule_version.clone()};
+    let target=identity::attribute_history(tx,&request)?;
+    if let Some(id)=target {
+        crate::display::bind_scope(tx,id,input)?;
+        for mut field in pcscope_contracts::adapters::retained_history::fields(input) {
+            if field.status!=pcscope_contracts::adapter::ValueStatus::Known {continue}
+            field.source_time=action.occurred_at.clone();
+            record_fact(tx,id,input,context,&field,&action.observed_at,&action.evidence)?;
+        }
+    }
+    Ok(target)
+}
+
+pub(crate) fn record_action(tx: &Connection, input: &EvidenceInput, context: &AdapterContext, action: &ActionCandidate) -> Result<bool> {
     let mut qualified = action.clone();
     let resolved_context=crate::event_association::qualify(tx,input,context,&mut qualified)?;
     let context=&resolved_context;
@@ -786,14 +806,47 @@ fn record_action(tx: &Connection, input: &EvidenceInput, context: &AdapterContex
         qualified.target=ActionTarget::Unassigned {reason:"导入的历史日志，未关联到本机当前对象。".into()};
     }
     let action=&qualified;
+    let retained=pcscope_contracts::adapters::retained_history::is_source(&input.source);
     if let Some(key) = &action.occurrence_key {
         let existing: Option<i64> = tx.query_row("SELECT action_row FROM object_actions WHERE occurrence_key=? LIMIT 1", [key], |row| row.get(0)).optional()?;
         if let Some(existing) = existing {
             for reference in &action.evidence { tx.execute("INSERT OR IGNORE INTO evidence_refs(subject_kind,subject_id,evidence_kind,evidence_id) VALUES('action',?,?,?)", params![existing.to_string(), kind_name(reference), reference.id])?; }
+            if retained {
+                // Conflicting complete identities remain a conflict while both retained citations
+                // exist. Replaying the original item is not evidence that the other item vanished.
+                let conflicted:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM association_repair_audit WHERE rule='retained-history-conflict-v1' AND action_row=?)",[existing],|r|r.get(0))?;
+                if conflicted{return Ok(false)}
+                if let ActionTarget::Assigned{identity}=&action.target {
+                    let prior:Option<(String,String,String)>=tx.query_row("SELECT i.type_id,i.scope,i.native_key FROM object_actions a JOIN object_instances i ON i.instance_id=a.instance_id WHERE a.action_row=?",[existing],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).optional()?;
+                    if let Some((ty,scope,key))=prior {
+                        let candidate_key=pcscope_contracts::identity::normalise(&pcscope_contracts::identity::TypeStrategy::for_type(&identity.type_id).unwrap(),identity).0;
+                        if ty==identity.type_id&&(scope!=identity.scope||key!=candidate_key) {
+                            tx.execute("INSERT OR IGNORE INTO association_repair_audit SELECT 'retained-history-conflict-v1',action_row,instance_id,instance_id,'unresolved',?,strftime('%Y-%m-%dT%H:%M:%fZ','now') FROM object_actions WHERE action_row=?",params![json!({"reason":"same_occurrence_conflicting_identity","evidence":input.evidence.id,"item":input.item_id}).to_string(),existing])?;
+                            tx.execute("INSERT INTO event_associations SELECT a.action_row,a.instance_id,json_array(i.type_id,i.category,i.machine_id,i.installation_id,i.scope,i.native_key,i.incarnation,i.identity_status),'mismatch','同一操作记录包含不同主体标识。','{}','retained-history-conflict-v1' FROM object_actions a JOIN object_instances i ON i.instance_id=a.instance_id WHERE a.action_row=? ON CONFLICT(action_row) DO UPDATE SET decision=excluded.decision,reason=excluded.reason,rule=excluded.rule",[existing])?;
+                            return Ok(false)
+                        }
+                    }
+                }
+                let target=retained_target(tx,input,context,action)?;
+                let ty=pcscope_contracts::model::action_definition(&action.action_id).and_then(|v|v["target_type"].as_str());
+                let reason=match &action.target{ActionTarget::Unassigned{reason}=>Some(reason.as_str()),_ if target.is_none()=>Some("历史主体存在身份冲突。"),_=>None};
+                let old:Option<u64>=tx.query_row("SELECT instance_id FROM object_actions WHERE action_row=?",[existing],|r|r.get(0))?;
+                // A later incomplete item cannot erase a previously proved association.
+                if target.is_none()&&old.is_some(){return Ok(false)}
+                if old!=target {
+                    tx.execute("INSERT OR IGNORE INTO association_repair_audit VALUES('retained-history-v1',?,?,?,'repaired',?,strftime('%Y-%m-%dT%H:%M:%fZ','now'))",params![existing,old,target,json!({"source":input.source,"evidence":input.evidence.id,"item":input.item_id}).to_string()])?;
+                }
+                tx.execute("UPDATE object_actions SET instance_id=?,target_type=?,unassigned_reason=? WHERE action_row=? AND (instance_id IS NOT ? OR target_type IS NOT ? OR unassigned_reason IS NOT ?)",params![target,ty,reason,existing,target,ty,reason])?;
+                crate::event_association::save(tx,existing,target,context,action)?;
+            }
             return Ok(false);
         }
     }
-    let (instance_id, unassigned, target_type) = match &action.target {
+    let (instance_id, unassigned, target_type) = if retained {
+        let target=retained_target(tx,input,context,action)?;
+        let reason=match &action.target{ActionTarget::Unassigned{reason}=>Some(reason.clone()),_ if target.is_none()=>Some("历史主体存在身份冲突。".into()),_=>None};
+        (target,reason,pcscope_contracts::model::action_definition(&action.action_id).and_then(|v|v["target_type"].as_str().map(str::to_owned)))
+    } else {match &action.target {
         ActionTarget::Assigned { identity } => {
             let request = pcscope_contracts::identity::IdentityRequest {
                 candidate: identity.clone(),
@@ -837,7 +890,7 @@ fn record_action(tx: &Connection, input: &EvidenceInput, context: &AdapterContex
             }
         }
         ActionTarget::Unassigned { reason } => (None, Some(reason.clone()), pcscope_contracts::model::action_definition(&action.action_id).and_then(|value| value["target_type"].as_str().map(str::to_owned))),
-    };
+    }};
 
     if !claim(tx, "action", &action_key(instance_id, action), &action.evidence)? {
         return Ok(false);
@@ -879,7 +932,7 @@ fn record_action(tx: &Connection, input: &EvidenceInput, context: &AdapterContex
         ],
     )?;
     let row = tx.last_insert_rowid();
-    if input.evidence.kind==pcscope_contracts::adapter::EvidenceKind::Event {crate::event_association::save(tx,row,instance_id,context,action)?;}
+    if retained || input.evidence.kind==pcscope_contracts::adapter::EvidenceKind::Event {crate::event_association::save(tx,row,instance_id,context,action)?;}
     for reference in &action.evidence {
         tx.execute(
             "INSERT INTO evidence_refs(subject_kind,subject_id,evidence_kind,evidence_id) VALUES('action',?,?,?) ON CONFLICT DO NOTHING",

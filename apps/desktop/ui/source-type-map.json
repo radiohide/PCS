@@ -357,6 +357,7 @@
           "name": "文件关联",
           "category": "shell",
           "fields": [
+            "path",
             "extension",
             "prog_id",
             "command"
@@ -591,6 +592,7 @@
           "category": "runtime",
           "fields": [
             "pid",
+            "name",
             "image",
             "parent_pid",
             "session",
@@ -765,6 +767,7 @@
           "name": "磁盘",
           "category": "hardware",
           "fields": [
+            "name",
             "number",
             "bus_type",
             "partition_style",
@@ -936,9 +939,7 @@
             "installed_on",
             "description"
           ],
-          "actions": [
-            "software.update_history"
-          ]
+          "actions": []
         }
       ]
     },
@@ -1091,6 +1092,7 @@
           "category": "runtime",
           "fields": [
             "pid",
+            "name",
             "image",
             "parent_pid",
             "session",
@@ -1342,6 +1344,7 @@
           "category": "runtime",
           "fields": [
             "pid",
+            "name",
             "image",
             "parent_pid",
             "session",
@@ -1498,6 +1501,7 @@
           "name": "磁盘",
           "category": "hardware",
           "fields": [
+            "name",
             "number",
             "bus_type",
             "partition_style",
@@ -1523,6 +1527,7 @@
           "name": "设备驱动绑定",
           "category": "hardware",
           "fields": [
+            "name",
             "device",
             "driver_version",
             "driver_date",
@@ -1872,6 +1877,7 @@
           "name": "DNS 配置",
           "category": "network",
           "fields": [
+            "path",
             "interface",
             "servers",
             "search_list"
@@ -1910,6 +1916,7 @@
           "name": "防火墙规则",
           "category": "network",
           "fields": [
+            "display_name",
             "name",
             "direction",
             "action",
@@ -2227,19 +2234,18 @@
       "handling": "action_adapter",
       "types": [
         {
-          "type_id": "security.protection",
-          "name": "防护配置与状态",
+          "type_id": "security.detection_history",
+          "name": "安全检测记录",
           "category": "security",
           "fields": [
             "name",
-            "engine_version",
-            "signature_version",
-            "real_time",
-            "real_time_configured",
-            "tamper_protected",
-            "scan_time"
+            "detection_id",
+            "threat_id"
           ],
-          "actions": []
+          "actions": [
+            "security.threat_detected",
+            "security.threat_status_recorded"
+          ]
         }
       ]
     },
@@ -2440,6 +2446,7 @@
           "name": "预览处理程序",
           "category": "shell",
           "fields": [
+            "path",
             "name",
             "hive",
             "view",
@@ -2452,6 +2459,7 @@
           "name": "图标覆盖处理程序",
           "category": "shell",
           "fields": [
+            "path",
             "name",
             "hive",
             "view",
@@ -2476,6 +2484,7 @@
           "name": "命名空间扩展",
           "category": "shell",
           "fields": [
+            "path",
             "name",
             "hive",
             "view",
@@ -2499,6 +2508,7 @@
           "name": "文件关联",
           "category": "shell",
           "fields": [
+            "path",
             "extension",
             "prog_id",
             "command"
@@ -2533,6 +2543,7 @@
           "name": "软件安装登记",
           "category": "software",
           "fields": [
+            "path",
             "display_name",
             "display_version",
             "publisher",
@@ -2629,6 +2640,7 @@
           "name": "软件安装登记",
           "category": "software",
           "fields": [
+            "path",
             "display_name",
             "display_version",
             "publisher",
@@ -2873,6 +2885,7 @@
           "name": "磁盘",
           "category": "hardware",
           "fields": [
+            "name",
             "number",
             "bus_type",
             "partition_style",
@@ -2983,9 +2996,7 @@
             "installed_on",
             "description"
           ],
-          "actions": [
-            "software.update_history"
-          ]
+          "actions": []
         }
       ]
     },
@@ -3036,13 +3047,13 @@
       "handling": "action_adapter",
       "types": [
         {
-          "type_id": "software.system_update",
-          "name": "系统更新组件",
+          "type_id": "software.update_history_subject",
+          "name": "更新历史",
           "category": "software",
           "fields": [
-            "hotfix_id",
-            "installed_on",
-            "description"
+            "name",
+            "update_id",
+            "revision"
           ],
           "actions": [
             "software.update_history"

@@ -65,6 +65,7 @@ const PCScopeTypePresentation=(()=>{
     return ({'runtime.module_instance':'最后加载时的信息','runtime.process':'最后运行时的信息','desktop.print_job':'最后在队列中的信息'})[row?.type_id]||'最后记录的信息';
   }
   function lifecycle(row){
+    if(['software.update_history_subject','security.detection_history'].includes(row.type_id))return '历史记录';
     if(row.lifecycle==='not_observed')return absence(row).label;
     if(row.lifecycle==='ended')return ({'runtime.process':'进程已退出','runtime.module_instance':'模块加载已结束','runtime.logon_session':'登录会话已结束','runtime.terminal_session':'登录会话已结束','network.endpoint':'连接已结束','network.smb_session':'文件共享连接已结束','desktop.print_job':'打印任务已结束'})[row.type_id]||(profile(row)?.name||'此项')+'已结束';
     if(row.lifecycle==='removed')return ({'network.adapter':'网卡已移除','hardware.device':'设备已移除','software.installation_registration':'安装登记已删除','software.portable_registration':'安装登记已删除','file.watched_file':'文件已删除','file.watched_directory':'文件夹已删除'})[row.type_id]||(profile(row)?.name||'此项')+'已移除';

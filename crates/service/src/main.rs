@@ -691,6 +691,9 @@ async fn run(data:PathBuf,endpoint:pcscope_ipc::Endpoint)->Result<()> {
         });
     }
     state.stopping.store(true, Ordering::SeqCst);
+    // Stop derived work before waiting for collectors that may be queued on the same writer.
+    // The worker cancels only its own SQL lease; collector transactions keep their normal path.
+    projector.request_stop();
     scheduler.abort();
     poller.abort();
     while state.collecting.load(Ordering::SeqCst) || state.polling.load(Ordering::SeqCst) || state.checking.load(Ordering::SeqCst) || state.monitoring_writes.load(Ordering::SeqCst)>0 {

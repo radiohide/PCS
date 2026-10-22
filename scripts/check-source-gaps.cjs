@@ -15,7 +15,8 @@ const moduleFile=view.moduleFiles({data:[{item_id:'fixture.dll',observed_at:'202
 assert.match(moduleFile,/磁盘文件身份变化/);assert.match(moduleFile,/文件内容指纹变化/);assert.match(moduleFile,/Example Publisher/);assert.match(moduleFile,/PID 100/);assert.match(moduleFile,/module-proof/);assert.match(moduleFile,/preserved/);assert(!moduleFile.includes('<img>'));assert(!moduleFile.includes('内存模块已损坏'));
 const update=view.timeline({data:[{action_id:'software.update_history',title:'更新操作记录',result:'failed',phase:'installation',precision:'exact',occurred_at:'2026-10-11T00:00:00Z',observed_at:'2026-10-12T00:00:00Z',unassigned_reason:'历史操作不证明当前安装',source_record:{title:'<script>example</script>',update_id:'U',revision:2,result:4,hresult:-1}}]});
 const updateVisible=update.slice(0,update.indexOf('<details>'));
-assert.match(updateVisible,/系统更新/);assert.match(updateVisible,/更新失败/);assert.match(updateVisible,/相关功能可能受影响/);
+assert.match(updateVisible,/更新历史/);assert.match(updateVisible,/安装失败/);
+assert.doesNotMatch(updateVisible,/相关功能可能受影响|不证明当前安装/);
 assert.doesNotMatch(updateVisible,/hresult|revision|错误码 -1|修订 2|software\.update_history/,'internal update codes are not shown by default');
 const originalUpdate=update.match(/<details><summary>记录详情<\/summary><pre>([\s\S]*?)<\/pre><\/details>/);
 assert(originalUpdate,'the complete update operation must remain in collapsed details');

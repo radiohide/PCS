@@ -13,10 +13,10 @@ struct StageTimings {
     last_wait_ms:u64,last_work_ms:u64,
 }
 impl StageTimings {
-    fn run<T>(&mut self,store:&Arc<Mutex<Store>>,action:impl FnOnce(&Store)->Result<T>)->Result<T> {
+    fn run<T>(&mut self,store:&Arc<Mutex<Store>>,stop:&Arc<AtomicBool>,action:impl FnOnce(&Store)->Result<T>)->Result<T> {
         let started=Instant::now();
         let guard=store.lock().map_err(|_|anyhow::anyhow!("storage lock poisoned"))?;
-        let acquired=Instant::now();let result=action(&guard);let finished=Instant::now();drop(guard);
+        let acquired=Instant::now();let result=guard.cancellable_maintenance(stop.clone(),action);let finished=Instant::now();drop(guard);
         self.last_wait_ms=acquired.duration_since(started).as_millis().try_into().unwrap_or(u64::MAX);
         self.last_work_ms=finished.duration_since(acquired).as_millis().try_into().unwrap_or(u64::MAX);
         self.batches=self.batches.saturating_add(1);self.wait_ms=self.wait_ms.saturating_add(self.last_wait_ms);
@@ -38,6 +38,10 @@ pub struct Worker {
 }
 
 impl Worker {
+    pub fn request_stop(&self) {
+        self.stop.store(true,Ordering::SeqCst);
+        if let Some(thread)=&self.thread {thread.thread().unpark();}
+    }
     pub fn start(store: Arc<Mutex<Store>>, machine: String) -> Result<Self> {
         let installation = store.lock().unwrap().projection_installation(&machine)?;
         let ready = Arc::new(AtomicBool::new(false));
@@ -56,7 +60,7 @@ impl Worker {
             let mut association_retry_at=Instant::now();let mut association_failures=0u32;
             while !worker_stop.load(Ordering::SeqCst) {
                 // Release the shared writer after every small atomic batch.
-                let result = projection_timings.run(&store,|store|store.project_pending(&machine, &installation, 64));
+                let result = projection_timings.run(&store,&worker_stop,|store|store.project_pending(&machine, &installation, 64));
                 // Reacquire after raw projection: collectors get a chance to commit between
                 // the two bounded transactions. Display work cannot be starved by raw backlog.
                 std::thread::yield_now();
@@ -65,7 +69,7 @@ impl Worker {
                 // inventory work to the same FIFO keeps those observations ahead of it,
                 // without waiting for a continuously fed collection queue to become empty.
                 if result.is_ok()&&Instant::now()>=baseline_retry_at {
-                    baselines=baseline_timings.run(&store,|s|s.prepare_snapshot_baselines(32)).map_err(|e|e.to_string());
+                    baselines=baseline_timings.run(&store,&worker_stop,|s|s.prepare_snapshot_baselines(32)).map_err(|e|e.to_string());
                     baseline_queued=baselines.as_ref().ok().is_some_and(|r|r["queued"].as_u64().unwrap_or(0)>0);
                     if baselines.is_err(){baseline_failures=baseline_failures.saturating_add(1);}
                     else{baseline_failures=0;}
@@ -73,7 +77,7 @@ impl Worker {
                     std::thread::yield_now();
                 }
                 if Instant::now()>=display_retry_at {
-                    display=display_timings.run(&store,|store|store.prepare_display(128,Duration::from_millis(40))).map_err(|error|error.to_string());
+                    display=display_timings.run(&store,&worker_stop,|store|store.prepare_display(128,Duration::from_millis(40))).map_err(|error|error.to_string());
                     if display.is_err() {
                         display_failures=display_failures.saturating_add(1);
                         display_retry_at=Instant::now()+Duration::from_secs((1u64<<display_failures.min(6)).min(60));
@@ -81,7 +85,7 @@ impl Worker {
                 }
                 if Instant::now()>=association_retry_at {
                     std::thread::yield_now();
-                    associations=association_timings.run(&store,|s|{let tasks=s.repair_event_associations(512,Duration::from_millis(40))?;if tasks["pending"]==true {Ok(tasks)}else{let mut context=s.repair_event_context(512,Duration::from_millis(40))?;context["tasks"]=tasks;Ok(context)}}).map_err(|e|e.to_string());
+                    associations=association_timings.run(&store,&worker_stop,|s|{let tasks=s.repair_event_associations(512,Duration::from_millis(40))?;if tasks["pending"]==true {Ok(tasks)}else{let mut context=s.repair_event_context(512,Duration::from_millis(40))?;context["tasks"]=tasks;if context["pending"]==false {let retained=s.repair_retained_history(128,Duration::from_millis(40))?;context["pending"]=retained["pending"].clone();context["retained_history"]=retained;}Ok(context)}}).map_err(|e|e.to_string());
                     if associations.is_err(){association_failures=association_failures.saturating_add(1)}else{association_failures=0}
                     association_retry_at=Instant::now()+if association_failures>0 {Duration::from_secs((1u64<<association_failures.min(6)).min(60))}else if associations.as_ref().is_ok_and(|v|v["pending"]==false||v["waiting"].is_string()){Duration::from_secs(10)}else{Duration::from_millis(250)};
                 }
@@ -118,7 +122,7 @@ impl Worker {
 
 impl Drop for Worker {
     fn drop(&mut self) {
-        self.stop.store(true, Ordering::SeqCst);
+        self.request_stop();
         if let Some(thread) = self.thread.take() {
             thread.thread().unpark();
             let _ = thread.join();
