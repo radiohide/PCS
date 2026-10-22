@@ -1,0 +1,85 @@
+{
+  "version": "0.2.35",
+  "feature": "Historical state comparison with paired trees",
+  "design": [
+    "Two native calendar and time controls; remembered locally",
+    "Category, type, object and property rows align across both sides",
+    "Expansion synchronized; branch reads lazy; 50 object pairs per page with automatic paging",
+    "Explicit comparison refresh only; automatic polling never shifts selected historical results"
+  ],
+  "data_rules": [
+    "Read retained snapshots at or before each cutoff; never substitute current facts",
+    "Identity pairs use stored instance identity, preserving distinct generations",
+    "One evidence/action/instance watermark across branches and pages",
+    "Use explicit end events and completed-inventory absence; incomplete checks do not remove objects",
+    "Preserve RFC3339 timezone offsets and nanosecond boundaries",
+    "Single-binding provisional identities retain provisional status; merged provisional records are marked for disambiguation",
+    "Logs without an inventory remain log records, not an invented running state"
+  ],
+  "tests": {
+    "existing_storage_regressions": 238,
+    "new_temporal_tests": 7,
+    "query_contract_tests": 7,
+    "frontend": "passed: dates, validation, remembered selection, synchronized expansion, alignment, lazy branches, shared watermark, automatic pagination, quiet polling, retry, late navigation, light/dark and 960px minimum width",
+    "model_view": "98 paths across 17 fixtures",
+    "refresh": "passed"
+  },
+  "scope": "Only the new instance selected by pcscope-launch.json; no old database used",
+  "performance": {
+    "directory_ms": 36,
+    "types_sampled": 75,
+    "errors": [],
+    "first_pages": [
+      {
+        "type": "startup.service",
+        "ms": 456,
+        "pairs": 50
+      },
+      {
+        "type": "hardware.device",
+        "ms": 492,
+        "pairs": 50
+      },
+      {
+        "type": "network.adapter",
+        "ms": 135,
+        "pairs": 17
+      },
+      {
+        "type": "runtime.module_instance",
+        "ms": 217,
+        "pairs": 50
+      },
+      {
+        "type": "software.installation_registration",
+        "ms": 207,
+        "pairs": 50
+      },
+      {
+        "type": "account.user",
+        "ms": 48,
+        "pairs": 7
+      },
+      {
+        "type": "startup.scheduled_task",
+        "ms": 566,
+        "pairs": 50
+      }
+    ],
+    "limited_objects": [
+      {
+        "type": "desktop.shortcut",
+        "availability": "ambiguous"
+      },
+      {
+        "type": "network.dns_configuration",
+        "availability": "ambiguous"
+      }
+    ]
+  },
+  "limitations": [
+    "Historical results require retained source observations. Pruned payloads are marked unavailable.",
+    "Existing merged provisional objects cannot be accurately compared until source identities are separated; they remain visible without guessed differences.",
+    "Branch totals include historical objects; change counters describe loaded pairs only."
+  ]
+}

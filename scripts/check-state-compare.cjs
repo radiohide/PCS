@@ -1,0 +1,47 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
+const {chromium}=require(process.env.PCSCOPE_PLAYWRIGHT_MODULE||'playwright');
+const root=path.resolve(__dirname,'..'),ui=path.join(root,'apps/desktop/ui');
+const samples=Object.fromEntries(JSON.parse(fs.readFileSync(path.join(root,'model/query-samples.json'),'utf8')).samples.map(s=>[s.name,s.response]));
+const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+new URL(req.url,'http://localhost').pathname);if(!file.startsWith(ui+path.sep)||!fs.existsSync(file)){res.writeHead(404).end();return;}res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html');res.end(fs.readFileSync(file));});
+(async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
+try{
+ browser=await chromium.launch({executablePath:process.env.PCSCOPE_CHROME_PATH,headless:true});const page=await browser.newPage({viewport:{width:1320,height:860}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.addInitScript(samples=>{
+  window.setInterval=()=>1;window.qa={calls:[],fail:false,delay:0};
+  localStorage.setItem('pcscope.compareTimes',JSON.stringify({from:'2026-10-22T13:00',until:'2026-10-22T15:00'}));
+  window.__TAURI__={core:{invoke:async(command,args)=>{
+   const r=args?.request||{};
+   if(r.operation==='status')return {pid:1,collecting:false,read_model_revision:'1',counts:{}};
+   if(r.operation==='monitoring_settings')return {elevated:true,settings:{configured:true,mode:'enhanced'}};
+   if(r.operation!=='query')throw Error('unexpected operation');const q=r.request;
+   if(q.query!=='state_compare')return structuredClone(samples[q.query]||{status:'empty',data:[]});
+   qa.calls.push(q);if(qa.delay)await new Promise(r=>setTimeout(r,qa.delay));if(qa.fail){qa.fail=false;throw Error('读取超时');}
+   const envelope=data=>({status:'loaded',data});
+   if(!q.type_id)return envelope({watermark:'fixed',branches:[{type_id:'startup.service',category:'startup',count:2},{type_id:'network.adapter',category:'network',count:1}]});
+   function side(state){const fields=[{field_id:'display_name',label:'名称',value:'Volume Shadow Copy',status:'known'},{field_id:'state',label:'运行状态',value:state,status:'known'},{field_id:'start_mode',label:'启动方式',value:'Manual',status:'known'}];return {availability:'recorded',checked_at:'2026-10-22T05:00:00Z',fields,summary:{type_id:q.type_id,identity_status:'confirmed',display_name:'Volume Shadow Copy',lifecycle:'active',record_basis:'observation',key_facts:fields}};}
+   const result=envelope({objects:[{instance_id:q.cursor?2:1,type_id:q.type_id,left:side('Stopped'),right:side('Running')}]});result.page={has_more:!q.cursor,next_cursor:q.cursor?null:'next'};return result;
+  }}};
+ },samples);
+ await page.goto('http://127.0.0.1:'+server.address().port+'/index.html');await page.locator('[data-page="compare"]').click();await page.locator('.compare-category').first().waitFor();
+ assert.equal(await page.locator('[data-compare-from]').inputValue(),'2026-10-22T13:00');
+ assert.equal(await page.evaluate(()=>qa.calls.filter(q=>q.type_id).length),0,'collapsed branches are lazy');
+ await page.locator('.compare-category-row button').first().click();await page.locator('.compare-type-row button').first().click();await page.locator('[data-compare-object="1"]').waitFor();
+ assert.equal(await page.evaluate(()=>qa.calls.find(q=>q.type_id).watermark),'fixed');
+ const row=page.locator('[data-compare-object="1"]');await row.locator('button').nth(0).click();assert.deepEqual(await row.locator('button').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('aria-expanded'))),['true','true']);
+ assert.match(await row.innerText(),/已停止/);assert.match(await row.innerText(),/运行中/);
+ const positions=await row.locator('.compare-property').first().locator('.compare-cell').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().y));assert.equal(positions[0],positions[1]);
+ await row.locator('button').nth(1).click();assert.equal(await row.locator('.compare-fields').isVisible(),false);await row.locator('button').nth(0).click();
+ const before=await page.evaluate(()=>qa.calls.length);await page.evaluate(()=>state.reloadPage({automatic:true}));assert.equal(await page.evaluate(()=>qa.calls.length),before,'fixed cutoffs are not polled');
+ await page.locator('[data-compare-until]').fill('2026-10-22T12:00');await page.locator('[data-compare-run]').click();assert.match(await page.locator('[data-compare-message]').innerText(),/不能晚于/);assert.equal(await row.count(),1);
+ await page.locator('[data-compare-until]').fill('2026-10-22T15:00');await page.evaluate(()=>qa.fail=true);await page.locator('[data-compare-run]').click();await page.waitForFunction(()=>document.querySelector('[data-compare-message]').textContent.includes('保留上次'));assert.equal(await row.count(),1);
+ await page.locator('[data-compare-run]').click();await page.waitForFunction(()=>!document.querySelector('[data-compare-run]').disabled);await page.locator('.compare-category-row button').first().click();await page.locator('.compare-type-row button').first().click();await page.locator('[data-compare-object="2"]').waitFor();assert.equal(await page.locator('[data-compare-object]').count(),2,'automatic paging includes next objects');
+ await page.locator('[data-compare-object="1"] button').first().click();await page.screenshot({path:path.join(root,'target/state-compare-dark.png')});
+ await page.locator('#theme').click();await page.screenshot({path:path.join(root,'target/state-compare-light.png')});
+ await page.setViewportSize({width:960,height:640});assert.equal(await page.evaluate(()=>document.querySelector('main').scrollWidth>document.querySelector('main').clientWidth),false,'minimum desktop size fits');
+ await page.evaluate(()=>qa.delay=100);await page.locator('[data-compare-run]').click();await page.locator('[data-page="overview"]').click();await page.waitForTimeout(200);assert.equal(await page.locator('#state-compare').count(),0,'late reply does not replace destination');
+ assert.deepEqual(errors,[]);
+ const {changes,equal}=require('../apps/desktop/ui/state-compare.js');assert(equal({b:2,a:1},{a:1,b:2}));assert.equal(changes({left:{availability:'not_recorded'},right:{availability:'recorded'}}),'added');assert.equal(changes({left:{availability:'unavailable'},right:{availability:'recorded'}}),'unavailable');
+ console.log('State comparison: calendars, validation, lazy loading, synchronized rows, fixed watermark, paging, refresh stability, retries, navigation and both themes passed.');
+}finally{await browser?.close();server.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});

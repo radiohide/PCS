@@ -21,6 +21,8 @@ use serde_json::{json, Value};
 mod history_labels;
 #[path="query_views.rs"]
 mod query_views;
+#[path = "state_compare.rs"]
+mod state_compare;
 use query_views::*;
 pub(crate) use query_views::{build_summary,build_action,is_legacy_com_rule};
 
@@ -103,6 +105,7 @@ fn response(status: ResponseStatus, data: Value, page: Option<Page>, counts: Opt
 pub fn answer(conn: &Connection, request: &QueryRequest) -> Result<QueryResponse> {
     match request {
         QueryRequest::TypeCatalog => types(conn),
+        QueryRequest::StateCompare { from, until, watermark, type_id, cursor, limit } => state_compare::answer_at(conn, from, until, type_id.as_deref(), cursor.as_deref(), *limit, watermark.as_deref()),
         QueryRequest::InstanceList(filter) => instances(conn, filter),
         QueryRequest::InstanceDetail { instance } => self::instance(conn, instance),
         QueryRequest::InstanceActions { instance, limit, .. } => actions(conn, instance, *limit),

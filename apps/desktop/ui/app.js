@@ -149,63 +149,11 @@ async function renderObjects(){
   try{catalog=(await api('query',{request:{query:'type_catalog'}})).data||[];}catch(error){catalog=[];notice(errorText(error),error);}
   options();await refresh();
 }
-// S24: comparison, from the model's own observations of one instance.
-//
-// The old page compared two snapshot payloads of the same source. This compares one object's
-// observation versions: what a field was, what it became, and the interval the change was in
-// effect over. A field one observation did not carry is shown as an incomplete pair, never as a
-// removal -- a source that says nothing about a field has not said the field is gone.
-const compareFilters={search:'',type_id:''};
 async function renderCompare(){
-  content.innerHTML=head('状态对比','查看同一对象前后的变化。没有读到的信息不会当作删除。')+`<section class="panel"><div class="object-filters">
-    <label class="object-search">查找对象<input id="compare-search" type="search" maxlength="1024" placeholder="名称或标识" value="${esc(compareFilters.search)}"></label>
-    <label>类型<select id="compare-type"><option value="">全部类型</option></select></label>
-    <label>对象<select id="compare-instance"><option value="">选择一个对象</option></select></label></div><p id="compare-picker-note" class="muted"></p></section><div id="compare-results" aria-live="polite"><div class="empty">选择一个对象后显示它的观察版本对比。</div></div><div id="compare-more"></div>`;
-  const results=content.querySelector('#compare-results'),picker=content.querySelector('#compare-instance');
-  let catalog=[],requestId=0,timer,selectedAlias='',comparisonDetail=null;
-  const historyPager=PCScopeAutoPage.mount(content.querySelector('#compare-more'),{
-    active:()=>!!selectedAlias,
-    query:async cursor=>{
-      const instance=selectedAlias;
-      if(cursor)return api('query',{request:{query:'instance_actions',instance,cursor,limit:200}});
-      const [detail,actions]=await Promise.all([api('query',{request:{query:'instance_detail',instance}}),api('query',{request:{query:'instance_actions',instance,limit:200}})]);
-      comparisonDetail=detail.status==='empty'?null:detail.data;return actions;
-    },
-    onStart:({append})=>{if(!append){results.setAttribute('aria-busy','true');results.innerHTML='<div class="empty">正在读取前后变化…</div>';}},
-    apply:(response,{append})=>{
-      const html=PCScopeModelView.comparison(comparisonDetail,response);
-      if(!append)results.innerHTML=html;
-      else if(!PCScopeModelView.isEmpty(response)){const template=document.createElement('template');template.innerHTML=html;const current=results.querySelector('tbody'),next=template.content.querySelector('tbody');if(current&&next)current.append(...next.children);else results.innerHTML=html;}
-      results.setAttribute('aria-busy','false');
-    },
-    onError:(error,{append})=>{results.setAttribute('aria-busy','false');if(!append)results.innerHTML=errorHtml(error);}
-  });
-  const options=()=>{
-    content.querySelector('#compare-type').innerHTML='<option value="">全部类型</option>'+catalog.map(t=>`<option value="${esc(t.type_id)}" ${t.type_id===compareFilters.type_id?'selected':''}>${esc(PCScopeObjectNames.typeName(t))}</option>`).join('');
-  };
-  const load=async()=>{
-    const id=++requestId;
-    selectedAlias='';historyPager.pause();
-    const body={query:'instance_list',limit:200,sort:'name_asc',include_counts:false};
-    if(compareFilters.search)body.search=compareFilters.search;
-    if(compareFilters.type_id)body.type_id=compareFilters.type_id;
-    const response=await api('query',{request:body});
-    if(id!==requestId)return;
-    picker.innerHTML=PCScopeModelView.instanceOptions(response);
-    content.querySelector('#compare-picker-note').textContent=response.page?.has_more?'还有其他对象，可搜索名称或按类型查找。':'';
-    results.innerHTML=PCScopeModelView.isEmpty(response)?'<div class="empty">没有匹配的对象。</div>':'<div class="empty">选择一个对象后显示它的观察版本对比。</div>';
-  };
-  const show=async alias=>{
-    selectedAlias=alias;
-    if(!alias){historyPager.pause();results.innerHTML='<div class="empty">选择一个对象后显示它的观察版本对比。</div>';return;}
-    return historyPager.reset();
-  };
-  content.querySelector('#compare-search').oninput=e=>{compareFilters.search=e.target.value;clearTimeout(timer);timer=setTimeout(load,250);};
-  content.querySelector('#compare-type').onchange=e=>{compareFilters.type_id=e.target.value;load();};
-  picker.onchange=e=>show(e.target.value);
-  state.reloadPage=()=>load();
-  try{catalog=(await api('query',{request:{query:'type_catalog'}})).data||[];}catch(error){catalog=[];notice(errorText(error),error);}
-  options();await load();
+  content.innerHTML=head('状态对比','选择两个时间点，查看系统对象的状态与属性。')+'<div id="state-compare"></div>';
+  const comparison=PCScopeStateCompare.mount(content.querySelector('#state-compare'),{query:request=>api('query',{request}),esc,localTime,errorText,categoryNames});
+  state.reloadPage=comparison.reload;state.disposePage=comparison.dispose;
+  await comparison.reload();
 }
 
 function mountModuleFileHistory(){

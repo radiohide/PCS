@@ -141,6 +141,15 @@ impl Default for ActionFilter {
 #[serde(tag = "query", rename_all = "snake_case")]
 pub enum QueryRequest {
     TypeCatalog,
+    /// Two historical inventory cutoffs. With no type, returns tree branches; otherwise one
+    /// bounded page of paired objects. Times are RFC3339 and rows share an evidence watermark.
+    StateCompare {
+        from: String, until: String,
+        #[serde(default)] watermark: Option<String>,
+        #[serde(default)] type_id: Option<String>,
+        #[serde(default)] cursor: Option<String>,
+        #[serde(default = "default_limit")] limit: usize,
+    },
     /// Every action, newest first, across objects. `InstanceActions` answers "what happened to this
     /// one"; this answers "what happened", which is the timeline.
     ActionTimeline(ActionFilter),
@@ -501,7 +510,7 @@ pub fn response_shape() -> Value {
         "coverage_result": ["success", "partial", "denied", "missing", "failed", "never"],
         "coverage_history": ["catching_up", "caught_up", "gap", "source_missing", "history_pruned", "unknown"],
         "evidence_state": ["available", "pruned"],
-        "queries": ["type_catalog", "instance_list", "instance_detail", "instance_actions", "action_timeline", "action_detail", "evidence_detail", "source_coverage", "source_readings", "projection_status"],
+        "queries": ["type_catalog", "state_compare", "instance_list", "instance_detail", "instance_actions", "action_timeline", "action_detail", "evidence_detail", "source_coverage", "source_readings", "projection_status"],
         "page": {"default": DEFAULT_PAGE, "maximum": MAX_PAGE},
         "timeline_cards": {"cards_only_default":false,"maximum":MAX_TIMELINE_CARDS,"maximum_data_bytes":TIMELINE_CARD_BYTES,"detail_query":"action_detail","detail_key":"detail_id"},
         "instance_list_counts": {"include_counts_default":true,"include_instance_total_default":false,"instance_total_optional":true,"scope":"same filter and cursor window; unrelated-material counts are omitted, never zero-filled"},
