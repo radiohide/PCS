@@ -35,7 +35,7 @@ pub(crate) fn advance(conn:&Connection,limit:usize,budget:Duration)->Result<Valu
         conn.execute("UPDATE association_repair_state SET cursor=?,examined=examined+?,repaired=repaired+?,unresolved=unresolved+? WHERE rule=?",params![last,examined,actions,missing,rule])?;
         return Ok(json!({"rule":rule,"cursor":last,"bound":bound,"pending":true,"examined":examined,"actions_processed":actions,"material_unavailable":missing,"elapsed_ms":started.elapsed().as_millis()}));
     }
-    Ok(json!({"rule":"retained-history-v1","pending":false}))
+    crate::process_history_repair::advance(conn,limit,budget)
 }
 
 #[cfg(test)]

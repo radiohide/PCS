@@ -180,6 +180,9 @@ fn normalize_component(strategy_id: &str, key: &str, value: &str) -> String {
 /// A missing component is never defaulted: the caller receives it in `missing` and the identity is
 /// reported as provisional rather than being keyed on a guess.
 pub fn normalise(strategy: &TypeStrategy, candidate: &IdentityCandidate) -> (String, Vec<String>) {
+    if strategy.strategy_id=="process_instance" {
+        if let Some(key)=historical_process_key(candidate){return (key,Vec::new())}
+    }
     let provided: BTreeMap<&str, &str> = candidate.fields.iter().map(|f| (f.key.as_str(), f.value.as_str())).collect();
     let mut parts = Vec::new();
     let mut missing = Vec::new();
@@ -210,6 +213,23 @@ pub fn normalise(strategy: &TypeStrategy, candidate: &IdentityCandidate) -> (Str
         parts.extend(extras);
     }
     (parts.join("|"), missing)
+}
+
+/// Alternative process identities occupy a separate namespace. The event's timestamp never
+/// substitutes for GetProcessTimes creation time, and a PID alone never identifies a process.
+pub fn historical_process_key(candidate:&IdentityCandidate)->Option<String> {
+    if candidate.type_id!="runtime.process"{return None}
+    let get=|key:&str|candidate.fields.iter().find(|f|f.key==key).map(|f|f.value.as_str());
+    if get("created_at").is_some(){return None}
+    let pid=crate::adapters::process_history::pid(get("pid")?)?;
+    if let Some(guid)=get("process_guid") {
+        let guid=guid.strip_prefix('{').and_then(|s|s.strip_suffix('}')).unwrap_or(guid);
+        if guid.len()!=36||!guid.bytes().enumerate().all(|(n,b)|if [8,13,18,23].contains(&n){b==b'-'}else{b.is_ascii_hexdigit()})||guid.bytes().all(|b|b==b'0'||b==b'-'){return None}
+        return Some(serde_json::json!([candidate.scope,"sysmon-process",guid.to_ascii_lowercase(),pid]).to_string())
+    }
+    let event=get("start_event")?;
+    if event.is_empty()||event.contains('\0'){return None}
+    Some(serde_json::json!([candidate.scope,"security-start",event,pid]).to_string())
 }
 
 // ---------- lookup ----------
@@ -501,6 +521,22 @@ mod tests {
             let id = definition["identity"]["strategy"].as_str().unwrap();
             assert!(case_rule(id).is_some(), "no case rule for strategy {id}");
         }
+    }
+
+    #[test]
+    fn process_history_keys_are_separate_from_native_pid_creation_keys() {
+        let strategy=strategy("runtime.process");
+        let native=candidate("runtime.process","s",&[("pid","32"),("created_at","2026-10-22T00:00:00Z")]);
+        let guid=candidate("runtime.process","s",&[("pid","0x20"),("process_guid","{11111111-1111-1111-1111-111111111111}")]);
+        let event=candidate("runtime.process","s",&[("pid","32"),("start_event","security|epoch-one|42")]);
+        let other=candidate("runtime.process","s",&[("pid","32"),("start_event","security|epoch-two|42")]);
+        let keys=[&native,&guid,&event,&other].map(|c|normalise(&strategy,c));
+        assert!(keys.iter().all(|(_,missing)|missing.is_empty()));
+        assert_eq!(keys.iter().map(|(key,_)|key).collect::<std::collections::BTreeSet<_>>().len(),4);
+        assert_eq!(keys[0].0,"s|32|2026-10-22T00:00:00Z");
+        let invalid=candidate("runtime.process","s",&[("pid","32"),("process_guid","00000000-0000-0000-0000-000000000000")]);
+        assert_eq!(normalise(&strategy,&invalid).1,vec!["created_at"]);
+        assert_eq!(crate::model::type_definition("runtime.process").unwrap()["identity"]["alternatives"].as_array().unwrap().len(),2);
     }
 
     #[test]

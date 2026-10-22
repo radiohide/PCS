@@ -36,6 +36,7 @@ pub mod security;
 pub mod file;
 pub mod source_gaps;
 pub mod retained_history;
+pub mod process_history;
 
 /// How a source's material becomes candidates. `build` is the source's whole behaviour, so a spec
 /// can be a flat mapping or something with structure without the registry caring which.

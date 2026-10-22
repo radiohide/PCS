@@ -13,7 +13,7 @@ const rel=file=>path.relative(root,file).split(path.sep).join('/');
 const row=(id,value)=>({id,value});
 
 const vocabulary=require(p('model/vocabulary.cjs'));
-const {types:typeRows,typesWithoutSource}=require(p('model/types.cjs'));
+const {types:typeRows,typesWithoutSource,identityAlternatives={}}=require(p('model/types.cjs'));
 const {rows:mapRows}=require(p('model/source-map.cjs'));
 const inventory=JSON.parse(fs.readFileSync(p('model/sources.json'),'utf8'));
 
@@ -96,6 +96,7 @@ const types=typeRows.map(line=>{
       normalization:overrides.normalization||(strategy?strategy.normalization:null),
       reuse_rule:overrides.reuse||(strategy?strategy.reuse:null),
       insufficient:overrides.insufficient||(strategy?strategy.insufficient:null),
+      ...(identityAlternatives[id]?{alternatives:identityAlternatives[id]}:{}),
     },
     fields,
     actions:splitList(actionList),

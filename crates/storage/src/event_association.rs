@@ -55,6 +55,9 @@ pub(crate) fn boot_at(conn:&Connection,machine:&str,installation:&str,at:&str)->
 pub(crate) fn qualify(conn:&Connection,input:&EvidenceInput,context:&AdapterContext,action:&mut ActionCandidate)->Result<AdapterContext> {
     let mut context=context.clone();
     let ty=pcscope_contracts::model::action_definition(&action.action_id).and_then(|v|v["target_type"].as_str()).unwrap_or("");
+    if action.action_id=="execution.process_started" {
+        if let Some(identity)=pcscope_contracts::adapters::process_history::security_start(input,&context) {action.target=ActionTarget::Assigned{identity};}
+    }
     if ty=="account.user" && matches!(action.target,ActionTarget::Unassigned{..}) && !input.source.starts_with("pcscope.eventlog.import") {
         if let Some(identity)=local_account_at(conn,input,&context)? {action.target=ActionTarget::Assigned{identity};}
     }

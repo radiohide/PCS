@@ -597,7 +597,10 @@
             "parent_pid",
             "session",
             "created_at",
-            "command_line"
+            "command_line",
+            "identity_basis",
+            "started_at",
+            "ended_at"
           ],
           "actions": [
             "execution.process_started",
@@ -1097,7 +1100,10 @@
             "parent_pid",
             "session",
             "created_at",
-            "command_line"
+            "command_line",
+            "identity_basis",
+            "started_at",
+            "ended_at"
           ],
           "actions": [
             "execution.process_started",
@@ -1349,7 +1355,10 @@
             "parent_pid",
             "session",
             "created_at",
-            "command_line"
+            "command_line",
+            "identity_basis",
+            "started_at",
+            "ended_at"
           ],
           "actions": [
             "execution.process_started",

@@ -1,5 +1,5 @@
 {
-  "version": "1.2.8",
+  "version": "1.2.9",
   "generated_by": "scripts/check-model-catalog.cjs",
   "note": "中立对象模型目录。ID 唯一来源是 model/vocabulary.cjs、model/types.cjs、model/source-map.cjs；本文件为展开结果，请勿手工编辑。",
   "categories": [
@@ -1566,9 +1566,29 @@
           "created_at"
         ],
         "scope": "启动作用域 + 进程 ID + 进程创建时间",
-        "normalization": "进程 ID 为数值，创建时间按来源时间格式保留。",
+        "normalization": "原生 PID 与创建时间；历史实例使用独立的 Sysmon GUID 或 Security 启动事件地址命名空间；日志时间不充当原生创建时间",
         "reuse_rule": "进程 ID 复用（相同 ID、不同创建时间）必须是两个实例，不得拼接生命周期。",
-        "insufficient": "缺少创建时间时标记暂定身份，不得仅凭进程 ID 归一。"
+        "insufficient": "缺少创建时间时标记暂定身份，不得仅凭进程 ID 归一。",
+        "alternatives": [
+          {
+            "namespace": "sysmon-process",
+            "keys": [
+              "scope",
+              "process_guid",
+              "pid"
+            ],
+            "basis": "Sysmon ProcessGuid"
+          },
+          {
+            "namespace": "security-start",
+            "keys": [
+              "scope",
+              "start_event",
+              "pid"
+            ],
+            "basis": "Security 4688 source event address including log epoch"
+          }
+        ]
       },
       "fields": [
         {
@@ -1617,6 +1637,27 @@
           "id": "command_line",
           "value": {
             "label": "命令行",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "identity_basis",
+          "value": {
+            "label": "身份依据",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "started_at",
+          "value": {
+            "label": "日志记录的启动时间",
+            "kind": "configuration"
+          }
+        },
+        {
+          "id": "ended_at",
+          "value": {
+            "label": "日志记录的退出时间",
             "kind": "configuration"
           }
         }

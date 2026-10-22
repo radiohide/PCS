@@ -777,7 +777,7 @@ fn retained_target(tx:&Connection,input:&EvidenceInput,context:&AdapterContext,a
     let ActionTarget::Assigned{identity}=&action.target else{return Ok(None)};
     let request=pcscope_contracts::identity::IdentityRequest{
         candidate:identity.clone(),strategy:pcscope_contracts::identity::TypeStrategy::for_type(&identity.type_id).unwrap(),
-        binding:pcscope_contracts::identity::SourceRecordRef{source:input.source.clone(),item_id:input.item_id.clone(),native_record_id:input.native_record_id.clone()},
+        binding:pcscope_contracts::identity::SourceRecordRef{source:input.source.clone(),item_id:input.item_id.clone(),native_record_id:if input.evidence.kind==pcscope_contracts::adapter::EvidenceKind::Event{input.evidence.id.clone()}else{input.native_record_id.clone()}},
         machine_id:context.machine_id.clone(),installation_id:context.installation_id.clone(),
         evidence_time:pcscope_contracts::identity::EvidenceTime{source_time:action.occurred_at.clone().or_else(||Some(input.observed_at.clone())),observed_at:input.observed_at.clone()},
         hints:pcscope_contracts::identity::LifecycleHints{complete_observation:false,collected_scope:context.collected_scope.clone(),configured:true,history_retained_from:None,states_object_ended:false,boot_id:None},rule_version:context.rule_version.clone()};
@@ -789,8 +789,16 @@ fn retained_target(tx:&Connection,input:&EvidenceInput,context:&AdapterContext,a
             field.source_time=action.occurred_at.clone();
             record_fact(tx,id,input,context,&field,&action.observed_at,&action.evidence)?;
         }
+        record_process_history_facts(tx,id,input,context,action)?;
     }
     Ok(target)
+}
+
+pub(crate) fn record_process_history_facts(tx:&Connection,id:u64,input:&EvidenceInput,context:&AdapterContext,action:&ActionCandidate)->Result<()> {
+    for field in pcscope_contracts::adapters::process_history::fields(input,action) {
+        record_fact(tx,id,input,context,&field,&action.observed_at,&action.evidence)?;
+    }
+    Ok(())
 }
 
 pub(crate) fn record_action(tx: &Connection, input: &EvidenceInput, context: &AdapterContext, action: &ActionCandidate) -> Result<bool> {
@@ -806,7 +814,8 @@ pub(crate) fn record_action(tx: &Connection, input: &EvidenceInput, context: &Ad
         qualified.target=ActionTarget::Unassigned {reason:"导入的历史日志，未关联到本机当前对象。".into()};
     }
     let action=&qualified;
-    let retained=pcscope_contracts::adapters::retained_history::is_source(&input.source);
+    let retained=pcscope_contracts::adapters::retained_history::is_source(&input.source)
+        ||matches!(&action.target,ActionTarget::Assigned{identity} if pcscope_contracts::adapters::process_history::is_history(identity));
     if let Some(key) = &action.occurrence_key {
         let existing: Option<i64> = tx.query_row("SELECT action_row FROM object_actions WHERE occurrence_key=? LIMIT 1", [key], |row| row.get(0)).optional()?;
         if let Some(existing) = existing {

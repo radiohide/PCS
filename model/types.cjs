@@ -29,7 +29,7 @@ const types=[
 'software.update_history_subject|更新历史|composite_native|update_id,revision|name:更新名称:c,update_id:更新标识:i,revision:修订号:i|software.update_history|scope=安装作用域；历史操作主体，安装状态由组件清单另行维护',
 'software.language_package|语言包登记|composite_native|package_manager,package_name,package_version|manager:包管理器:i,name:包名称:i,version:版本:i,path:安装路径:c|-|scope=安装作用域 + 包管理器；自定义前缀目录不覆盖',
 // ---------- 运行实例 ----------
-'runtime.process|进程|process_instance|-|pid:进程 ID:i,name:程序名称:c,image:程序路径:c,parent_pid:父进程 ID:c,session:会话:c,created_at:创建时间:i,command_line:命令行:c|execution.process_started,execution.process_stopped,execution.remote_thread,execution.process_access,execution.process_tampering,execution.pipe_created,execution.pipe_connected|-',
+'runtime.process|进程|process_instance|-|pid:进程 ID:i,name:程序名称:c,image:程序路径:c,parent_pid:父进程 ID:c,session:会话:c,created_at:创建时间:i,command_line:命令行:c,identity_basis:身份依据:c,started_at:日志记录的启动时间:c,ended_at:日志记录的退出时间:c|execution.process_started,execution.process_stopped,execution.remote_thread,execution.process_access,execution.process_tampering,execution.pipe_created,execution.pipe_connected|normalization=原生 PID 与创建时间；历史实例使用独立的 Sysmon GUID 或 Security 启动事件地址命名空间；日志时间不充当原生创建时间',
 'runtime.module_instance|模块加载实例|composite_native|process_identity,module_path|process:所属进程:i,process_start:进程创建时间:i,process_name:进程名称:c,session:会话:c,user_sid:账户 SID:c,module_path:模块路径:i,module_base:观察基址:s,size:映像大小:s,version:磁盘版本:s,signature_status:磁盘签名检查状态:s,module_origin:发布者类别:s|execution.module_loaded|scope=安装作用域；模块身份含进程 PID 与建立时间，磁盘签名不证明内存字节',
 'runtime.logon_session|登录会话|native_identifier|-|logon_id:登录 ID:i,logon_type:登录类型:c,start_time:开始时间:c,authentication_package:认证包:c|identity.logon,identity.logoff,identity.special_privileges|scope=安装作用域 + 登录 ID；已确认启动周期时隔离会话；特殊权限事件缺启动周期时不关联会话',
 'runtime.terminal_session|终端会话|native_identifier|-|session_id:会话 ID:i,station:站点:c,user:用户:c,domain:域:c,state:状态:s|identity.session_locked,identity.session_unlocked,identity.session_reconnected,identity.session_disconnected|-',
@@ -132,4 +132,10 @@ const types=[
 // never presented as a completed collection.
 const typesWithoutSource=[];
 
-module.exports={types,typesWithoutSource};
+const identityAlternatives={
+  'runtime.process':[
+    {namespace:'sysmon-process',keys:['scope','process_guid','pid'],basis:'Sysmon ProcessGuid'},
+    {namespace:'security-start',keys:['scope','start_event','pid'],basis:'Security 4688 source event address including log epoch'},
+  ],
+};
+module.exports={types,typesWithoutSource,identityAlternatives};

@@ -61,21 +61,27 @@ fn retry_waiting(conn:&Connection,limit:usize,budget:Duration)->Result<Value> {
     Ok(json!({"rule":RULE,"cursor":cursor,"bound":bound,"examined":total,"repaired":changed,"unresolved":unresolved,"batch_repaired":repaired,"retry_examined":examined,"pending":examined>0,"elapsed_ms":started.elapsed().as_millis()}))
 }
 fn audit(conn:&Connection,row:i64,old:Option<u64>,new:Option<u64>,outcome:&str,detail:Value)->Result<()> {
-    conn.execute("INSERT OR IGNORE INTO association_repair_audit VALUES(?,?,?,?,?,?,strftime('%Y-%m-%dT%H:%M:%fZ','now'))",params![RULE,row,old,new,outcome,detail.to_string()])?;Ok(())
+    audit_rule(conn,RULE,row,old,new,outcome,detail)
+}
+pub(crate) fn audit_rule(conn:&Connection,rule:&str,row:i64,old:Option<u64>,new:Option<u64>,outcome:&str,detail:Value)->Result<()> {
+    conn.execute("INSERT OR IGNORE INTO association_repair_audit VALUES(?,?,?,?,?,?,strftime('%Y-%m-%dT%H:%M:%fZ','now'))",params![rule,row,old,new,outcome,detail.to_string()])?;Ok(())
 }
 fn repair(conn:&Connection,row:i64,old:Option<u64>,action_id:&str)->Result<Option<bool>> {
+    repair_rule(conn,row,old,action_id,RULE)
+}
+pub(crate) fn repair_rule(conn:&Connection,row:i64,old:Option<u64>,action_id:&str,rule:&str)->Result<Option<bool>> {
     let environment=old.map(|id|conn.query_row("SELECT machine_id,installation_id FROM object_instances WHERE instance_id=?",[id],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?))).optional()).transpose()?.flatten();
     let environment=match environment {Some(v)=>Some(v),None=>conn.query_row("SELECT m.value,i.value FROM settings m JOIN settings i ON i.key='projection_installation' WHERE m.key='projection_machine'",[],|r|Ok((r.get(0)?,r.get(1)?))).optional()?};
-    let Some((machine,installation))=environment else{audit(conn,row,old,old,"unresolved",json!({"reason":"historical_environment_missing"}))?;return Ok(None)};
+    let Some((machine,installation))=environment else{audit_rule(conn,rule,row,old,old,"unresolved",json!({"reason":"historical_environment_missing"}))?;return Ok(None)};
     let addresses={let mut q=conn.prepare("SELECT e.evidence_id,e.item_id FROM evidence_refs r CROSS JOIN evidence e ON e.kind=r.evidence_kind AND e.evidence_id=r.evidence_id WHERE r.subject_kind='action' AND r.subject_id=? AND r.evidence_kind='event' AND r.pruned_at IS NULL AND e.pruned_at IS NULL ORDER BY e.seq LIMIT 129")?;
         let rows=q.query_map([row.to_string()],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;rows};
-    if addresses.len()>128{audit(conn,row,old,old,"unresolved",json!({"reason":"evidence_limit"}))?;return Ok(None)}
+    if addresses.len()>128{audit_rule(conn,rule,row,old,old,"unresolved",json!({"reason":"evidence_limit"}))?;return Ok(None)}
     let mut cache=crate::evidence::SnapshotCache::default();let mut parsed=Vec::new();let mut expected=None;
     for (address,item) in addresses {
         let Some(input)=crate::evidence::input_at_cached(conn,&address,&item,&mut cache)? else {continue};
         if input.source.starts_with("pcscope.eventlog.import"){continue}
         let scope=if input.source_scope.trim().is_empty(){format!("machine:{machine}")}else{pcscope_contracts::semantics::business_scope(&input.source_scope)};
-        let context=AdapterContext{catalog_version:pcscope_contracts::model::catalog_version().into(),rule_version:RULE.into(),machine_id:machine.clone(),installation_id:installation.clone(),boot_id:None,collected_scope:scope,complete:true};
+        let context=AdapterContext{catalog_version:pcscope_contracts::model::catalog_version().into(),rule_version:rule.into(),machine_id:machine.clone(),installation_id:installation.clone(),boot_id:None,collected_scope:scope,complete:true};
         let Some(mut action)=pcscope_contracts::adapters::event::EventAdapter.adapt(&input,&context).actions.into_iter().find(|a|a.action_id==action_id) else {continue};
         let context=crate::event_association::qualify(conn,&input,&context,&mut action)?;
         if let Some((identity,_))=crate::projection::service_state_target(conn,&input,&context)? {action.target=ActionTarget::Assigned{identity};}
@@ -83,12 +89,12 @@ fn repair(conn:&Connection,row:i64,old:Option<u64>,action_id:&str)->Result<Optio
             let Some(strategy)=TypeStrategy::for_type(&identity.type_id) else {continue};
             let (key,missing)=pcscope_contracts::identity::normalise(&strategy,identity);if !missing.is_empty(){continue}
             let key=(identity.type_id.clone(),identity.scope.clone(),key);
-            if expected.as_ref().is_some_and(|v|v!=&key){audit(conn,row,old,old,"unresolved",json!({"reason":"conflicting_identities"}))?;return Ok(None)}
+            if expected.as_ref().is_some_and(|v|v!=&key){audit_rule(conn,rule,row,old,old,"unresolved",json!({"reason":"conflicting_identities"}))?;return Ok(None)}
             expected=Some(key);
         }
         parsed.push((input,context,action));
     }
-    if parsed.is_empty(){audit(conn,row,old,old,"unresolved",json!({"reason":"material_or_rule_missing"}))?;return Ok(None)}
+    if parsed.is_empty(){audit_rule(conn,rule,row,old,old,"unresolved",json!({"reason":"material_or_rule_missing"}))?;return Ok(None)}
     // Missing identity does not veto complete evidence. Keep the incomplete inputs too:
     // their independent replay claims and any old bindings still need reconciliation.
     let mut target=None;
@@ -97,9 +103,10 @@ fn repair(conn:&Connection,row:i64,old:Option<u64>,action_id:&str)->Result<Optio
             let request=IdentityRequest{candidate:identity.clone(),strategy:TypeStrategy::for_type(&identity.type_id).unwrap(),
                 binding:SourceRecordRef{source:input.source.clone(),item_id:input.item_id.clone(),native_record_id:input.evidence.id.clone()},
                 machine_id:machine.clone(),installation_id:installation.clone(),evidence_time:EvidenceTime{source_time:input.source_time.clone(),observed_at:input.observed_at.clone()},
-                hints:LifecycleHints{complete_observation:false,collected_scope:context.collected_scope.clone(),configured:true,history_retained_from:None,states_object_ended:false,boot_id:context.boot_id.clone()},rule_version:RULE.into()};
-            let Some(id)=crate::identity::attribute_history(conn,&request)? else{audit(conn,row,old,old,"unresolved",json!({"reason":"ambiguous_identity"}))?;return Ok(None)};
+                hints:LifecycleHints{complete_observation:false,collected_scope:context.collected_scope.clone(),configured:true,history_retained_from:None,states_object_ended:false,boot_id:context.boot_id.clone()},rule_version:rule.into()};
+            let Some(id)=crate::identity::attribute_history(conn,&request)? else{audit_rule(conn,rule,row,old,old,"unresolved",json!({"reason":"ambiguous_identity"}))?;return Ok(None)};
             anyhow::ensure!(target.is_none_or(|prior|prior==id),"historical evidence resolved to different objects");target=Some(id);crate::display::bind_scope(conn,id,input)?;
+            crate::projection::record_process_history_facts(conn,id,input,context,action)?;
         }
     }
     let (_,context,action)=parsed.iter().find(|(_,_,a)|target.is_none()||matches!(a.target,ActionTarget::Assigned{..})).expect("parsed evidence is nonempty");
@@ -119,6 +126,6 @@ fn repair(conn:&Connection,row:i64,old:Option<u64>,action_id:&str)->Result<Optio
         conn.execute("INSERT OR IGNORE INTO evidence_refs(subject_kind,subject_id,evidence_kind,evidence_id) VALUES('action',?,'event',?)",params![crate::projection::action_key(claim_target,action),input.evidence.id])?;
     }
     crate::event_association::save(conn,row,target,context,action)?;
-    audit(conn,row,old,target,if changed{"repaired"}else if target.is_none(){"independent"}else{"verified"},json!({"identity":expected,"reason":reason,"boot_id":context.boot_id}))?;
+    audit_rule(conn,rule,row,old,target,if changed{"repaired"}else if target.is_none(){"independent"}else{"verified"},json!({"identity":expected,"reason":reason,"boot_id":context.boot_id}))?;
     Ok(Some(changed))
 }

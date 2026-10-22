@@ -3,6 +3,9 @@ mod association_repair;
 mod event_association;
 mod event_association_repair;
 mod retained_history;
+mod process_history_repair;
+#[cfg(test)]
+mod process_history_tests;
 mod timeline_policy;
 mod display;
 mod display_counts;
@@ -788,6 +791,11 @@ impl Store {
         anyhow::ensure!((1..=1024).contains(&limit),"history repair limit must be 1..1024");
         let tx=self.conn.unchecked_transaction()?;
         let report=retained_history::advance(&tx,limit,budget)?;tx.commit()?;Ok(report)
+    }
+    pub fn repair_process_history(&self,limit:usize,budget:std::time::Duration)->Result<Value> {
+        anyhow::ensure!((1..=1024).contains(&limit),"process history repair limit must be 1..1024");
+        let tx=self.conn.unchecked_transaction()?;
+        let report=process_history_repair::advance(&tx,limit,budget)?;tx.commit()?;Ok(report)
     }
 
     pub fn repair_event_associations(&self,limit:usize,budget:std::time::Duration)->Result<Value> {

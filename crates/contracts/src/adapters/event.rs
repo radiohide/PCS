@@ -51,7 +51,7 @@ fn identity_fields(type_id: &str) -> &'static [(&'static str, &'static [&'static
         "runtime.module_instance" => &[("module_path", &["ImageLoaded"])],
         // Account events use the target principal, never the actor's or a group member's SID.
         "account.user" => &[("sid", &["TargetUserSid", "TargetSid"])],
-        "account.group_membership" => &[("member_sid", &["MemberSid"])],
+        "account.group_membership" => &[("group_sid", &["TargetSid"]),("member_sid", &["MemberSid"])],
         "startup.scheduled_task" => &[("path", &["TaskName"])],
         "startup.service" => &[("name", &["ServiceName"])],
         "hardware.driver_service" => &[("name", &["DriverName", "ServiceName"])],
@@ -129,6 +129,28 @@ pub(crate) fn account_event_target(input: &EvidenceInput, context: &AdapterConte
         Some(sid) => ActionTarget::Assigned { identity: identity("account.user",&installation_scope(&context.collected_scope),&input.evidence.id,&[("sid",Some(sid))]) },
         None => ActionTarget::Unassigned { reason:"事件没有提供可确认的目标账户标识，暂不关联到账户。".into() },
     }
+}
+
+fn membership_target(input:&EvidenceInput,context:&AdapterContext,action:&str)->ActionTarget {
+    let p=&input.payload;
+    let id=p["event_id"].as_u64();
+    let number=|v:&Value|v.as_u64().or_else(||v.as_str()?.parse().ok());
+    let nested=p.get("system").and_then(|s|s.get("Version")).and_then(|v|v.get("value"));
+    let version=nested.or_else(||p.get("version")).and_then(number);
+    let header_ok=input.decoding.available&&input.decoding.problems.is_empty()&&version==Some(0)
+        &&p.get("version").is_none_or(|v|number(v)==version)
+        &&p.get("system").is_none_or(|s|s.get("Version").is_none_or(|_|nested.is_some())
+            &&s.get("EventID").is_none_or(|v|v.get("value").and_then(number)==id)
+            &&s.get("Provider").is_none_or(|v|v["Name"]=="Microsoft-Windows-Security-Auditing")
+            &&s.get("Channel").is_none_or(|v|v["value"]=="Security"));
+    let matches_id=if action=="identity.group_member_added"{matches!(id,Some(4728|4732|4756))}else{matches!(id,Some(4729|4733|4757))};
+    let values=crate::event_state::field(input,&["TargetSid"]).zip(crate::event_state::field(input,&["MemberSid"]));
+    if header_ok&&input.source=="pcscope.eventlog.security"&&p["channel"]=="Security"&&p["provider"]=="Microsoft-Windows-Security-Auditing"&&matches_id {
+        if let Some((group,member))=values.filter(|(group,member)|is_account_sid(group)&&is_account_sid(member)) {
+            return ActionTarget::Assigned{identity:identity("account.group_membership",&installation_scope(&context.collected_scope),&input.evidence.id,&[("group_sid",Some(group.to_ascii_uppercase())),("member_sid",Some(member.to_ascii_uppercase()))])}
+        }
+    }
+    ActionTarget::Unassigned{reason:"成员变更记录缺少有效的组与成员标识。".into()}
 }
 
 pub(crate) fn logon_scope(context: &AdapterContext) -> String {
@@ -278,6 +300,7 @@ impl SourceAdapter for EventAdapter {
         let identity = identity(target_type, &scope, &input.evidence.id, &keys);
         let target = if action_id=="identity.special_privileges" { special_logon_target(input,context) }
             else if target_type=="account.user" { account_event_target(input,context) }
+            else if target_type=="account.group_membership" { membership_target(input,context,action_id) }
             else if target_type=="startup.scheduled_task" { task_event_target(input,context) }
             else { ActionTarget::Assigned { identity } };
         let mut result = AdapterResult::adapted();

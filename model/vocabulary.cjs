@@ -247,4 +247,4 @@ const result_semantics=[
   ['unknown','未知','来源未提供结果'],
 ];
 
-module.exports={version:'1.2.8',categories,field_kinds,value_status,derivations,time_precisions,identity_strategies,name_key_terms,scope_only_keys,forbidden_identity_terms,actions,result_semantics};
+module.exports={version:'1.2.9',categories,field_kinds,value_status,derivations,time_precisions,identity_strategies,name_key_terms,scope_only_keys,forbidden_identity_terms,actions,result_semantics};

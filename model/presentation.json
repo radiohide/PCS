@@ -486,7 +486,10 @@
         "image",
         "pid",
         "created_at",
-        "name"
+        "name",
+        "identity_basis",
+        "started_at",
+        "ended_at"
       ],
       "state_fields": [],
       "labels": {
@@ -496,7 +499,10 @@
         "session": "会话",
         "created_at": "创建时间",
         "command_line": "命令行",
-        "name": "程序名称"
+        "name": "程序名称",
+        "identity_basis": "身份依据",
+        "started_at": "日志记录的启动时间",
+        "ended_at": "日志记录的退出时间"
       },
       "formats": {
         "pid": {
@@ -519,6 +525,15 @@
         },
         "name": {
           "kind": "text"
+        },
+        "identity_basis": {
+          "kind": "details"
+        },
+        "started_at": {
+          "kind": "time"
+        },
+        "ended_at": {
+          "kind": "time"
         }
       },
       "fallback": "有运行记录"
