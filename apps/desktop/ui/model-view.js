@@ -286,36 +286,27 @@ const PCScopeModelView=(()=>{
     }).join('')+'</tbody></table></div>';
   }
 
-  /// The overview: what the model holds, what has happened lately, and how collection is doing.
-  ///
-  /// Counts are shown per kind and never added together. An object, a source record, an action and
-  /// a piece of evidence are four different things counted four different ways; one number over all
-  /// of them would be a number that means nothing. The type counts say how much of the catalog is
-  /// wired to a source, which is the honest answer to "how much is collected" — a type with no
-  /// source is not an empty collection, it is one nothing feeds.
+  // Stable overview shell. Its controller refreshes each section without remounting the page.
   function overview(types, instances, actions, coverageResponse){
-    const catalog=types.data||[];
-    const categories=[...new Set(catalog.map(entry=>entry.category))];
-    const wired=catalog.filter(entry=>entry.supplied_by_source).length;
-    const counts=instances.counts||{};
-    const rows=actions.data||[];
-    const sources=coverageResponse.data||[];
-    const failing=sources.filter(entry=>entry.configured&&(entry.last_result!=='success'||Number(entry.projection?.failed||0)>0)).length;
-    const disabled=sources.filter(entry=>!entry.configured).length;
-    const stat=(label,value,hint='')=>`<div class="stat"><span class="muted">${label}</span><strong>${value}</strong>${hint?`<br><small class="muted">${hint}</small>`:''}</div>`;
-    const recent=rows.length?rows.slice(0,8).map(row=>{
-      const when=row.precision==='interval'?`${esc(time(row.interval_from))} → ${esc(time(row.interval_until))}`:esc(time(row.occurred_at||row.observed_at));
-      return `<li class="overview-action${row.instance_id?'':' unattributed'}"><span class="muted">${when}</span> <span class="action-title">${esc(readableEvents.title(row))}</span><p class="muted">${esc(readableEvents.subject(row))}</p></li>`;
-    }).join(''):'<li class="muted">还没有观察到动作。</li>';
-    return `<div class="stats">
-        ${stat('当前对象',counts.instances??'—')}
-        ${stat('已记录变化',counts.actions??'—')}
-        ${stat('监控项目',sources.length,`${failing} 项信息待补充 · ${disabled} 项已暂停`)}
+    return `<section class="overview-status panel"><div><span class="overview-indicator" aria-hidden="true"></span><strong data-overview-status>连接中</strong></div><span class="muted">最近检查 <time data-overview-check>—</time></span><button data-overview-page="health">查看采集健康</button></section>
+      <div class="overview-stats">
+        <section class="panel overview-stat"><span class="muted">监控对象</span><strong data-overview-objects>—</strong><button data-overview-page="objects">查看系统对象 ↗</button><div class="overview-feedback" data-overview-error="objects" hidden></div></section>
+        <section class="panel overview-stat"><span class="muted">已启用采集项</span><strong data-overview-enabled>—</strong><details class="overview-scope"><summary>采集概况</summary><p data-overview-scope>正在读取…</p><button data-overview-page="plugins">管理采集项 ↗</button></details><div class="overview-feedback" data-overview-error="coverage" hidden></div></section>
       </div>
-      ${failing?'<p class="notice">部分监控信息不全，相关异常可能漏报。</p>':''}
-      <details><summary>记录统计与支持范围</summary><p>对象类别 ${categories.length} · 对象类型 ${catalog.length}（${wired} 个已接入） · 来源记录 ${counts.source_records??'—'} · 证据 ${counts.evidence??'—'}</p></details>
-      <div class="split"><section class="panel"><h2>最近发生</h2><ul class="overview-actions">${recent}</ul></section>
-      <aside class="panel"><h2>来源采集</h2>${sources.length?coverage(coverageResponse):'<div class="empty">还没有来源记录。</div>'}</aside></div>`;
+      <section class="panel overview-recent"><div class="overview-heading"><h2>最近变化</h2><button data-overview-page="timeline">查看时间线 ↗</button></div><div class="overview-feedback" data-overview-error="recent" hidden></div><ul class="overview-actions"><li class="overview-placeholder" data-overview-row="loading">正在读取最近变化…</li></ul></section>`;
+  }
+
+  function overviewRecent(response){
+    const rows=response.data||[];
+    if(!rows.length)return '<li class="overview-placeholder" data-overview-row="empty">还没有变化记录。</li>';
+    return rows.slice(0,8).map((row,index)=>{
+      const card=readableEvents.card(row),subject=readableEvents.subject(row),kind=readableEvents.typeLabel(row);
+      const end=row.precision==='interval'?row.interval_until:row.occurred_at||row.observed_at;
+      const when=row.precision==='interval'?`${time(row.interval_from)} — ${time(end)}`:time(end);
+      const change=card.kind==='diff'?`${card.before} → ${card.after}`:card.kind==='value'?card.after:card.label;
+      const key=row.detail_id??row.row_id??JSON.stringify([row.action_id,end,row.instance_id,row.field_id,subject,index]);
+      return `<li class="overview-action" data-overview-row="${esc(key)}"><div class="overview-action-main"><strong>${esc(subject)}</strong><span class="overview-type">${esc(kind)}</span><p class="overview-change timeline-tone-${esc(card.tone)}">${card.field?`<span class="muted">${esc(card.field)}：</span>`:''}${esc(change)}</p></div><time class="overview-time">${row.precision==='interval'?'<span>变化区间</span>':''}${esc(when)}</time></li>`;
+    }).join('');
   }
 
 
@@ -409,6 +400,6 @@ const PCScopeModelView=(()=>{
       return '<article class="panel module-file-card"><strong>'+esc(name)+'</strong><p>'+esc(moduleFileAssessment(payload))+'</p><small class="muted">检查时间：'+esc(time(row.observed_at))+' · 发布者：'+esc(check.publisher||'未取得发布者信息')+'</small><details><summary>文件与诊断详情</summary><p>'+esc(payload.path||row.item_id)+' · '+esc(statuses[check.status]||'未知')+'</p><p>变化：'+esc((payload.changes||[]).map(c=>labels[c]||c).join('、')||'无已确认差异')+'</p><p>发布者类别：'+esc(origins[check.module_origin]||'归属未知')+'</p><p>签名：'+esc(signatures[check.signature_status]||'未知')+'；发布者：'+esc(check.publisher||'未知')+'；版本：'+esc(check.version||'未知')+'</p>'+(check.pe_status?'<p>PE 文件：'+esc(pe[check.pe_status]||check.pe_status)+(check.pe_error?' · '+esc(check.pe_error):'')+'。</p>':'')+'<p>关联模块观察：'+bindings.map(b=>esc(b.process_name)+' / PID '+esc(b.pid)+' / 建立 '+esc(time(b.process_start))+' / 最近观察 '+esc(time(b.last_observed))+(b.module_path?' / 原观察路径 '+esc(b.module_path):'')).join('<br>')+'</p>'+(check.error?'<p>'+esc(check.error)+'</p>':'')+'<small>证据 '+esc(row.evidence?.id)+'</small><details><summary>前后状态与完整原始字段</summary><pre>'+esc(JSON.stringify(payload,null,2))+'</pre></details></details></article>';
     }).join('');
   }
-  return {treePage,moduleFileAssessment,coverageImpact,moduleFiles,sourceReadings, PATHS, OPTIONAL_PATHS, list, detail, timeline,timelineBatches,timelineRecord, coverage, projection, comparison, overview, listSummary, messageOf, instanceOptions, isEmpty, migrationStatus};
+  return {treePage,moduleFileAssessment,coverageImpact,moduleFiles,sourceReadings, PATHS, OPTIONAL_PATHS, list, detail, timeline,timelineBatches,timelineRecord, coverage, projection, comparison, overview, overviewRecent, listSummary, messageOf, instanceOptions, isEmpty, migrationStatus};
 })();
 if(typeof module!=='undefined'&&module.exports)module.exports=PCScopeModelView;

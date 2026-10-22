@@ -233,6 +233,7 @@ function mountModuleFileHistory(){
 let renderRevision=0;
 async function render(){
   state.disposePage?.();state.disposePage=null;
+  state.syncPageStatus=null;
   PCScopeAutoPage.disposeWithin(content);
   const revision=++renderRevision;
   state.reloadPage=null;
@@ -243,16 +244,13 @@ async function render(){
     if(page==='timeline'){
       await renderTimeline();
     }else if(page==='overview'){
-      // S25: the overview answers from the model, and keeps the counts apart. An object, a source
-      // record, an action and a piece of evidence are four things counted four ways; adding them
-      // into one number would produce a number that means nothing.
-      const [types,instances,actions,coverage]=await Promise.all([
-        api('query',{request:{query:'type_catalog'}}),
-        api('query',{request:{query:'instance_list',sort:'seen_desc',limit:1}}),
-        api('query',{request:{query:'action_timeline',limit:8}}),
-        api('query',{request:{query:'source_coverage'}}),
-      ]);if(state.page!==page||revision!==renderRevision)return;
-      content.innerHTML=head('系统总览','查看最近变化与监控状态。信息不足时，部分异常可能漏报。')+PCScopeModelView.overview(types,instances,actions,coverage);
+      content.innerHTML=head('系统总览','本机监控与最近变化。')+'<div id="overview-content"></div>';
+      const overview=PCScopeOverview.mount(content.querySelector('#overview-content'),{
+        api,getStatus:()=>state.status,view:PCScopeModelView,esc,localTime,errorText,
+        navigate:target=>{state.page=target;render();}
+      });
+      state.reloadPage=overview.reload;state.disposePage=overview.dispose;state.syncPageStatus=overview.status;
+      await overview.reload();
     }else if(page==='objects'){
       await renderObjects();
     }else if(page==='compare'){
@@ -311,13 +309,13 @@ async function refreshStatus(automatic=false){
   const epoch=state.refreshEpoch;const valid=()=>!automatic||(state.autoRefresh&&epoch===state.refreshEpoch);
   const operation=document.querySelector('#operation'),progress=document.querySelector('#progress');
   try{
-    const status=await api('status');if(!valid())return false;state.status=status;issues.syncStatus(status);
+    const status=await api('status');if(!valid())return false;state.status=status;issues.syncStatus(status);state.syncPageStatus?.();
     const text=status.collecting?'正在采集':status.projection_worker?.display?.pending===true?'正在更新记录':'监控中';if(operation.textContent!==text)operation.textContent=text;
     const last=status.last_collection;progress.hidden=!status.collecting;
     if(status.collecting&&last?.total)progress.value=100*last.completed/last.total;else if(status.collecting)progress.removeAttribute('value');else progress.value=0;
     return true;
   }catch(error){
-    if(!valid())return false;state.status=null;operation.textContent='连接中断';progress.hidden=true;progress.value=0;
+    if(!valid())return false;state.status=null;state.syncPageStatus?.();operation.textContent='连接中断';progress.hidden=true;progress.value=0;
     connectionNotice('监控信息暂时无法更新，正在尝试恢复连接。',error);return false;
   }
 }

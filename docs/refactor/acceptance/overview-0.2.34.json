@@ -1,0 +1,33 @@
+{
+  "version": "0.2.34",
+  "backend_version": "0.2.33",
+  "scope": "Desktop overview only; collector and database schema unchanged",
+  "changes": [
+    "Stable overview shell and independently refreshed sections",
+    "Keep scroll, expanded details and unchanged row nodes",
+    "Defer changed recent rows while reading; manual refresh applies them",
+    "Preserve useful results on failures; one automatic transient failure stays quiet",
+    "Count collection sources once across scopes",
+    "Three lightweight queries; no repeated type catalog or related historical counts"
+  ],
+  "validation": {
+    "source_rows": 1559,
+    "distinct_sources": 125,
+    "model_view": "passed: 98 paths, 17 fixtures",
+    "status_issues_browser": "passed: 11 UI checks",
+    "front_refresh": "passed",
+    "visual": "dark and light screenshots reviewed",
+    "live_query_limit": "One sample on native-v2, includes IPC process startup; not full UI render time",
+    "overview_browser": "passed: single flight, unchanged DOM, actual auto-refresh, scroll/expansion, failure recovery, manual/auto race, navigation race, source deduplication",
+    "live_queries_ms": {
+      "action_timeline": 48,
+      "source_coverage": 186,
+      "instance_list": 98
+    }
+  },
+  "known_preexisting_failure": {
+    "test": "scripts/check-product-status-copy.cjs:154",
+    "reason": "Expects the old 未能对应到具体对象 disclaimer on timeline cards. Same failure reproduced using HEAD model-view.js; this change does not alter that behavior."
+  },
+  "data_policy": "Only native-v2 queried; no old history imported or referenced"
+}
