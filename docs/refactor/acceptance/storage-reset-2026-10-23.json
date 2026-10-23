@@ -1,0 +1,64 @@
+{
+  "date": "2026-10-23",
+  "version": "0.2.42",
+  "operation": "User-requested deletion and fresh collection at the existing data path",
+  "old_database_bytes": 75518365696,
+  "deletion": "User manually deleted history.db after tool policy rejected deletion; absence and absence of WAL/SHM verified before installation",
+  "baseline": {
+    "event_history": "from_baseline",
+    "initial_seconds": 600,
+    "started_at": "2026-10-23T09:02:38.295Z",
+    "version": 1
+  },
+  "preserved_settings": [
+    "global and per-plugin schedule",
+    "monitoring mode",
+    "retention mode and quota",
+    "projection limit"
+  ],
+  "cleared": [
+    "raw history",
+    "events and checkpoints",
+    "object state",
+    "derived presentation",
+    "module file observation cache",
+    "installation identity"
+  ],
+  "verification": {
+    "version": "0.2.42",
+    "elevated": true,
+    "all_13_jobs_seconds": 600,
+    "counts": {
+      "records": 10017,
+      "snapshots": 625,
+      "evidence": 10481,
+      "snapshot_contents": 206
+    },
+    "pre_baseline_records": 0,
+    "first_observation": "2026-10-23T09:02:44.439854+00:00"
+  },
+  "desktop": {
+    "version": "开发版 0.2.42",
+    "card_text": "历史数据占用\n173.97 MB\n保留策略\n不限容量\n\n保留全部历史，存储占用会随采集增加。\n\n检查时间：2026-10-23 17:03:49\n统计范围\n\n包含当前历史数据库及其写入缓存，不含备份、导出文件和程序文件。按文件大小统计，1 GB = 10 亿字节。",
+    "stable_card": true,
+    "stable_metric": true,
+    "details_open": true,
+    "backend_pid": 34244,
+    "overflow": false,
+    "errors": []
+  },
+  "monitoring": {
+    "automation_id": "pcscope",
+    "interval_minutes": 30,
+    "implementation": "File sizes and volume free space only; no SQL scan, checkpoint, VACUUM or collector",
+    "first_report": "After one hour with sufficient samples; a second summary after 24 hours",
+    "alerts": [
+      "Two consecutive intervals of at least 20 minutes exceed 500 MB/hour",
+      "Free disk below 10 GB",
+      "Repeated sampler failure or confirmed backend outage"
+    ],
+    "log": "target/storage-monitor/samples.jsonl"
+  },
+  "application_version_changed": false,
+  "note": "Operational reset and monitoring setup; no application binary change."
+}
