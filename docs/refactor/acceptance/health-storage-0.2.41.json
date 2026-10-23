@@ -1,0 +1,44 @@
+{
+  "desktop_version": "0.2.41",
+  "backend_version": "0.2.40",
+  "scope": "采集健康顶部展示当前历史数据库及写入缓存的文件大小；不包括备份、导出及程序文件。",
+  "implementation": [
+    "复用 retention 只读接口，无后台改动、目录遍历或采集请求",
+    "显示存储占用、保留策略、检查时间；未知值不转为零",
+    "页面开启期间跟随自动刷新，存储独立检查间隔至少 30 秒；页面数据刷新时同时读取；请求合并",
+    "短暂自动读取失败保留结果，连续失败显示局部提示和重试",
+    "采集健康按区域刷新，保留页面和存储卡片节点"
+  ],
+  "tests": [
+    "check-health-storage.cjs passed",
+    "check-front-refresh.cjs passed",
+    "check-overview-load.cjs passed",
+    "desktop debug build passed",
+    "native Tauri WebView inspection passed; no horizontal overflow or page errors"
+  ],
+  "performance": {
+    "times_ms": [
+      194,
+      16,
+      17,
+      11,
+      4,
+      5,
+      4,
+      4
+    ],
+    "physical_bytes": 70901276672,
+    "mode": "unlimited"
+  },
+  "native_ui": {
+    "version": "开发版 0.2.41",
+    "card_text": "历史数据占用\n70.99 GB\n保留策略\n不限容量\n\n保留全部历史，存储占用会随采集增加。\n\n检查时间：2026-10-23 15:00:06\n统计范围\n\n包含当前历史数据库及其写入缓存，不含备份、导出文件和程序文件。按文件大小统计，1 GB = 10 亿字节。",
+    "stable_card": true,
+    "stable_metric": true,
+    "details_open": true,
+    "backend_pid": 27816,
+    "overflow": false,
+    "errors": []
+  },
+  "deployment": "固定 dist/dev 和桌面 debug 入口更新至 0.2.41；增强后台 0.2.40 / PID 27816 保持运行；未修改历史、配置或周期。"
+}

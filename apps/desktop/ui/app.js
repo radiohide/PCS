@@ -212,18 +212,20 @@ async function render(){
       // permission or availability problem; material that arrived and could not be turned into
       // objects is an adapter that does not understand what it was given. One number for both
       // would tell the reader nothing about which to fix.
-      content.innerHTML=head('采集健康','查看哪些信息已读取、哪些可能遗漏，以及对异常判断的影响。')+`<section class="panel status-panel"><h2>监控覆盖</h2><div id="health-coverage">正在读取…</div></section><section class="panel status-panel"><h2>记录处理</h2><div id="health-projection">正在读取…</div></section>`;
-      const loadHealth=async(selector,query,format)=>{
+      content.innerHTML=head('采集健康','查看哪些信息已读取、哪些可能遗漏，以及对异常判断的影响。')+`<section class="panel status-panel"><h2>存储占用</h2><div id="health-storage"></div></section><section class="panel status-panel"><h2>监控覆盖</h2><div id="health-coverage">正在读取…</div></section><section class="panel status-panel"><h2>记录处理</h2><div id="health-projection">正在读取…</div></section>`;
+      const storage=PCScopeHealthStorage.mount(content.querySelector('#health-storage'),{api,localTime,canRefresh:()=>state.autoRefresh&&Boolean(state.status)});
+      state.disposePage=storage.dispose;state.syncPageStatus=storage.tick;
+      const healthLoaded=new Set(),healthFailures=new Map();
+      const loadHealth=async(selector,query,format,{automatic=false}={})=>{
         const target=content.querySelector(selector);if(!target?.isConnected)return;
-        target.textContent='正在读取…';
-        try{const response=await api('query',{request:{query}});if(target.isConnected)target.innerHTML=format(response);}
-        catch(error){if(target.isConnected){target.innerHTML=`${errorHtml(error)}<button>重试</button>`;target.querySelector('button').onclick=()=>loadHealth(selector,query,format);}}
+        try{const response=await api('query',{request:{query}});if(target.isConnected){const html=format(response);if(target.innerHTML!==html)target.innerHTML=html;healthLoaded.add(selector);healthFailures.delete(selector);target.parentElement.querySelector('[data-health-error]')?.remove();}}
+        catch(error){if(target.isConnected){const failures=(healthFailures.get(selector)||0)+1;healthFailures.set(selector,failures);if(automatic&&healthLoaded.has(selector)&&failures<2)return;let note=target.parentElement.querySelector('[data-health-error]');if(!note){note=document.createElement('div');note.dataset.healthError='';target.after(note);}if(!healthLoaded.has(selector))target.textContent='暂未取得';note.innerHTML=`${errorHtml(error)}<button>重试</button>`;note.querySelector('button').onclick=()=>loadHealth(selector,query,format);}}
       };
       content.insertAdjacentHTML('beforeend','<section class="panel status-panel"><h2>资源与监控范围</h2><label>来源 <select id="reading-source"><option value="">全部</option><option value="pcscope.execution.module-scan-status">程序模块监控情况</option><option value="pcscope.execution.resources">资源采样</option><option value="pcscope.collector.scoped-configuration">采集范围配置</option><option value="pcscope.collector.event-channel-coverage">日志可用情况</option><option value="pcscope.usn.watch-list">文件监控名单</option></select></label><div id="source-readings"></div><div id="readings-next"></div></section>');
       const readingPanel=content.querySelector('#source-readings'),readingSelect=content.querySelector('#reading-source'),readingNext=content.querySelector('#readings-next');
       const readingsPager=PCScopeAutoPage.mount(readingNext,{
         query:cursor=>api('query',{request:{query:'source_readings',source:readingSelect.value||null,cursor,limit:100}}),
-        onStart:({append})=>{if(!append)readingPanel.textContent='正在读取…';},
+        onStart:({append})=>{if(!append&&!readingPanel.hasChildNodes())readingPanel.textContent='正在读取…';},
         apply:(response,{append})=>{
           if(!append)readingPanel.innerHTML=PCScopeModelView.sourceReadings(response);
           else if(!PCScopeModelView.isEmpty(response)){const records=readingPanel.querySelector('.source-reading-records');if(records)records.insertAdjacentHTML('beforeend',PCScopeModelView.sourceReadings(response,{recordsOnly:true}));}
@@ -232,7 +234,8 @@ async function render(){
       });
       const loadReadings=()=>readingsPager.reset();
       readingSelect.onchange=loadReadings;
-      await Promise.all([loadHealth('#health-coverage','source_coverage',PCScopeModelView.coverage),loadHealth('#health-projection','projection_status',PCScopeModelView.projection),loadReadings()]);
+      state.reloadPage=async(options={})=>{await Promise.all([storage.reload(options),loadHealth('#health-coverage','source_coverage',PCScopeModelView.coverage,options),loadHealth('#health-projection','projection_status',PCScopeModelView.projection,options),loadReadings()]);};
+      await state.reloadPage();
     }else if(page==='settings'){
       content.innerHTML=head('系统配置','管理界面、历史存储、采集权限与隐私显示。')+'<section id="launch-settings" class="panel"></section><div id="settings-content">正在读取监控设置…</div>';
       PCScopeLaunchSettings.mount(content.querySelector('#launch-settings'));
