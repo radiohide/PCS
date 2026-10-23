@@ -152,17 +152,209 @@
     "Benchmarks are isolated unchanged-service fixtures, not a forecast of whole-machine daily size",
     "Existing large database is not compacted or rewritten",
     "Evidence/projection queue rows still retain one observation each; their later compaction is a separate phase",
-    "Ordinary-token driver-store check requires elevation; enhanced backend verification pending Windows UAC"
+    "Live observation covered startup and three notification refreshes, not a full ten-minute periodic cycle; timer boundaries also covered by unit tests.",
+    "CNG provider errors, selected registry access failures, virtualization compatibility failures and absent Sysmon/Hyper-V channels remain outside this storage/frequency change; listed in live validation."
   ],
   "deployment": {
     "optimized_runtime": "target/release",
     "normal_bundle": "dist/dev",
     "desktop_debug": "apps/desktop/src-tauri/target/debug",
-    "enhanced_backend": "Pending replacement; existing backend remains 0.2.40"
+    "enhanced_backend": "Updated using one authorized UAC; version 0.2.42, elevated, same account and native-v2 instance"
   },
   "remaining": [
-    "Verify enhanced backend runtime, collection intervals and content sharing after UAC",
     "Compact completed projection metadata while preserving historical freshness and evidence addresses",
     "Plan bounded historical deduplication/space reclamation separately; no full VACUUM on low-space live database"
-  ]
+  ],
+  "live_validation": {
+    "backend_version": "0.2.42",
+    "pid": 137752,
+    "elevated": true,
+    "startup_ms": 8020,
+    "all_13_jobs_seconds": 600,
+    "notification_checks": [
+      {
+        "unit": "pcscope-powershell-adapter.exe",
+        "notifications_seen": 5,
+        "notification_runs": 3,
+        "last_sources": [
+          "pcscope.network.adapters",
+          "pcscope.network.addresses"
+        ],
+        "last_ok": true,
+        "full_deadline_drift_seconds": 0.0
+      },
+      {
+        "unit": "network",
+        "notifications_seen": 5,
+        "notification_runs": 3,
+        "last_sources": [
+          "pcscope.network.routes"
+        ],
+        "last_ok": true,
+        "full_deadline_drift_seconds": 0.0
+      }
+    ],
+    "source_runs_since_upgrade": [
+      {
+        "source": "pcscope.hardware.driver-packages",
+        "snapshots": 32,
+        "runs": 2,
+        "first": "2026-10-23T08:36:27.6261252Z",
+        "last": "2026-10-23T08:38:27.9003761Z"
+      },
+      {
+        "source": "pcscope.network.adapters",
+        "snapshots": 4,
+        "runs": 4,
+        "first": "2026-10-23T08:37:25.1921004Z",
+        "last": "2026-10-23T08:41:21.1297932Z"
+      },
+      {
+        "source": "pcscope.network.addresses",
+        "snapshots": 4,
+        "runs": 4,
+        "first": "2026-10-23T08:37:25.3612977Z",
+        "last": "2026-10-23T08:41:21.2480387Z"
+      },
+      {
+        "source": "pcscope.network.firewall-rules",
+        "snapshots": 16,
+        "runs": 1,
+        "first": "2026-10-23T08:37:57.1942309Z",
+        "last": "2026-10-23T08:37:57.1942309Z"
+      },
+      {
+        "source": "pcscope.network.routes",
+        "snapshots": 64,
+        "runs": 4,
+        "first": "2026-10-23T08:37:58.0931577Z",
+        "last": "2026-10-23T08:41:21.4222848Z"
+      },
+      {
+        "source": "pcscope.shell.registrations",
+        "snapshots": 64,
+        "runs": 1,
+        "first": "2026-10-23T08:37:22.4008388Z",
+        "last": "2026-10-23T08:37:23.6613247Z"
+      }
+    ],
+    "sharing": {
+      "unique_arrays": 499,
+      "observations": 556,
+      "unique_bytes": 10121696,
+      "bytes_without_sharing": 10617833,
+      "max_reuse": 4
+    },
+    "storage_domain_ok": true,
+    "free_disk_bytes": 6630473728,
+    "outstanding_collection_gaps": [
+      {
+        "unit": "security",
+        "gaps": [
+          "Native source unavailable; previous state retained [9a71cea461cf9b75eca7d38ea6c5bebbda1bbeff1147bb0bfa445865c070eaa4]: CNG enumeration failed: 0x80090009",
+          "Native source unavailable; previous state retained [1cbfa2dd80d66ca84f66433518fdc35dde1ef9e89201da44b6e41e4cbcc68157]: CNG enumeration failed: 0x8010001D",
+          "Native source unavailable; previous state retained [f90c488a22ec047f1800625359170b4df6f43ffa28eaa2b0a9f03891a6d539c7]: CNG enumeration failed: 0x80090009"
+        ]
+      },
+      {
+        "unit": "startup",
+        "gaps": [
+          "Native source unavailable; previous state retained []: 不允许所请求的注册表访问权。"
+        ]
+      },
+      {
+        "unit": "desktop",
+        "gaps": [
+          "Native source unavailable; previous state retained []: 不允许所请求的注册表访问权。"
+        ]
+      },
+      {
+        "unit": "virtualization",
+        "gaps": [
+          "PowerShell compatibility collector unavailable; source state retained: collector failed; diagnostic bytes captured: 543",
+          "PowerShell compatibility collector unavailable; source state retained: collector failed; diagnostic bytes captured: 543",
+          "PowerShell compatibility collector unavailable; source state retained: collector failed; diagnostic bytes captured: 543",
+          "PowerShell compatibility collector unavailable; source state retained: collector failed; diagnostic bytes captured: 543"
+        ]
+      },
+      {
+        "unit": "eventlog",
+        "gaps": []
+      }
+    ],
+    "missing_event_channels": [
+      "Microsoft-Windows-Hyper-V-VMMS/Admin",
+      "Microsoft-Windows-Sysmon/Operational"
+    ],
+    "at": "2026-10-23T16:41:56.786933+08:00",
+    "source_run_window": "Rows appended after the pre-update watermark, including an old-backend in-flight batch completed during replacement.",
+    "history_anchors": 6,
+    "performance": [
+      {
+        "query": "timeline",
+        "milliseconds": [
+          55,
+          52,
+          43
+        ],
+        "status": [
+          "loaded",
+          "loaded",
+          "loaded"
+        ],
+        "response_bytes": [
+          171458,
+          171458,
+          171458
+        ]
+      },
+      {
+        "query": "hardware_all_history",
+        "milliseconds": [
+          516,
+          86,
+          94
+        ],
+        "status": [
+          "loaded",
+          "loaded",
+          "loaded"
+        ],
+        "response_bytes": [
+          179271,
+          179271,
+          179271
+        ]
+      },
+      {
+        "query": "historical_service_compare",
+        "milliseconds": [
+          1771,
+          315,
+          316
+        ],
+        "status": [
+          "loaded",
+          "loaded",
+          "loaded"
+        ],
+        "response_bytes": [
+          325292,
+          325292,
+          325292
+        ]
+      }
+    ],
+    "desktop": {
+      "version": "开发版 0.2.42",
+      "card_text": "历史数据占用\n75.45 GB\n保留策略\n不限容量\n\n保留全部历史，存储占用会随采集增加。\n\n检查时间：2026-10-23 16:41:04\n统计范围\n\n包含当前历史数据库及其写入缓存，不含备份、导出文件和程序文件。按文件大小统计，1 GB = 10 亿字节。",
+      "stable_card": true,
+      "stable_metric": true,
+      "details_open": true,
+      "backend_pid": 137752,
+      "overflow": false,
+      "errors": []
+    },
+    "temporary_wal_released_bytes": 4245956672
+  }
 }
