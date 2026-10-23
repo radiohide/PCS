@@ -1,0 +1,1471 @@
+{
+  "title": "存储增长诊断与优化实施方案",
+  "date": "2026-10-23",
+  "software": {
+    "desktop": "0.2.41",
+    "backend": "0.2.40"
+  },
+  "scope": "仅正常入口配置的新采集实例；数据库 mode=ro、query_only；未读取旧备份，未修改采集配置、清理历史或执行 VACUUM。",
+  "measurement": {
+    "initial_time": "2026-10-23 15:15:14",
+    "initial_files": {
+      "history.db": 71686856704,
+      "history.db-shm": 98304,
+      "history.db-wal": 49666632,
+      "service-startup.json": 305
+    },
+    "pragmas": {
+      "page_count": 17501676,
+      "page_size": 4096,
+      "freelist_count": 0,
+      "journal_mode": "wal",
+      "auto_vacuum": 2
+    },
+    "snapshot_scan_bound": 478048,
+    "snapshot_scan_complete": true,
+    "snapshot_scan_seconds": 5.907000000006519,
+    "raw_snapshot_payload_bytes": 9142251835,
+    "snapshot_sources": 95,
+    "source_times_and_counts": {
+      "pcscope.shell.registrations": {
+        "first_observed": "2026-10-22T06:09:54.4398390Z",
+        "last_observed": "2026-10-23T07:24:23.4911891Z",
+        "last_shard_items": 68
+      },
+      "pcscope.network.firewall-rules": {
+        "first_observed": "2026-10-22T06:10:41.4809518Z",
+        "last_observed": "2026-10-23T07:19:31.6831185Z",
+        "last_shard_items": 32
+      },
+      "pcscope.startup.services": {
+        "first_observed": "2026-10-22T06:09:57.0982209Z",
+        "last_observed": "2026-10-23T07:24:23.7681924Z",
+        "last_shard_items": 281
+      },
+      "pcscope.hardware.devices": {
+        "first_observed": "2026-10-22T06:09:59.7483502Z",
+        "last_observed": "2026-10-23T07:24:24.3238057Z",
+        "last_shard_items": 213
+      },
+      "counts": {
+        "all": 15425896,
+        "done": 15425896,
+        "shell": 12563773,
+        "shell_percent": 81.44598537420453
+      }
+    },
+    "snapshot_ranking": [
+      {
+        "source": "pcscope.shell.registrations",
+        "snapshots": 98688,
+        "payload_bytes": 4811763198,
+        "share_of_snapshot_payload_percent": 52.632
+      },
+      {
+        "source": "pcscope.network.firewall-rules",
+        "snapshots": 15696,
+        "payload_bytes": 2769689894,
+        "share_of_snapshot_payload_percent": 30.295
+      },
+      {
+        "source": "pcscope.network.tcp",
+        "snapshots": 15680,
+        "payload_bytes": 476917597,
+        "share_of_snapshot_payload_percent": 5.217
+      },
+      {
+        "source": "pcscope.startup.services",
+        "snapshots": 1542,
+        "payload_bytes": 212337370,
+        "share_of_snapshot_payload_percent": 2.323
+      },
+      {
+        "source": "pcscope.startup.tasks",
+        "snapshots": 1542,
+        "payload_bytes": 112391802,
+        "share_of_snapshot_payload_percent": 1.229
+      },
+      {
+        "source": "pcscope.hardware.driver-packages",
+        "snapshots": 2096,
+        "payload_bytes": 109704771,
+        "share_of_snapshot_payload_percent": 1.2
+      },
+      {
+        "source": "pcscope.hardware.devices",
+        "snapshots": 1542,
+        "payload_bytes": 82803918,
+        "share_of_snapshot_payload_percent": 0.906
+      },
+      {
+        "source": "pcscope.execution.module-file-state",
+        "snapshots": 14365,
+        "payload_bytes": 66554740,
+        "share_of_snapshot_payload_percent": 0.728
+      },
+      {
+        "source": "pcscope.network.routes",
+        "snapshots": 15696,
+        "payload_bytes": 52922700,
+        "share_of_snapshot_payload_percent": 0.579
+      },
+      {
+        "source": "pcscope.hardware.driver-services",
+        "snapshots": 2096,
+        "payload_bytes": 45836507,
+        "share_of_snapshot_payload_percent": 0.501
+      },
+      {
+        "source": "pcscope.startup.task-details",
+        "snapshots": 928,
+        "payload_bytes": 41029607,
+        "share_of_snapshot_payload_percent": 0.449
+      },
+      {
+        "source": "pcscope.execution.processes",
+        "snapshots": 2320,
+        "payload_bytes": 36501414,
+        "share_of_snapshot_payload_percent": 0.399
+      },
+      {
+        "source": "pcscope.hardware.driver-bindings",
+        "snapshots": 2096,
+        "payload_bytes": 33438585,
+        "share_of_snapshot_payload_percent": 0.366
+      },
+      {
+        "source": "pcscope.environment.configuration",
+        "snapshots": 928,
+        "payload_bytes": 30366016,
+        "share_of_snapshot_payload_percent": 0.332
+      },
+      {
+        "source": "pcscope.network.udp",
+        "snapshots": 14864,
+        "payload_bytes": 30352767,
+        "share_of_snapshot_payload_percent": 0.332
+      },
+      {
+        "source": "pcscope.network.winrm-configuration",
+        "snapshots": 15696,
+        "payload_bytes": 23455710,
+        "share_of_snapshot_payload_percent": 0.257
+      },
+      {
+        "source": "pcscope.network.dns-configuration",
+        "snapshots": 15696,
+        "payload_bytes": 17696259,
+        "share_of_snapshot_payload_percent": 0.194
+      },
+      {
+        "source": "pcscope.startup.logon",
+        "snapshots": 1542,
+        "payload_bytes": 16754978,
+        "share_of_snapshot_payload_percent": 0.183
+      },
+      {
+        "source": "pcscope.execution.modules",
+        "snapshots": 2448,
+        "payload_bytes": 9887631,
+        "share_of_snapshot_payload_percent": 0.108
+      },
+      {
+        "source": "pcscope.network.access",
+        "snapshots": 15696,
+        "payload_bytes": 9878670,
+        "share_of_snapshot_payload_percent": 0.108
+      },
+      {
+        "source": "pcscope.network.firewall-profiles",
+        "snapshots": 15696,
+        "payload_bytes": 7613541,
+        "share_of_snapshot_payload_percent": 0.083
+      },
+      {
+        "source": "pcscope.network.shares",
+        "snapshots": 15696,
+        "payload_bytes": 7053390,
+        "share_of_snapshot_payload_percent": 0.077
+      },
+      {
+        "source": "pcscope.identity.groups",
+        "snapshots": 1542,
+        "payload_bytes": 6618264,
+        "share_of_snapshot_payload_percent": 0.072
+      },
+      {
+        "source": "pcscope.software",
+        "snapshots": 302,
+        "payload_bytes": 6336189,
+        "share_of_snapshot_payload_percent": 0.069
+      },
+      {
+        "source": "pcscope.network.adapters",
+        "snapshots": 1542,
+        "payload_bytes": 6246632,
+        "share_of_snapshot_payload_percent": 0.068
+      },
+      {
+        "source": "pcscope.software.appx-user",
+        "snapshots": 2320,
+        "payload_bytes": 6163515,
+        "share_of_snapshot_payload_percent": 0.067
+      },
+      {
+        "source": "pcscope.network.profiles",
+        "snapshots": 15696,
+        "payload_bytes": 5640750,
+        "share_of_snapshot_payload_percent": 0.062
+      },
+      {
+        "source": "pcscope.network.addresses",
+        "snapshots": 1542,
+        "payload_bytes": 5231116,
+        "share_of_snapshot_payload_percent": 0.057
+      },
+      {
+        "source": "pcscope.network.share-sessions",
+        "snapshots": 15696,
+        "payload_bytes": 4928544,
+        "share_of_snapshot_payload_percent": 0.054
+      },
+      {
+        "source": "pcscope.network.mapped-drives",
+        "snapshots": 15696,
+        "payload_bytes": 4912848,
+        "share_of_snapshot_payload_percent": 0.054
+      },
+      {
+        "source": "pcscope.network.dns-cache",
+        "snapshots": 15696,
+        "payload_bytes": 4855051,
+        "share_of_snapshot_payload_percent": 0.053
+      },
+      {
+        "source": "pcscope.network.ipsec",
+        "snapshots": 15696,
+        "payload_bytes": 4787280,
+        "share_of_snapshot_payload_percent": 0.052
+      },
+      {
+        "source": "pcscope.network.hosts",
+        "snapshots": 15696,
+        "payload_bytes": 4787280,
+        "share_of_snapshot_payload_percent": 0.052
+      },
+      {
+        "source": "pcscope.identity.accounts",
+        "snapshots": 1542,
+        "payload_bytes": 4707726,
+        "share_of_snapshot_payload_percent": 0.051
+      },
+      {
+        "source": "pcscope.system.clock",
+        "snapshots": 2320,
+        "payload_bytes": 3630945,
+        "share_of_snapshot_payload_percent": 0.04
+      },
+      {
+        "source": "pcscope.startup.session-hooks",
+        "snapshots": 928,
+        "payload_bytes": 3429714,
+        "share_of_snapshot_payload_percent": 0.038
+      },
+      {
+        "source": "pcscope.system.hotfixes",
+        "snapshots": 1542,
+        "payload_bytes": 2852700,
+        "share_of_snapshot_payload_percent": 0.031
+      },
+      {
+        "source": "pcscope.software.user-inventory",
+        "snapshots": 2320,
+        "payload_bytes": 2840115,
+        "share_of_snapshot_payload_percent": 0.031
+      },
+      {
+        "source": "pcscope.desktop.shortcuts",
+        "snapshots": 928,
+        "payload_bytes": 2815975,
+        "share_of_snapshot_payload_percent": 0.031
+      },
+      {
+        "source": "pcscope.identity.profiles",
+        "snapshots": 2320,
+        "payload_bytes": 2763265,
+        "share_of_snapshot_payload_percent": 0.03
+      },
+      {
+        "source": "pcscope.apps.dotnet-runtimes",
+        "snapshots": 2288,
+        "payload_bytes": 2629627,
+        "share_of_snapshot_payload_percent": 0.029
+      },
+      {
+        "source": "pcscope.software.optional-features",
+        "snapshots": 2320,
+        "payload_bytes": 2464275,
+        "share_of_snapshot_payload_percent": 0.027
+      },
+      {
+        "source": "pcscope.startup.advanced-extensions",
+        "snapshots": 928,
+        "payload_bytes": 2318202,
+        "share_of_snapshot_payload_percent": 0.025
+      },
+      {
+        "source": "pcscope.execution.module-scan-status",
+        "snapshots": 3939,
+        "payload_bytes": 2288413,
+        "share_of_snapshot_payload_percent": 0.025
+      },
+      {
+        "source": "pcscope.system.reboot-pending",
+        "snapshots": 2320,
+        "payload_bytes": 2155570,
+        "share_of_snapshot_payload_percent": 0.024
+      },
+      {
+        "source": "pcscope.security.key-metadata",
+        "snapshots": 5568,
+        "payload_bytes": 2077734,
+        "share_of_snapshot_payload_percent": 0.023
+      },
+      {
+        "source": "pcscope.system.update-history",
+        "snapshots": 2320,
+        "payload_bytes": 2055539,
+        "share_of_snapshot_payload_percent": 0.022
+      },
+      {
+        "source": "pcscope.storage.partitions",
+        "snapshots": 2096,
+        "payload_bytes": 1762212,
+        "share_of_snapshot_payload_percent": 0.019
+      },
+      {
+        "source": "pcscope.security.certificates.currentuser",
+        "snapshots": 928,
+        "payload_bytes": 1685886,
+        "share_of_snapshot_payload_percent": 0.018
+      },
+      {
+        "source": "pcscope.security.certificates.localmachine",
+        "snapshots": 928,
+        "payload_bytes": 1631250,
+        "share_of_snapshot_payload_percent": 0.018
+      },
+      {
+        "source": "pcscope.apps.chromium-extensions",
+        "snapshots": 2288,
+        "payload_bytes": 1586180,
+        "share_of_snapshot_payload_percent": 0.017
+      },
+      {
+        "source": "pcscope.storage.volumes",
+        "snapshots": 1542,
+        "payload_bytes": 1520412,
+        "share_of_snapshot_payload_percent": 0.017
+      },
+      {
+        "source": "pcscope.identity.logon-sessions",
+        "snapshots": 2320,
+        "payload_bytes": 1328490,
+        "share_of_snapshot_payload_percent": 0.015
+      },
+      {
+        "source": "pcscope.policy.configuration",
+        "snapshots": 928,
+        "payload_bytes": 1300882,
+        "share_of_snapshot_payload_percent": 0.014
+      },
+      {
+        "source": "pcscope.identity.assigned-rights",
+        "snapshots": 2320,
+        "payload_bytes": 1264545,
+        "share_of_snapshot_payload_percent": 0.014
+      },
+      {
+        "source": "pcscope.desktop.shell-settings",
+        "snapshots": 928,
+        "payload_bytes": 1191030,
+        "share_of_snapshot_payload_percent": 0.013
+      },
+      {
+        "source": "pcscope.software.provisioned",
+        "snapshots": 2320,
+        "payload_bytes": 1164785,
+        "share_of_snapshot_payload_percent": 0.013
+      },
+      {
+        "source": "pcscope.desktop.printer-drivers",
+        "snapshots": 928,
+        "payload_bytes": 1059428,
+        "share_of_snapshot_payload_percent": 0.012
+      },
+      {
+        "source": "pcscope.identity.machine",
+        "snapshots": 2320,
+        "payload_bytes": 1050815,
+        "share_of_snapshot_payload_percent": 0.011
+      },
+      {
+        "source": "pcscope.execution.resources",
+        "snapshots": 2320,
+        "payload_bytes": 1027715,
+        "share_of_snapshot_payload_percent": 0.011
+      },
+      {
+        "source": "pcscope.power.configuration",
+        "snapshots": 2096,
+        "payload_bytes": 981976,
+        "share_of_snapshot_payload_percent": 0.011
+      },
+      {
+        "source": "pcscope.storage.disks",
+        "snapshots": 2096,
+        "payload_bytes": 917917,
+        "share_of_snapshot_payload_percent": 0.01
+      },
+      {
+        "source": "pcscope.collector.event-channel-coverage",
+        "snapshots": 928,
+        "payload_bytes": 910032,
+        "share_of_snapshot_payload_percent": 0.01
+      },
+      {
+        "source": "pcscope.hardware.disk-health",
+        "snapshots": 2096,
+        "payload_bytes": 890145,
+        "share_of_snapshot_payload_percent": 0.01
+      },
+      {
+        "source": "pcscope.system.version",
+        "snapshots": 1542,
+        "payload_bytes": 883566,
+        "share_of_snapshot_payload_percent": 0.01
+      },
+      {
+        "source": "pcscope.virtualization.platform",
+        "snapshots": 1542,
+        "payload_bytes": 832680,
+        "share_of_snapshot_payload_percent": 0.009
+      },
+      {
+        "source": "pcscope.identity.interactive-sessions",
+        "snapshots": 2320,
+        "payload_bytes": 832445,
+        "share_of_snapshot_payload_percent": 0.009
+      },
+      {
+        "source": "pcscope.system.boot-state",
+        "snapshots": 1542,
+        "payload_bytes": 809550,
+        "share_of_snapshot_payload_percent": 0.009
+      },
+      {
+        "source": "pcscope.collector.scoped-configuration",
+        "snapshots": 2288,
+        "payload_bytes": 804518,
+        "share_of_snapshot_payload_percent": 0.009
+      },
+      {
+        "source": "pcscope.hardware.firmware",
+        "snapshots": 2096,
+        "payload_bytes": 799886,
+        "share_of_snapshot_payload_percent": 0.009
+      },
+      {
+        "source": "pcscope.hardware.battery",
+        "snapshots": 2096,
+        "payload_bytes": 788493,
+        "share_of_snapshot_payload_percent": 0.009
+      },
+      {
+        "source": "pcscope.apps.npm-global-packages",
+        "snapshots": 2288,
+        "payload_bytes": 787358,
+        "share_of_snapshot_payload_percent": 0.009
+      },
+      {
+        "source": "pcscope.apps.onedrive-registration",
+        "snapshots": 2288,
+        "payload_bytes": 727584,
+        "share_of_snapshot_payload_percent": 0.008
+      },
+      {
+        "source": "pcscope.system.restore-points",
+        "snapshots": 2320,
+        "payload_bytes": 726160,
+        "share_of_snapshot_payload_percent": 0.008
+      },
+      {
+        "source": "pcscope.apps.firefox-extensions",
+        "snapshots": 2288,
+        "payload_bytes": 720720,
+        "share_of_snapshot_payload_percent": 0.008
+      },
+      {
+        "source": "pcscope.apps.browser-policies",
+        "snapshots": 2288,
+        "payload_bytes": 716144,
+        "share_of_snapshot_payload_percent": 0.008
+      },
+      {
+        "source": "pcscope.apps.ide-extensions",
+        "snapshots": 2288,
+        "payload_bytes": 711568,
+        "share_of_snapshot_payload_percent": 0.008
+      },
+      {
+        "source": "pcscope.desktop.printer-ports",
+        "snapshots": 928,
+        "payload_bytes": 644032,
+        "share_of_snapshot_payload_percent": 0.007
+      },
+      {
+        "source": "pcscope.security.protection-policy",
+        "snapshots": 928,
+        "payload_bytes": 620020,
+        "share_of_snapshot_payload_percent": 0.007
+      },
+      {
+        "source": "pcscope.desktop.printing",
+        "snapshots": 928,
+        "payload_bytes": 540386,
+        "share_of_snapshot_payload_percent": 0.006
+      },
+      {
+        "source": "pcscope.security.protection",
+        "snapshots": 928,
+        "payload_bytes": 432139,
+        "share_of_snapshot_payload_percent": 0.005
+      },
+      {
+        "source": "pcscope.desktop.clipboard",
+        "snapshots": 928,
+        "payload_bytes": 366850,
+        "share_of_snapshot_payload_percent": 0.004
+      },
+      {
+        "source": "pcscope.startup.wmi-bindings",
+        "snapshots": 928,
+        "payload_bytes": 345796,
+        "share_of_snapshot_payload_percent": 0.004
+      },
+      {
+        "source": "pcscope.security.deviceguard",
+        "snapshots": 928,
+        "payload_bytes": 334718,
+        "share_of_snapshot_payload_percent": 0.004
+      },
+      {
+        "source": "pcscope.startup.wmi-consumers",
+        "snapshots": 928,
+        "payload_bytes": 323292,
+        "share_of_snapshot_payload_percent": 0.004
+      },
+      {
+        "source": "pcscope.security.products",
+        "snapshots": 928,
+        "payload_bytes": 316274,
+        "share_of_snapshot_payload_percent": 0.003
+      },
+      {
+        "source": "pcscope.startup.wmi-filters",
+        "snapshots": 928,
+        "payload_bytes": 311112,
+        "share_of_snapshot_payload_percent": 0.003
+      },
+      {
+        "source": "pcscope.security.encryption",
+        "snapshots": 928,
+        "payload_bytes": 304384,
+        "share_of_snapshot_payload_percent": 0.003
+      },
+      {
+        "source": "pcscope.security.tpm",
+        "snapshots": 928,
+        "payload_bytes": 300846,
+        "share_of_snapshot_payload_percent": 0.003
+      },
+      {
+        "source": "pcscope.virtualization.wsl-registration",
+        "snapshots": 928,
+        "payload_bytes": 299744,
+        "share_of_snapshot_payload_percent": 0.003
+      },
+      {
+        "source": "pcscope.security.ssh-public-keys",
+        "snapshots": 928,
+        "payload_bytes": 293248,
+        "share_of_snapshot_payload_percent": 0.003
+      },
+      {
+        "source": "pcscope.security.secureboot",
+        "snapshots": 928,
+        "payload_bytes": 291102,
+        "share_of_snapshot_payload_percent": 0.003
+      },
+      {
+        "source": "pcscope.security.detections",
+        "snapshots": 928,
+        "payload_bytes": 288608,
+        "share_of_snapshot_payload_percent": 0.003
+      },
+      {
+        "source": "pcscope.desktop.print-jobs",
+        "snapshots": 928,
+        "payload_bytes": 287680,
+        "share_of_snapshot_payload_percent": 0.003
+      },
+      {
+        "source": "pcscope.usn.watch-list",
+        "snapshots": 148,
+        "payload_bytes": 48898,
+        "share_of_snapshot_payload_percent": 0.001
+      }
+    ],
+    "record_payload_ranking": [
+      {
+        "source": "pcscope.eventlog.security",
+        "records": 36267,
+        "bytes": 239676761
+      },
+      {
+        "source": "pcscope.execution.module-file-state",
+        "records": 14365,
+        "bytes": 122470798
+      },
+      {
+        "source": "pcscope.eventlog.microsoft-windows-wmi-activity/operational",
+        "records": 11517,
+        "bytes": 59208441
+      },
+      {
+        "source": "pcscope.network.udp",
+        "records": 33647,
+        "bytes": 34337938
+      },
+      {
+        "source": "pcscope.network.tcp",
+        "records": 26346,
+        "bytes": 31810194
+      },
+      {
+        "source": "pcscope.execution.modules",
+        "records": 14110,
+        "bytes": 19447947
+      },
+      {
+        "source": "pcscope.startup.task-details",
+        "records": 1806,
+        "bytes": 12288648
+      },
+      {
+        "source": "pcscope.eventlog.microsoft-windows-taskscheduler/operational",
+        "records": 2142,
+        "bytes": 10433210
+      },
+      {
+        "source": "pcscope.eventlog.microsoft-windows-networkprofile/operational",
+        "records": 1613,
+        "bytes": 9255394
+      },
+      {
+        "source": "pcscope.eventlog.microsoft-windows-grouppolicy/operational",
+        "records": 1470,
+        "bytes": 6100857
+      },
+      {
+        "source": "pcscope.shell.registrations",
+        "records": 8161,
+        "bytes": 4326013
+      },
+      {
+        "source": "pcscope.identity.profiles",
+        "records": 582,
+        "bytes": 4169162
+      },
+      {
+        "source": "pcscope.eventlog.microsoft-windows-powershell/operational",
+        "records": 354,
+        "bytes": 3404553
+      },
+      {
+        "source": "pcscope.network.routes",
+        "records": 2156,
+        "bytes": 3371131
+      },
+      {
+        "source": "pcscope.execution.processes",
+        "records": 4486,
+        "bytes": 3303603
+      },
+      {
+        "source": "pcscope.network.firewall-rules",
+        "records": 518,
+        "bytes": 2954480
+      },
+      {
+        "source": "pcscope.startup.services",
+        "records": 2420,
+        "bytes": 2829638
+      },
+      {
+        "source": "pcscope.network.addresses",
+        "records": 3002,
+        "bytes": 1353930
+      },
+      {
+        "source": "pcscope.eventlog.application",
+        "records": 250,
+        "bytes": 1243344
+      },
+      {
+        "source": "pcscope.execution.resources",
+        "records": 3192,
+        "bytes": 1177816
+      },
+      {
+        "source": "pcscope.eventlog.system",
+        "records": 215,
+        "bytes": 1017956
+      },
+      {
+        "source": "pcscope.hardware.driver-packages",
+        "records": 740,
+        "bytes": 912633
+      },
+      {
+        "source": "pcscope.system.clock",
+        "records": 609,
+        "bytes": 668998
+      },
+      {
+        "source": "pcscope.environment.configuration",
+        "records": 1116,
+        "bytes": 609340
+      },
+      {
+        "source": "pcscope.collector.event-channel-coverage",
+        "records": 513,
+        "bytes": 545289
+      },
+      {
+        "source": "pcscope.eventlog.microsoft-windows-windows defender/operational",
+        "records": 66,
+        "bytes": 510576
+      },
+      {
+        "source": "pcscope.execution.module-scan-status",
+        "records": 359,
+        "bytes": 474655
+      },
+      {
+        "source": "pcscope.hardware.driver-services",
+        "records": 403,
+        "bytes": 416761
+      },
+      {
+        "source": "pcscope.hardware.driver-bindings",
+        "records": 261,
+        "bytes": 346105
+      },
+      {
+        "source": "pcscope.hardware.battery",
+        "records": 131,
+        "bytes": 288992
+      },
+      {
+        "source": "pcscope.eventlog.microsoft-windows-wlan-autoconfig/operational",
+        "records": 36,
+        "bytes": 203538
+      },
+      {
+        "source": "pcscope.startup.tasks",
+        "records": 237,
+        "bytes": 114843
+      },
+      {
+        "source": "pcscope.hardware.devices",
+        "records": 261,
+        "bytes": 100484
+      },
+      {
+        "source": "pcscope.eventlog.microsoft-windows-appxdeploymentserver/operational",
+        "records": 17,
+        "bytes": 84437
+      },
+      {
+        "source": "pcscope.startup.session-hooks",
+        "records": 66,
+        "bytes": 60402
+      },
+      {
+        "source": "pcscope.software",
+        "records": 51,
+        "bytes": 53228
+      },
+      {
+        "source": "pcscope.desktop.shortcuts",
+        "records": 89,
+        "bytes": 52952
+      },
+      {
+        "source": "pcscope.core",
+        "records": 19,
+        "bytes": 52076
+      },
+      {
+        "source": "pcscope.software.appx-user",
+        "records": 64,
+        "bytes": 45213
+      },
+      {
+        "source": "pcscope.startup.advanced-extensions",
+        "records": 64,
+        "bytes": 39467
+      },
+      {
+        "source": "pcscope.network.adapters",
+        "records": 75,
+        "bytes": 37050
+      },
+      {
+        "source": "pcscope.software.optional-features",
+        "records": 136,
+        "bytes": 34395
+      },
+      {
+        "source": "pcscope.security.certificates.currentuser",
+        "records": 44,
+        "bytes": 30016
+      },
+      {
+        "source": "pcscope.security.certificates.localmachine",
+        "records": 42,
+        "bytes": 28776
+      },
+      {
+        "source": "pcscope.eventlog.microsoft-windows-windowsupdateclient/operational",
+        "records": 6,
+        "bytes": 26123
+      },
+      {
+        "source": "pcscope.apps.chromium-extensions",
+        "records": 18,
+        "bytes": 22550
+      },
+      {
+        "source": "pcscope.network.winrm-configuration",
+        "records": 24,
+        "bytes": 21064
+      },
+      {
+        "source": "pcscope.policy.configuration",
+        "records": 34,
+        "bytes": 20704
+      },
+      {
+        "source": "pcscope.network.dns-cache",
+        "records": 42,
+        "bytes": 18195
+      },
+      {
+        "source": "pcscope.security.protection",
+        "records": 4,
+        "bytes": 18020
+      },
+      {
+        "source": "pcscope.desktop.shell-settings",
+        "records": 6,
+        "bytes": 16162
+      },
+      {
+        "source": "pcscope.apps.dotnet-runtimes",
+        "records": 24,
+        "bytes": 15912
+      },
+      {
+        "source": "pcscope.software.user-inventory",
+        "records": 12,
+        "bytes": 15903
+      },
+      {
+        "source": "pcscope.network.dns-configuration",
+        "records": 14,
+        "bytes": 15348
+      },
+      {
+        "source": "pcscope.startup.logon",
+        "records": 27,
+        "bytes": 14229
+      },
+      {
+        "source": "pcscope.desktop.printer-drivers",
+        "records": 6,
+        "bytes": 14043
+      },
+      {
+        "source": "pcscope.system.update-history",
+        "records": 10,
+        "bytes": 10918
+      },
+      {
+        "source": "pcscope.system.reboot-pending",
+        "records": 4,
+        "bytes": 10639
+      },
+      {
+        "source": "pcscope.storage.partitions",
+        "records": 12,
+        "bytes": 10342
+      },
+      {
+        "source": "pcscope.desktop.printer-ports",
+        "records": 11,
+        "bytes": 8030
+      },
+      {
+        "source": "pcscope.identity.groups",
+        "records": 20,
+        "bytes": 7088
+      },
+      {
+        "source": "pcscope.identity.assigned-rights",
+        "records": 15,
+        "bytes": 6412
+      },
+      {
+        "source": "pcscope.identity.logon-sessions",
+        "records": 11,
+        "bytes": 6300
+      },
+      {
+        "source": "pcscope.security.protection-policy",
+        "records": 1,
+        "bytes": 5772
+      },
+      {
+        "source": "pcscope.network.access",
+        "records": 4,
+        "bytes": 5592
+      },
+      {
+        "source": "pcscope.power.configuration",
+        "records": 11,
+        "bytes": 5121
+      },
+      {
+        "source": "pcscope.desktop.printing",
+        "records": 4,
+        "bytes": 5029
+      },
+      {
+        "source": "pcscope.software.provisioned",
+        "records": 10,
+        "bytes": 4546
+      },
+      {
+        "source": "pcscope.identity.accounts",
+        "records": 8,
+        "bytes": 4477
+      },
+      {
+        "source": "pcscope.storage.disks",
+        "records": 9,
+        "bytes": 4314
+      },
+      {
+        "source": "pcscope.hardware.disk-health",
+        "records": 9,
+        "bytes": 4044
+      },
+      {
+        "source": "pcscope.hardware.firmware",
+        "records": 9,
+        "bytes": 3567
+      },
+      {
+        "source": "pcscope.network.firewall-profiles",
+        "records": 3,
+        "bytes": 3225
+      },
+      {
+        "source": "pcscope.identity.machine",
+        "records": 4,
+        "bytes": 3199
+      },
+      {
+        "source": "pcscope.system.hotfixes",
+        "records": 9,
+        "bytes": 2982
+      },
+      {
+        "source": "pcscope.network.shares",
+        "records": 3,
+        "bytes": 2837
+      },
+      {
+        "source": "pcscope.desktop.clipboard",
+        "records": 4,
+        "bytes": 1874
+      },
+      {
+        "source": "pcscope.security.key-metadata",
+        "records": 5,
+        "bytes": 1644
+      },
+      {
+        "source": "pcscope.identity.interactive-sessions",
+        "records": 4,
+        "bytes": 1534
+      },
+      {
+        "source": "pcscope.network.profiles",
+        "records": 2,
+        "bytes": 1169
+      },
+      {
+        "source": "pcscope.startup.wmi-bindings",
+        "records": 1,
+        "bytes": 1048
+      },
+      {
+        "source": "pcscope.storage.volumes",
+        "records": 3,
+        "bytes": 1041
+      },
+      {
+        "source": "pcscope.security.deviceguard",
+        "records": 1,
+        "bytes": 928
+      },
+      {
+        "source": "pcscope.apps.npm-global-packages",
+        "records": 2,
+        "bytes": 727
+      },
+      {
+        "source": "pcscope.startup.wmi-consumers",
+        "records": 1,
+        "bytes": 705
+      },
+      {
+        "source": "pcscope.security.products",
+        "records": 1,
+        "bytes": 656
+      },
+      {
+        "source": "pcscope.collector.scoped-configuration",
+        "records": 1,
+        "bytes": 652
+      },
+      {
+        "source": "pcscope.virtualization.platform",
+        "records": 2,
+        "bytes": 564
+      },
+      {
+        "source": "pcscope.system.restore-points",
+        "records": 2,
+        "bytes": 561
+      },
+      {
+        "source": "pcscope.startup.wmi-filters",
+        "records": 1,
+        "bytes": 553
+      },
+      {
+        "source": "pcscope.security.tpm",
+        "records": 1,
+        "bytes": 505
+      },
+      {
+        "source": "pcscope.security.encryption",
+        "records": 1,
+        "bytes": 455
+      },
+      {
+        "source": "pcscope.system.version",
+        "records": 1,
+        "bytes": 436
+      },
+      {
+        "source": "pcscope.system.boot-state",
+        "records": 1,
+        "bytes": 391
+      },
+      {
+        "source": "pcscope.security.secureboot",
+        "records": 1,
+        "bytes": 218
+      },
+      {
+        "source": "pcscope.usn.watch-list",
+        "records": 1,
+        "bytes": 191
+      },
+      {
+        "source": "pcscope.virtualization.hyperv-checkpoints",
+        "records": 1,
+        "bytes": 173
+      },
+      {
+        "source": "pcscope.virtualization.hyperv-disks",
+        "records": 1,
+        "bytes": 173
+      },
+      {
+        "source": "pcscope.virtualization.hyperv-switches",
+        "records": 1,
+        "bytes": 173
+      },
+      {
+        "source": "pcscope.virtualization.hyperv-vms",
+        "records": 1,
+        "bytes": 173
+      },
+      {
+        "source": "pcscope.desktop.input",
+        "records": 1,
+        "bytes": 151
+      },
+      {
+        "source": "pcscope.startup.service-configuration",
+        "records": 1,
+        "bytes": 151
+      },
+      {
+        "source": "pcscope.eventlog.microsoft-windows-hyper-v-vmms/admin",
+        "records": 1,
+        "bytes": 126
+      },
+      {
+        "source": "pcscope.eventlog.microsoft-windows-sysmon/operational",
+        "records": 1,
+        "bytes": 126
+      }
+    ],
+    "duplicate_samples": {
+      "pcscope.shell.registrations": {
+        "snapshots_sampled": 512,
+        "scopes": 64,
+        "runs": 8,
+        "items_sampled": 65224,
+        "first": "2026-10-23T07:12:22.9671782Z",
+        "last": "2026-10-23T07:19:24.1624746Z",
+        "compared_items": 57071,
+        "unchanged_items": 57071,
+        "changed_items": 0,
+        "added": 0,
+        "removed": 0,
+        "unchanged_percent": 100.0,
+        "changed_fields": [],
+        "json_bytes": 24963752,
+        "zlib_bytes": 2546892,
+        "median_run_gap_seconds": 59.96685,
+        "minimum_gap": 37.023674,
+        "maximum_gap": 98.097579,
+        "seconds": 0.625
+      },
+      "pcscope.network.firewall-rules": {
+        "snapshots_sampled": 128,
+        "scopes": 16,
+        "runs": 8,
+        "items_sampled": 4032,
+        "first": "2026-10-23T07:12:31.8662959Z",
+        "last": "2026-10-23T07:19:31.6831185Z",
+        "compared_items": 3528,
+        "unchanged_items": 3528,
+        "changed_items": 0,
+        "added": 0,
+        "removed": 0,
+        "unchanged_percent": 100.0,
+        "changed_fields": [],
+        "json_bytes": 22389872,
+        "zlib_bytes": 969260,
+        "median_run_gap_seconds": 60.00215,
+        "minimum_gap": 36.042555,
+        "maximum_gap": 85.192056,
+        "seconds": 0.485
+      },
+      "pcscope.startup.services": {
+        "snapshots_sampled": 128,
+        "scopes": 1,
+        "runs": 128,
+        "items_sampled": 35968,
+        "first": "2026-10-23T05:11:23.7128396Z",
+        "last": "2026-10-23T07:19:25.3729860Z",
+        "compared_items": 35687,
+        "unchanged_items": 35508,
+        "changed_items": 179,
+        "added": 0,
+        "removed": 0,
+        "unchanged_percent": 99.4984,
+        "changed_fields": [
+          [
+            "pid",
+            179
+          ],
+          [
+            "state",
+            176
+          ],
+          [
+            "start_mode",
+            12
+          ]
+        ],
+        "json_bytes": 17625949,
+        "zlib_bytes": 3509031,
+        "median_run_gap_seconds": 60.000681,
+        "minimum_gap": 37.420435,
+        "maximum_gap": 127.816856,
+        "seconds": 0.796
+      },
+      "pcscope.hardware.devices": {
+        "snapshots_sampled": 128,
+        "scopes": 1,
+        "runs": 128,
+        "items_sampled": 26864,
+        "first": "2026-10-23T05:11:24.2530587Z",
+        "last": "2026-10-23T07:19:26.1516709Z",
+        "compared_items": 26651,
+        "unchanged_items": 26651,
+        "changed_items": 0,
+        "added": 4,
+        "removed": 0,
+        "unchanged_percent": 100.0,
+        "changed_fields": [],
+        "json_bytes": 6863936,
+        "zlib_bytes": 942035,
+        "median_run_gap_seconds": 59.998717,
+        "minimum_gap": 37.543042,
+        "maximum_gap": 127.810873,
+        "seconds": 0.375
+      },
+      "pcscope.execution.module-file-state": {
+        "snapshots_sampled": 128,
+        "scopes": 94,
+        "runs": 128,
+        "items_sampled": 128,
+        "first": "2026-10-23T07:03:08.4313299Z",
+        "last": "2026-10-23T07:13:21.3814404Z",
+        "compared_items": 34,
+        "unchanged_items": 0,
+        "changed_items": 34,
+        "added": 0,
+        "removed": 0,
+        "unchanged_percent": 0.0,
+        "changed_fields": [
+          [
+            "before",
+            34
+          ],
+          [
+            "check",
+            34
+          ],
+          [
+            "module_bindings",
+            32
+          ]
+        ],
+        "json_bytes": 597696,
+        "zlib_bytes": 189102,
+        "median_run_gap_seconds": 0.399791,
+        "minimum_gap": 0.142001,
+        "maximum_gap": 524.596543,
+        "seconds": 0.063
+      },
+      "pcscope.network.tcp": {
+        "snapshots_sampled": 128,
+        "scopes": 16,
+        "runs": 8,
+        "items_sampled": 3878,
+        "first": "2026-10-23T07:12:33.2987700Z",
+        "last": "2026-10-23T07:19:33.1176290Z",
+        "compared_items": 3316,
+        "unchanged_items": 3316,
+        "changed_items": 0,
+        "added": 86,
+        "removed": 79,
+        "unchanged_percent": 100.0,
+        "changed_fields": [],
+        "json_bytes": 4008534,
+        "zlib_bytes": 246168,
+        "median_run_gap_seconds": 59.980745,
+        "minimum_gap": 36.064409,
+        "maximum_gap": 85.563009,
+        "seconds": 0.14
+      }
+    },
+    "recent_metadata_samples": {
+      "evidence": {
+        "sample": 1000,
+        "average_text_bytes": 706.509,
+        "columns": {
+          "evidence_id": 180.0,
+          "item_id": 38.28,
+          "kind": 7.94,
+          "source": 27.11,
+          "structure_version": 2,
+          "source_scope": 117.9,
+          "native_record_id": 38.28,
+          "observed_at": 28.01,
+          "ingested_at": 24,
+          "decoding": 18,
+          "payload_ref": 224.98
+        }
+      },
+      "projection_queue": {
+        "sample": 1000,
+        "average_text_bytes": 282.791,
+        "columns": {
+          "evidence_id": 180.0,
+          "item_id": 38.28,
+          "projection": 12,
+          "state": 4.51,
+          "enqueued_at": 24,
+          "updated_at": 24
+        }
+      }
+    },
+    "evidence_refs_table_bytes": 3997659136,
+    "index_count": 77
+  },
+  "limits": [
+    "快照正文大小为逐行精确统计，包含空列表和信封；共享索引、关联表、页内空闲不分摊到采集项。",
+    "重复率来自明确时间范围的连续采集样本，不能当成全天去重率。",
+    "较重的 dbstat 扫描已停止；未获得全部大表与索引的精确物理占用，不据此发布各大表完整排名。",
+    "检查时后台仍写入，不同查询采样时间不同，数值不属于同一冻结快照。",
+    "较长只读扫描曾延后 WAL 复用；停止所有诊断连接后，末次文件观测 history.db 72,294,608,896 字节、WAL 4,245,956,672 字节；C 盘剩余约 8.18 GB。未手工截断 WAL。"
+  ],
+  "findings": [
+    {
+      "problem": "配置 600 秒，部分全量清单仍约 60 秒运行",
+      "evidence": "shell、firewall 最近八轮中位间隔均约 60 秒；plugins 实时配置全部 600 秒。main.rs 的设备/网络通知会 request_refresh 整组 powershell adapter；网络通知同时重跑整个 network 组；schedule due_at 用 manual_after 提前运行，冷却仅 30 秒。",
+      "certainty": "提前触发路径和实际频率均已核实；历史没有逐次触发原因，不能断言每一轮具体由设备还是网络通知引起。",
+      "code": [
+        "crates/service/src/main.rs:625",
+        "crates/service/src/schedule.rs:29",
+        "crates/service/src/schedule.rs:129",
+        "crates/service/src/device_notify.rs:85"
+      ]
+    },
+    {
+      "problem": "未变化内容依然保存完整快照并逐项入队",
+      "evidence": "shell 和 firewall 连续八轮样本既无字段变化，也无成员增删；ingest 的 unchanged 分支只跳过变化记录，随后仍调用 store_snapshot 和 record_snapshot_items。",
+      "code": [
+        "crates/storage/src/lib.rs:450",
+        "crates/storage/src/lib.rs:499",
+        "crates/storage/src/evidence.rs:81"
+      ]
+    },
+    {
+      "problem": "完成的处理队列常驻，长文本标识在多表和多索引重复",
+      "evidence": "统计时 15,425,896 条投影队列记录均为 done；shell 占 81.45%。证据表重复 source/scope/native_record_id/payload_ref；队列再次复制 evidence_id/item_id，并保留 done 行；COM 另有逐项和对象两类关联。",
+      "code": [
+        "crates/storage/src/evidence.rs:266",
+        "crates/storage/src/projection.rs:161",
+        "crates/storage/src/projection.rs:338",
+        "crates/storage/src/model.rs:93"
+      ]
+    },
+    {
+      "problem": "不限容量缺少物理磁盘保护",
+      "evidence": "retention_mode=unlimited、freelist_count=0，5 GB 配置并未生效为限额；当前保留策略允许持续增长。",
+      "code": [
+        "crates/storage/src/lib.rs:1265",
+        "crates/storage/src/lib.rs:1303"
+      ]
+    }
+  ],
+  "implementation_plan": [
+    {
+      "priority": "P0",
+      "title": "先控制新增量和保护磁盘",
+      "changes": [
+        "将通知触发与周期全量采集分离；设备通知只刷新受影响设备/驱动，网络通知只刷新网卡/IP/路由，不连带扫描 Shell、服务或防火墙全量规则。",
+        "通知快路径使用原生后端；PowerShell 保留单实例单次任务，不建立内部轮询。按对象合并通知、保留一个待办，加入冷却、持续通知预算和退避。",
+        "无关全量项目严格遵守用户 600 秒周期；手动采集为明确例外。记录触发原因、请求次数、合并次数和实际运行次数。",
+        "增加磁盘可用空间门限、单批写入预算、队列上限；低空间先停止高体积重复状态写入并明确标示受影响项目；不能无限堆积日志队列或推进未持久化书签。",
+        "先确认没有长读事务，再通过受控维护回收 WAL；不直接删除 db-wal 文件。"
+      ],
+      "acceptance": [
+        "持续通知 1 小时，无关全量采集不提前；任务并发不超过既有通道限制。",
+        "网卡/驱动新增与删除仍及时记录；事件合并不遗漏最终状态。",
+        "首次启动、后台重启、全局周期修改、单项覆盖、失败重试均纳入测试。"
+      ]
+    },
+    {
+      "priority": "P1",
+      "title": "内容去重与观察记录分离",
+      "changes": [
+        "每轮保存轻量采集凭证：来源、范围、配置版本、检查时间、完整性、结果、内容清单版本。相同内容复用原清单，保留本轮检查事实。",
+        "对象内容按稳定标识及内容指纹存一次；仅新增、删除、字段变化进入历史变化处理。完整成功空列表、部分读取、失败必须区分。",
+        "近期状态快照加变化记录与有界检查点；限制差异链长度，时间对比仍可快速定位任一检查时点。",
+        "不把检查时间、来源时间混入内容判等；模块地址等用户要求保留的字段继续判断变化。模块文件的签名检查时间与文件版本分离，不因每次检查而复制整份前后内容。",
+        "可无损压缩内容块，按校验摘要读取；保留隐私版本和规则版本边界，不跨错误范围合并。"
+      ],
+      "acceptance": [
+        "固定同一清单连续 1,000 轮，只产生一份内容，检查时间仍有 1,000 轮记录。",
+        "A→B→A、删除再出现、空列表、部分失败、缺字段、掩码、晚到记录、规则升级均保持正确。",
+        "迁移前后时间线动作、当前状态、时间对比、证据回溯一致；原文可按摘要校验还原。"
+      ]
+    },
+    {
+      "priority": "P2",
+      "title": "缩小证据、队列和索引",
+      "changes": [
+        "来源、范围、对象、内容、采集批次使用整数引用；长标识和解码上下文保存于共享记录。",
+        "完成队列转换为紧凑完成水位/批次状态；保留失败、待办、重试及规则升级重建入口，不能直接删 done 行破坏覆盖计数与重放语义。",
+        "用范围观察或清单版本表达未变化对象本轮仍在，不再为每轮每个对象复制多个长文本证据关联。",
+        "逐项审查索引与查询计划，用小型整数键、针对待办的部分索引替代宽文本重复索引；有基准再删除索引。",
+        "保留时间线和对象摘要预计算；将原始详情与列表摘要分离。"
+      ],
+      "acceptance": [
+        "崩溃重启、重复投递、回滚、队列压缩、规则升级后，处理恰好一次且可重建。",
+        "覆盖计数与查询逐项一致；已有 timeline/compare/association/refresh 回归通过。",
+        "相同输入回放的稳态新增存储目标减少至少 90%，这是验收目标而非已验证效果；查询 P95 不回退超过 10%。"
+      ]
+    },
+    {
+      "priority": "P3",
+      "title": "回收现有空间",
+      "changes": [
+        "优先在有足够空间的目标磁盘创建新格式数据库，分批转换、校验再切换，保留可回滚原库；只有验证通过且用户确认后删除旧库。",
+        "先停止重复写入，随后缩减可重建的完成队列和索引；处理小批次、限时提交、检查磁盘余量。",
+        "当前 auto_vacuum=INCREMENTAL，但起始 freelist=0；先产生可回收页才能回收，整理本身不能消除逻辑重复。",
+        "当前磁盘余量不适合直接全库 VACUUM；空间不足时停止迁移，不创建又一份巨型临时数据库。"
+      ],
+      "acceptance": [
+        "对当前新基线数据进行样本回放及全量内容清单校验；不中途引用旧备份。",
+        "强制中断后可续传或回滚；记录总量、完整性、摘要、A/B 对比结果一致。",
+        "验收同时测主库、WAL、可回收页、索引、磁盘实际剩余空间，不能只看记录条数。"
+      ]
+    },
+    {
+      "priority": "P4",
+      "title": "让采集健康持续显示增长来源",
+      "changes": [
+        "展示主库、写入缓存、近 24 小时新增量、磁盘剩余和占用前三采集项。",
+        "入库时累计来源内容字节、去重命中、采集次数、触发原因和队列积压；不要每次打开页面全库扫描。",
+        "全局异常只报告确实影响采集的空间不足或写入失败；不在每张对象卡片重复解释。"
+      ],
+      "acceptance": [
+        "健康页统计读取 P95 <100 ms，不调用全库 dbstat；总量与文件统计口径一致。",
+        "停采、失败、后台断连时，不把缺失统计展示为零或正常。"
+      ]
+    }
+  ],
+  "compression_sample_note": "zlib level 6 样本：shell 24,963,752 → 2,546,892 字节，firewall 22,389,872 → 969,260 字节；仅证明正文可压缩，不能将该比率直接外推为整库节省比例。",
+  "references": [
+    "https://sqlite.org/lang_corefunc.html#octet_length",
+    "https://www.sqlite.org/dbstat.html",
+    "https://www.sqlite.org/lang_vacuum.html"
+  ],
+  "deployment": "本次只诊断与形成方案，软件代码、版本及运行配置未改动。"
+}
