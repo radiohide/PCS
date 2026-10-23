@@ -79,7 +79,7 @@
         emptyPages=Array.isArray(items)&&items.length?0:emptyPages+1;
         if(more&&(!cursor||requested.has(cursor)||emptyPages>=3)){restartOnRetry=true;throw Error('分页未能继续，已停止自动读取。');}
       }catch(error){
-        if(alive()&&revision===generation){fault=error;onError(error,{append:append||loaded});}
+        if(alive()&&revision===generation){fault=error instanceof Error?error:new Error(typeof error==='string'?error:error?.message||'读取失败，请重试。');onError(fault,{append:append||loaded});}
       }finally{
         busy=false;
         if(alive()){

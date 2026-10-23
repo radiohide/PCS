@@ -1,0 +1,34 @@
+{
+  "version": "0.2.37",
+  "backend_version": "0.2.35",
+  "issue": "A reopened comparison showed zero changes before reading any object branches; string IPC failures also lost their error detail.",
+  "diagnosis": {
+    "from": "2026-10-22T06:20:00Z",
+    "until": "2026-10-22T09:20:00Z",
+    "source": "configured native-v2 instance only",
+    "before": "All branches collapsed, zero objects loaded, misleading zero-change counters. Initial service read failed; retry succeeded.",
+    "verified": "281 service objects read; the same 5 changes remain, including BITS stopped to running and Manual to Auto. No history repair was needed.",
+    "retry_first_page_ms": 3415
+  },
+  "changes": [
+    "Unread, reading and failed branches no longer display a zero-change conclusion",
+    "Category and type expansion persist locally; reopened branches resume loading; collapsed parents stay lazy",
+    "Partial-result counters report the number of objects compared and flag failed types",
+    "Normalize string IPC errors so pagination details retain the original failure reason"
+  ],
+  "tests": {
+    "check-state-compare.cjs": "passed, including unread/failure/loading summaries, string IPC error detail, recovery, remembered expansion, collapsed parent, filtering, alignment, pagination, quiet refresh and navigation",
+    "check-auto-page.cjs": "passed",
+    "check-front-refresh.cjs": "passed"
+  },
+  "deployment": "Desktop-only update; no backend restart or UAC required.",
+  "live_verification": {
+    "desktop_build": "passed",
+    "desktop_version": "0.2.37",
+    "services_checked": 281,
+    "changes": 5,
+    "dates_unchanged": true,
+    "tree_expansion_saved": true,
+    "backend_pid": 13268
+  }
+}

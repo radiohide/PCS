@@ -18,6 +18,8 @@ const PCScopeStateCompare=(()=>{
   function mount(container,{query,esc,localTime,errorText,categoryNames}){
     let disposed=false,revision=0,busy=false,applied=null,pagers=[],branches=[],loaded=0,totals={added:0,absent:0,changed:0},onlyChanges=true;
     try{onlyChanges=localStorage.getItem('pcscope.compareOnlyChanges')!=='false';}catch{}
+    let expanded=new Set();try{const saved=JSON.parse(localStorage.getItem('pcscope.compareExpanded'));if(Array.isArray(saved))expanded=new Set(saved.filter(key=>typeof key==='string'));}catch{}
+    const saveExpanded=()=>{try{localStorage.setItem('pcscope.compareExpanded',JSON.stringify([...expanded]));}catch{}};
     const now=new Date();let times={from:localInput(new Date(now.getTime()-3600000)),until:localInput(now)};
     try{const saved=JSON.parse(localStorage.getItem(storageKey));if(saved?.from&&saved?.until&&Number.isFinite(Date.parse(saved.from))&&Number.isFinite(Date.parse(saved.until)))times=saved;}catch{}
     container.innerHTML=`<div class="compare-times"><label>基准时间 <small>A · 左侧</small><input data-compare-from type="datetime-local" value="${esc(times.from)}"><span>截至此时的最近检查结果</span></label><label>对比时间 <small>B · 右侧</small><input data-compare-until type="datetime-local" value="${esc(times.until)}"><span>截至此时的最近检查结果</span></label></div><div class="compare-toolbar"><p data-compare-summary>选择两个时间点，查看对象和属性的变化。</p><button data-compare-run class="primary">对比</button></div><p data-compare-message role="status"></p><div data-compare-results></div>`;
@@ -31,14 +33,20 @@ const PCScopeStateCompare=(()=>{
     }
     toggle.onchange=()=>{onlyChanges=toggle.checked;try{localStorage.setItem('pcscope.compareOnlyChanges',String(onlyChanges));}catch{}filterObjects();summary();for(const pager of pagers)pager.resume();};
     const alive=()=>!disposed&&container.isConnected;
-    function summary(){container.querySelector('[data-compare-summary]').innerHTML=`${onlyChanges?'已检查':'已载入'} ${loaded} 个对象 <span class="compare-changed">${totals.changed} 项变化</span><span class="compare-added">${totals.added} 项首次记录</span><span class="compare-absent">${totals.absent} 项退出清单</span>`;}
+    function summary(){
+      const failed=branches.filter(b=>b.failed()).length,reading=branches.some(b=>b.reading()),node=container.querySelector('[data-compare-summary]');
+      if(!loaded){node.textContent=failed?'部分类型读取失败，请在对应类型下重试。':reading?'正在对比对象…':branches.length?'展开对象类型，查看这两个时间点的变化。':'所选时间内没有对象记录。';return;}
+      node.innerHTML=`已对比 ${loaded} 个对象 <span class="compare-changed">${totals.changed} 项变化</span><span class="compare-added">${totals.added} 项首次记录</span><span class="compare-absent">${totals.absent} 项退出清单</span>${failed?`<span>${failed} 类读取失败，请重试</span>`:''}`;
+    }
     function pairRow(parent,labelLeft,labelRight,kind='branch',tailLeft='',tailRight=''){
       const row=document.createElement('div');row.className='compare-pair compare-'+kind;
       row.innerHTML=[labelLeft,labelRight].map((label,i)=>`<button type="button" class="compare-cell" aria-expanded="false"><i class="compare-chevron" aria-hidden="true"></i><span>${esc(label)}</span><small>${esc(i?tailRight:tailLeft)}</small></button>`).join('');parent.append(row);return row;
     }
-    function expandable(row,body,onOpen=()=>{}){
+    function expandable(row,body,onOpen=()=>{},key=null){
       const controls=[...row.querySelectorAll('button')];body.hidden=true;
-      controls.forEach(control=>control.onclick=()=>{const open=body.hidden;body.hidden=!open;controls.forEach(b=>b.setAttribute('aria-expanded',String(open)));if(open)onOpen();});
+      const setOpen=open=>{body.hidden=!open;controls.forEach(b=>b.setAttribute('aria-expanded',String(open)));if(open)onOpen();};
+      controls.forEach(control=>control.onclick=()=>{const open=body.hidden;if(key){if(open)expanded.add(key);else expanded.delete(key);saveExpanded();}setOpen(open);});
+      if(key&&expanded.has(key))setOpen(true);
     }
     function value(side,field){
       if(side.availability==='not_recorded')return '此前无记录';
@@ -71,10 +79,11 @@ const PCScopeStateCompare=(()=>{
     function branch(parent,entry,request){
       const shell=document.createElement('section');shell.className='compare-type';parent.append(shell);
       const label=PCScopeObjectNames.typeName(entry),row=pairRow(shell,label,label,'type-row',`${entry.count} 个历史对象`,`${entry.count} 个历史对象`),body=document.createElement('div');shell.append(body);
-      const objects=document.createElement('div'),note=document.createElement('p'),anchor=document.createElement('div');note.className='compare-filter-note';note.hidden=true;body.append(objects,note,anchor);let started=false,complete=false;
-      const paint=()=>{const nodes=[...objects.children],visible=nodes.some(n=>!n.hidden),unavailable=nodes.filter(n=>n.dataset.compareKind==='unavailable').length;note.hidden=!onlyChanges||(!complete&&!unavailable)||(visible&&!unavailable);note.textContent=[!visible&&complete?(unavailable?'暂无可显示的变化':'没有变化'):'',unavailable?`${unavailable} 个对象缺少可对比记录，关闭“只看变化”可查看`:''].filter(Boolean).join(' · ');};branches.push({paint});
-      const pager=PCScopeAutoPage.mount(anchor,{active:()=>alive()&&!body.hidden&&request.revision===revision,query:cursor=>query({query:'state_compare',from:request.from,until:request.until,watermark:request.watermark,type_id:entry.type_id,limit:50,...(cursor?{cursor}:{})}),apply:(response,{append})=>{if(request.revision!==revision)return;if(!append)objects.replaceChildren();for(const pair of response.data?.objects||[])object(objects,pair);complete=!response.page?.has_more;paint();summary();},onError:()=>{},endLabel:'此类型已全部检查'});pagers.push(pager);
-      expandable(row,body,()=>{if(!started){started=true;pager.reset();}else pager.resume();});
+      const objects=document.createElement('div'),note=document.createElement('p'),anchor=document.createElement('div');note.className='compare-filter-note';note.hidden=true;body.append(objects,note,anchor);let started=false,complete=false,reading=false,failed=false;
+      const paint=()=>{const nodes=[...objects.children],visible=nodes.some(n=>!n.hidden),unavailable=nodes.filter(n=>n.dataset.compareKind==='unavailable').length;note.hidden=!onlyChanges||(!complete&&!unavailable)||(visible&&!unavailable);note.textContent=[!visible&&complete?(unavailable?'暂无可显示的变化':'没有变化'):'',unavailable?`${unavailable} 个对象缺少可对比记录，关闭“只看变化”可查看`:''].filter(Boolean).join(' · ');};branches.push({paint,reading:()=>reading,failed:()=>failed});
+      const pager=PCScopeAutoPage.mount(anchor,{active:()=>alive()&&!body.hidden&&!parent.hidden&&request.revision===revision,query:cursor=>query({query:'state_compare',from:request.from,until:request.until,watermark:request.watermark,type_id:entry.type_id,limit:50,...(cursor?{cursor}:{})}),onStart:()=>{reading=true;failed=false;summary();},apply:(response,{append})=>{if(request.revision!==revision)return;if(!append)objects.replaceChildren();for(const pair of response.data?.objects||[])object(objects,pair);complete=!response.page?.has_more;reading=false;failed=false;paint();summary();},onError:()=>{if(request.revision!==revision)return;reading=false;failed=true;summary();},endLabel:'此类型已全部检查'});pagers.push(pager);
+      const start=()=>{if(parent.hidden||body.hidden)return;if(!started){started=true;pager.reset();}else pager.resume();};
+      shell.startCompare=start;expandable(row,body,start,'type:'+entry.type_id);
     }
     async function reload({automatic=false}={}){
       // A selected historical cutoff is fixed. Background polling must not move the comparison.
@@ -94,7 +103,7 @@ const PCScopeStateCompare=(()=>{
         const header=document.createElement('div');header.className='compare-pair compare-tree-head';header.innerHTML=[['基准',from],['对比',until]].map(([label,time])=>`<div class="compare-cell"><strong>本机 · ${label}</strong><span>${esc(localTime(time))}</span></div>`).join('');results.append(header);
         const categories=new Map();for(const entry of response.data?.branches||[]){
           if(!categories.has(entry.category)){
-            const shell=document.createElement('section');shell.className='compare-category';results.append(shell);const label=categoryNames[entry.category]||'其他对象';const row=pairRow(shell,label,label,'category-row'),body=document.createElement('div');shell.append(body);expandable(row,body);categories.set(entry.category,body);
+            const shell=document.createElement('section');shell.className='compare-category';results.append(shell);const label=categoryNames[entry.category]||'其他对象';const row=pairRow(shell,label,label,'category-row'),body=document.createElement('div');shell.append(body);expandable(row,body,()=>{for(const type of body.children)type.startCompare?.();},'category:'+entry.category);categories.set(entry.category,body);
           }
           branch(categories.get(entry.category),entry,request);
         }
