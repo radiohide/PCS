@@ -1,0 +1,36 @@
+{
+  "version": "0.2.39",
+  "backend_version": "0.2.38",
+  "feature": "Difference counts on paired comparison category and type rows",
+  "rules": [
+    "Count changed, newly recorded and absent objects once per object, regardless of property count",
+    "Category totals include all child types; unread or incomplete children keep the partial label",
+    "Unread types show pending; unavailable records and failed reads are scoped to the count",
+    "Both columns display identical counts; collapsing and filtering preserve totals",
+    "Reuse existing paged comparison results without extra queries"
+  ],
+  "tests": {
+    "state_compare": "passed: partial and final counts, multi-type category totals, added and absent objects, unavailable results, collapse, filter, refresh, existing retries and alignment",
+    "front_refresh": "passed",
+    "desktop_build": "passed",
+    "git_diff_check": "passed"
+  },
+  "live_verification": {
+    "version": "0.2.39",
+    "backend_pid": 142828,
+    "objects": 281,
+    "changes": 5,
+    "category_counts": [
+      "已发现 5 项不同",
+      "已发现 5 项不同"
+    ],
+    "type_counts": [
+      "5 项不同",
+      "5 项不同"
+    ],
+    "collapsed_counts_preserved": true,
+    "paired_rows_aligned": true,
+    "source": "configured native-v2 instance"
+  },
+  "deployment": "Desktop-only update in fixed normal and debug directories; enhanced backend unchanged; no UAC required"
+}

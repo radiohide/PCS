@@ -18,12 +18,13 @@ try{
    if(q.query!=='state_compare')return structuredClone(samples[q.query]||{status:'empty',data:[]});
    qa.calls.push(q);if(qa.delay)await new Promise(r=>setTimeout(r,qa.delay));if(qa.fail){qa.fail=false;throw Error('读取超时');}
    const envelope=data=>({status:'loaded',data});
-   if(!q.type_id)return envelope({watermark:'fixed',branches:[{type_id:'startup.service',category:'startup',count:qa.filterPages?5:2},{type_id:'network.adapter',category:'network',count:1}]});
+   if(!q.type_id)return envelope({watermark:'fixed',branches:[{type_id:'startup.service',category:'startup',count:qa.filterPages?5:2},...(qa.extraType?[{type_id:'startup.scheduled_task',category:'startup',count:2}]:[]),{type_id:'network.adapter',category:'network',count:1}]});
    if(qa.branchFail){qa.branchFail=false;throw '查询超时，请重试';}
    if(q.cursor&&qa.holdNext)await new Promise(resolve=>{qa.releaseNext=resolve;});
    if(q.cursor&&qa.failNext){qa.failNext=false;throw '后续读取超时';}
    if(qa.branchDelay)await new Promise(r=>setTimeout(r,qa.branchDelay));
    function side(state){const fields=[{field_id:'display_name',label:'名称',value:'Volume Shadow Copy',status:'known'},{field_id:'state',label:'运行状态',value:state,status:'known'},{field_id:'start_mode',label:'启动方式',value:'Manual',status:'known'}];return {availability:'recorded',checked_at:'2026-10-22T05:00:00Z',fields,summary:{type_id:q.type_id,identity_status:'confirmed',display_name:'Volume Shadow Copy',lifecycle:'active',record_basis:'observation',key_facts:fields}};}
+   if(q.type_id==='startup.scheduled_task'){const absent=side('Stopped');absent.summary.lifecycle='not_observed';return {...envelope({objects:[{instance_id:10,type_id:q.type_id,left:{availability:'not_recorded'},right:side('Running')},{instance_id:11,type_id:q.type_id,left:side('Stopped'),right:absent}]}),page:{has_more:false}};}
    if(qa.filterPages){const n=Number(q.cursor||1);const result=envelope({objects:[{instance_id:n,type_id:q.type_id,left:side('Stopped'),right:qa.same?side('Stopped'):n===5?{availability:'unavailable'}:side(n===4?'Running':'Stopped')}]});result.page={has_more:n<5,next_cursor:n<5?String(n+1):null};return result;}
    const result=envelope({objects:[{instance_id:q.cursor?2:1,type_id:q.type_id,left:side('Stopped'),right:side('Running')}]});result.page={has_more:!q.cursor,next_cursor:q.cursor?null:'next'};return result;
   }}};
@@ -34,12 +35,16 @@ try{
  assert.equal(await page.locator('[data-compare-only-changes]').isChecked(),true,'changes only is enabled by default');
  assert.equal(await page.evaluate(()=>qa.calls.filter(q=>q.type_id).length),0,'collapsed branches are lazy');
  assert.doesNotMatch(await page.locator('[data-compare-summary]').innerText(),/0 项变化/,'unread is not zero changes');
+ const badges=selector=>page.locator(selector).first().locator('small').allTextContents();
+ assert.deepEqual(await badges('.compare-category-row'),['待对比','待对比']);
  await page.evaluate(()=>qa.holdNext=true);
  await openTree();await page.locator('[data-compare-object="1"]').waitFor();
  await page.waitForFunction(()=>qa.releaseNext);assert.equal(await page.locator('[data-compare-progress]').getAttribute('value'),'1');assert.equal(await page.locator('[data-compare-progress]').getAttribute('max'),'2');assert.match(await page.locator('[data-compare-summary]').innerText(),/已发现.*1 项变化/s);assert.doesNotMatch(await page.locator('[data-compare-progress-label]').innerText(),/完成/);
  assert.equal(await page.locator('.compare-property').count(),0,'collapsed properties are not rendered');
+ assert.deepEqual(await badges('.compare-type-row'),['已发现 1 项不同','已发现 1 项不同']);assert.deepEqual(await badges('.compare-category-row'),['已发现 1 项不同','已发现 1 项不同']);
  await page.evaluate(()=>{qa.holdNext=false;qa.releaseNext();});await page.locator('[data-compare-object="2"]').waitFor();assert.equal(await page.locator('[data-compare-progress]').getAttribute('value'),'2');assert.match(await page.locator('[data-compare-progress-label]').innerText(),/已展开类型对比完成/);
  assert.equal(await page.evaluate(()=>qa.calls.find(q=>q.type_id).watermark),'fixed');
+ assert.deepEqual(await badges('.compare-type-row'),['2 项不同','2 项不同']);assert.deepEqual(await badges('.compare-category-row'),['2 项不同','2 项不同']);
  const row=page.locator('[data-compare-object="1"]');await row.locator('button').nth(0).click();assert.deepEqual(await row.locator('button').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('aria-expanded'))),['true','true']);
  assert.match(await row.innerText(),/已停止/);assert.match(await row.innerText(),/运行中/);
  const positions=await row.locator('.compare-property').first().locator('.compare-cell').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().y));assert.equal(positions[0],positions[1]);
@@ -56,6 +61,7 @@ try{
  assert.equal(await page.locator('.compare-object:visible').count(),1,'unchanged pages do not hide later changes or stop paging');
  assert.equal(await page.locator('[data-compare-object="1"]').isVisible(),false);
  assert.match(await page.locator('.compare-filter-note:visible').innerText(),/1 个对象缺少可对比记录/);
+ assert.deepEqual(await badges('.compare-type-row'),['已发现 1 项不同 · 1 项缺少记录','已发现 1 项不同 · 1 项缺少记录']);
  const changed=page.locator('[data-compare-object="4"]');await changed.locator('button').first().click();
  const filterCalls=await page.evaluate(()=>qa.calls.length);await page.locator('[data-compare-only-changes]').uncheck();assert.equal(await page.locator('.compare-object:visible').count(),5);assert.equal(await changed.locator('.compare-fields').isVisible(),true,'filter preserves expansion');
  await page.locator('[data-compare-only-changes]').check();assert.equal(await page.locator('.compare-object:visible').count(),1);assert.equal(await page.evaluate(()=>qa.calls.length),filterCalls,'filter reuses already loaded pairs');
@@ -68,6 +74,15 @@ try{
  await page.evaluate(()=>qa.failNext=true);await page.locator('[data-compare-run]').click();await page.waitForFunction(()=>document.querySelector('[data-compare-progress-label]').textContent.includes('读取失败'));assert.equal(await page.locator('[data-compare-progress]').getAttribute('value'),'1','failed append preserves partial progress');assert.equal(await page.locator('[data-compare-object="1"]').count(),1);await page.locator('.compare-type').first().locator('.auto-page button').click();await page.locator('[data-compare-object="2"]').waitFor();assert.equal(await page.locator('[data-compare-progress]').getAttribute('value'),'2');
  await page.evaluate(()=>qa.branchDelay=300);await page.locator('[data-page="overview"]').click();await page.locator('[data-page="compare"]').click();await page.waitForFunction(()=>document.querySelector('[data-compare-summary]')?.textContent==='正在对比对象…');await page.locator('[data-compare-object="2"]').waitFor();assert.equal(await page.locator('.compare-type-row button').first().getAttribute('aria-expanded'),'true','tree reopens and loads after navigation');
  await page.locator('.compare-category-row button').first().click();await page.locator('[data-page="overview"]').click();const beforeCollapsed=await page.evaluate(()=>qa.calls.filter(q=>q.type_id).length);await page.locator('[data-page="compare"]').click();await page.locator('.compare-category').first().waitFor();assert.equal(await page.evaluate(()=>qa.calls.filter(q=>q.type_id).length),beforeCollapsed,'restored child stays idle under collapsed parent');await openTree();await page.locator('[data-compare-object="2"]').waitFor();
+ await page.evaluate(()=>{qa.extraType=true;qa.branchDelay=0;});await page.locator('[data-compare-run]').click();await page.locator('[data-compare-object="2"]').waitFor();
+ assert.deepEqual(await badges('.compare-category-row'),['已发现 2 项不同','已发现 2 项不同'],'unopened sibling prevents final category total');
+ assert.equal(await page.evaluate(()=>qa.calls.filter(q=>q.type_id==='startup.scheduled_task').length),0,'badges do not load unopened types');
+ const extra=page.locator('.compare-type').nth(1);await extra.locator('.compare-type-row button').first().click();await page.locator('[data-compare-object="11"]').waitFor();
+ assert.deepEqual(await badges('.compare-category-row'),['4 项不同','4 项不同'],'category sums changed, added and absent objects once');
+ assert.deepEqual(await extra.locator('.compare-type-row small').allTextContents(),['2 项不同','2 项不同']);
+ await page.locator('.compare-category-row button').first().click();assert.deepEqual(await badges('.compare-category-row'),['4 项不同','4 项不同'],'collapsed category retains total');
+ await page.locator('.compare-category-row button').first().click();await page.locator('[data-compare-only-changes]').uncheck();await page.locator('[data-compare-only-changes]').check();assert.deepEqual(await badges('.compare-category-row'),['4 项不同','4 项不同'],'filter does not double count');
+ await page.locator('[data-compare-run]').click();await page.locator('[data-compare-object="11"]').waitFor();await page.locator('[data-compare-object="2"]').waitFor();assert.deepEqual(await badges('.compare-category-row'),['4 项不同','4 项不同'],'refresh resets counts');
  await page.locator('[data-compare-from]').fill('2026-10-22T15:00');
  await page.evaluate(()=>qa.delay=100);await page.locator('[data-compare-run]').click();await page.locator('[data-page="overview"]').click();await page.waitForTimeout(200);assert.equal(await page.locator('#state-compare').count(),0,'late reply does not replace destination');
  assert.deepEqual(errors,[]);
