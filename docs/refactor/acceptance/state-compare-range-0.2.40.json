@@ -28,5 +28,26 @@
     "errors": 0,
     "source": "configured native-v2 only"
   },
-  "deployment": "0.2.40 staged; enhanced backend remains 0.2.38 pending UAC. Baseline notice requires new backend metadata."
+  "deployment": "Desktop and enhanced backend 0.2.40 active in the configured native-v2 instance; original dates verified in the native desktop.",
+  "live_ui": {
+    "version": "0.2.40",
+    "notice": "基准时间早于采集起点，缺少左侧状态。 当前数据从 2026-10-22 12:17:21 开始，请选择此后的时间。",
+    "original_range": [
+      "2026-10-22T10:20",
+      "2026-10-23T10:20"
+    ],
+    "early_side_count": 1,
+    "both_before_warning": true,
+    "future_warning": true,
+    "corrected_range": [
+      "2026-10-22T14:20",
+      "2026-10-23T10:20"
+    ],
+    "corrected_complete": true,
+    "corrected_ms": 2497,
+    "objects": 281,
+    "changes": 6,
+    "summary": "已展开类型中\n6 项变化\n0 项首次记录\n0 项退出清单",
+    "backend_pid": 27816
+  }
 }
