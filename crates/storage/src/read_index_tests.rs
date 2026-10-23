@@ -18,7 +18,7 @@ fn online_read_indexes_preserve_history_and_progress_and_existing_writer() {
     for _ in 0..2 {assert_eq!(Store::install_read_indexes(&path).unwrap()["indexes_ready"],true);}
     assert_eq!(progress(&store),before,"online maintenance must not restart the display rebuild");
     assert_eq!(store.conn.query_row("SELECT group_concat(payload) FROM snapshots",[],|r|r.get::<_,String>(0)).unwrap(),raw);
-    assert_eq!(store.conn.query_row("PRAGMA user_version",[],|r|r.get::<_,i64>(0)).unwrap(),10);
+    assert_eq!(store.conn.query_row("PRAGMA user_version",[],|r|r.get::<_,i64>(0)).unwrap(),crate::model::SCHEMA_VERSION);
     let plan=|sql:&str|store.conn.prepare(&format!("EXPLAIN QUERY PLAN {sql}")).unwrap().query_map([],|r|r.get::<_,String>(3)).unwrap().collect::<rusqlite::Result<Vec<_>>>().unwrap().join("\n");
     assert!(plan("SELECT count(*) FROM projection_queue WHERE state='pending'").contains("projection_queue_pending"));
     assert!(plan("SELECT 1 FROM object_actions a JOIN evidence_refs r ON r.subject_kind='action' AND r.subject_id=CAST(a.action_row AS TEXT) WHERE a.instance_id=1 AND r.evidence_id='missing'").contains("evidence_refs_action_address"));

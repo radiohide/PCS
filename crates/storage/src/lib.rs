@@ -1,4 +1,5 @@
 mod self_activity;
+mod snapshot_content;
 mod baseline;
 mod association_repair;
 mod event_association;
@@ -62,10 +63,7 @@ fn digest(value: &str) -> String {
 /// receipt that makes a replay of the same run a no-op, and the scope record.
 #[allow(clippy::too_many_arguments)]
 fn store_snapshot(tx: &Connection, source: &str, scope: &str, run_id: &str, payload: &str, unit_id: i64, observed_at: &str, ingested_at: &str, items: &[pcscope_contracts::Item]) -> Result<()> {
-    tx.execute(
-        "INSERT INTO snapshots(source,scope,run_id,payload,unit_id) VALUES(?,?,?,?,?)",
-        params![source, scope, run_id, payload, unit_id],
-    )?;
+    snapshot_content::store(tx,source,scope,run_id,payload,unit_id)?;
     evidence::record_snapshot_items(tx, source, scope, run_id, observed_at, ingested_at, items, &evidence::decoding_of_stored_material())?;
     tx.execute(
         "INSERT INTO snapshot_receipts VALUES(?,?,?,?)",
@@ -103,7 +101,7 @@ impl Store {
         let mut conn=Connection::open_with_flags(path,rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE)?;
         conn.busy_timeout(std::time::Duration::from_secs(5))?;
         let version:i64=conn.query_row("PRAGMA user_version",[],|r|r.get(0))?;
-        anyhow::ensure!(version==10,"online index maintenance requires schema 10");
+        anyhow::ensure!((10..=model::SCHEMA_VERSION).contains(&version),"online index maintenance requires a supported schema");
         let marker:Option<String>=conn.query_row("SELECT value FROM settings WHERE key='native_program_identity'",[],|r|r.get(0)).optional()?;
         anyhow::ensure!(marker.as_deref()==Some("pcscope-native-v1"),"refusing to modify an unknown database");
         let tx=conn.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)?;
@@ -263,7 +261,8 @@ impl Store {
             display_counts::ensure(&tx)?;
             association_repair::ensure(&tx)?;
             event_association::ensure(&tx)?;
-            tx.execute_batch("PRAGMA user_version=10;")?;
+            snapshot_content::ensure_schema(&tx)?;
+            tx.execute_batch("PRAGMA user_version=11;")?;
             tx.commit()?;
         }
         // How deep the projection backlog may get before ingest stops accepting more. A default
@@ -935,7 +934,7 @@ impl Store {
                     |r| r.get(0),
                 )
                 .context("snapshot unavailable in retained history")?;
-            match serde_json::from_str::<Message>(&payload)? {
+            match serde_json::from_value::<Message>(snapshot_content::resolve(&self.conn,&payload)?)? {
                 Message::Snapshot { items, .. } => {
                     Ok(items.into_iter().map(|i| (i.id, i.data)).collect())
                 }

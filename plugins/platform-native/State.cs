@@ -56,6 +56,12 @@ partial class Platform {
             captured.GetStringBuilder().Clear();Request=D("selection",D("disabled_sources",new[]{"fixture.base","fixture.sharded"}));bool called=false;
             EmitBase("fixture.base",()=>{called=true;return new List<object>();});Emit("fixture.sharded",()=>{called=true;return new List<object>();});
             check(!called&&captured.ToString()=="","disabled source does no query");
+            Request=D("selection",D("allowed_sources",new[]{"fixture.base"},"disabled_sources",new[]{"fixture.base"}));
+            EmitBase("fixture.base",()=>{called=true;return new List<object>();});Emit("fixture.unknown",()=>{called=true;return new List<object>();});
+            check(!called&&captured.ToString()=="","targeted source allowlist preserves disables and blocks future sources");
+            Request=D("selection",D("allowed_sources",new[]{"fixture.base"}));
+            check(EmitBase("fixture.base",()=>new List<object>())&&captured.ToString()!="","targeted source can collect");
+            Request=D();
             check(Text(WmiDate("20261014155837.123456+480"))=="2026-10-14T07:58:37.1234560Z","DMTF date and offset");
             check(Text(EvidenceText("C:\\Windows\\System32\\svchost.exe -k netsvcs"))=="C:\\Windows\\System32\\svchost.exe -k netsvcs","ordinary command retained");
             foreach(string value in new[]{"tool --password=secret-value","powershell -EncodedArguments hidden","https://user:secret@example.invalid/"})check(Get(EvidenceText(value),"sensitive") is bool&&(bool)Get(EvidenceText(value),"sensitive"),"sensitive command protected");

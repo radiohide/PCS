@@ -1,3 +1,4 @@
+mod notification_scope;
 use anyhow::{Context, Result};
 use pcscope_ipc::Request;
 use serde_json::{json, Value};
@@ -65,7 +66,8 @@ impl Collector {
 }
 
 fn collect_owned(state:&State,path:&std::path::Path,args:&[std::ffi::OsString],input:Option<Vec<u8>>,timeout:Duration,plugin:&str)->Result<pcscope_supervisor::Collection>{
-    let selection=state.store.lock().unwrap().collection_selection(if plugin.starts_with("eventlog/"){"eventlog"}else if plugin=="runtime"{"scoped"}else{plugin})?;
+    let mut selection=state.store.lock().unwrap().collection_selection(if plugin.starts_with("eventlog/"){"eventlog"}else if plugin=="runtime"{"scoped"}else{plugin})?;
+    if let Some(sources)=state.schedule.lock().unwrap().active_sources(plugin){notification_scope::restrict(&mut selection,plugin,&sources)?;}
     if selection["all_disabled"]==true{return Ok(pcscope_supervisor::Collection{messages:vec![],diagnostic:String::new()});}
     let input=if plugin=="pcscope-software.exe"{input}else{
         let mut request:Value=input.as_ref().map(|v|serde_json::from_slice(v)).transpose()?.unwrap_or(json!({}));
@@ -283,8 +285,10 @@ fn start_collection(state: Arc<State>, manual: Option<&str>) -> Result<()> {
                 *last = json!({"operation":collector.name(),"completed":index,"total":ids.len()});
             }
             let result = (|| -> Result<(usize, Vec<String>)> {
-                let args: Vec<std::ffi::OsString> =
-                    collector.domain.iter().map(Into::into).collect();
+                let targeted=state.schedule.lock().unwrap().active_sources(&collector.name()).is_some();
+                let args: Vec<std::ffi::OsString> = if targeted {vec![collector.name().into()]}else{
+                    collector.domain.iter().map(Into::into).collect()};
+                let path=if targeted{collector.path.with_file_name("pcscope-platform-native.exe")}else{collector.path.clone()};
                 let watch=if collector.domain.as_deref()==Some("scoped") {
                     let store=state.store.lock().unwrap();
                     let mut watch=store.file_watch_settings()?;let directories=store.directory_watch_settings()?;
@@ -295,7 +299,7 @@ fn start_collection(state: Arc<State>, manual: Option<&str>) -> Result<()> {
                 let item_revision=state.store.lock().unwrap().item_settings()?["revision"].clone();
                 let input=watch.as_ref().map(serde_json::to_vec).transpose()?;
                 let result = collect_owned(
-                    &state, &collector.path,
+                    &state, &path,
                     &args,
                     input,
                     Duration::from_secs(120), &collector.name(),
@@ -625,13 +629,13 @@ async fn run(data:PathBuf,endpoint:pcscope_ipc::Endpoint,report:&mut startup_rep
             tick.tick().await;
             if device_coalescer.poll(device_watcher.as_ref().is_some_and(|watcher|watcher.take()),std::time::Instant::now()) {
                 let mut schedule=scheduled.schedule.lock().unwrap();
-                schedule.request_refresh("pcscope-powershell-adapter.exe");
-                schedule.request_refresh("storage");
+                schedule.request_refresh("pcscope-powershell-adapter.exe",notification_scope::DEVICE_CORE);
+                schedule.request_refresh("storage",notification_scope::DEVICE_STORAGE);
             }
             if network_coalescer.poll(network_watcher.as_ref().is_some_and(|watcher|watcher.take()),std::time::Instant::now()) {
                 let mut schedule=scheduled.schedule.lock().unwrap();
-                schedule.request_refresh("pcscope-powershell-adapter.exe");
-                schedule.request_refresh("network");
+                schedule.request_refresh("pcscope-powershell-adapter.exe",notification_scope::NETWORK_CORE);
+                schedule.request_refresh("network",notification_scope::NETWORK_ROUTES);
             }
             let _ = start_collection(scheduled.clone(), None);
             let _ = start_event_collection(scheduled.clone(), None);

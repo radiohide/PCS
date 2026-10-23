@@ -29,6 +29,8 @@ partial class Platform {
         return value;
     }
     static bool Enabled(string source) {
+        var allowed=Get(Get(Request,"selection"),"allowed_sources") as IEnumerable;
+        if(allowed!=null){bool found=false;foreach(var name in allowed)if(Text(name)==source){found=true;break;}if(!found)return false;}
         var disabled=Get(Get(Request,"selection"),"disabled_sources") as IEnumerable;
         if(disabled!=null)foreach(var name in disabled)if(Text(name)==source)return false;
         return true;

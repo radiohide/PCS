@@ -1,0 +1,168 @@
+{
+  "version": "0.2.42",
+  "date": "2026-10-23",
+  "scope": "First storage-growth fixes: bounded native notification refresh and lossless snapshot-content sharing",
+  "frequency": {
+    "periodic": "Existing global and individual periods preserved; current baseline is 600 seconds",
+    "notifications": "Only native device/network-related source allowlists; full inventory deadline unchanged",
+    "storm_control": "One pending source set per job; minimum 30 seconds after completion, exponential failure backoff capped at 1800 seconds",
+    "powershell": "No PowerShell path for notification refresh",
+    "telemetry": [
+      "trigger",
+      "sources",
+      "notification_requests",
+      "notification_runs",
+      "next_full_at"
+    ]
+  },
+  "storage": {
+    "schema": 11,
+    "representation": "Each observation retains its envelope/timestamp/receipt/evidence; identical item arrays of at least 1024 bytes share immutable content",
+    "identity": "SHA-256 with byte comparison on reuse; content reference indexed by source/scope/run, independent of SQLite rowid/VACUUM",
+    "atomicity": "Content, snapshot, ref count and evidence are in the same ingest transaction",
+    "retention": "Remove shared content only when its final snapshot is removed under existing retention policy",
+    "upgrade": "Additive schema only, no rewrite/delete of retained production history, older binaries refuse schema 11",
+    "compatibility": [
+      "snapshot comparison",
+      "temporal state comparison",
+      "evidence detail",
+      "historical process labels",
+      "freshness timestamps",
+      "replay receipts",
+      "capacity maintenance"
+    ]
+  },
+  "tests": {
+    "rust_service": 38,
+    "rust_storage": 253,
+    "native_contract_checks": 27,
+    "regressions": [
+      "20000 notification requests coalesce without postponing full inventory",
+      "User source disables respected; unknown future native sources excluded",
+      "1000 equal observations reconstruct their exact original envelopes",
+      "Changed/reverted content and last-reference pruning",
+      "VACUUM does not break content references",
+      "Failed transaction and conflicting replay roll back",
+      "Missing/corrupt content raises an error rather than an empty inventory",
+      "Shared content preserves each observation time and historical state changes",
+      "Legacy payloads unchanged on migration; old writer refused"
+    ]
+  },
+  "benchmark": {
+    "fixture": "100 unchanged services, 60 observations, 10-minute spacing",
+    "production_database_access": false,
+    "new": {
+      "snapshot_rows": 60,
+      "content_versions": 1,
+      "payload_bytes": 174381,
+      "database_bytes": 8282112,
+      "evidence_rows": 6000,
+      "queue_rows": 6000,
+      "ingest_ms": 17635.52
+    },
+    "old": {
+      "snapshot_rows": 60,
+      "content_versions": 0,
+      "payload_bytes": 9729470,
+      "database_bytes": 17920000,
+      "evidence_rows": 6000,
+      "queue_rows": 6000,
+      "ingest_ms": 18586.12
+    },
+    "replay_ms": 158.53,
+    "payload_reduction_percent": 98.21,
+    "database_reduction_percent": 53.78,
+    "upgrade_ms": 430.25,
+    "legacy_payload_sha256": "72ee2346a7355e55f4af9439ee16a287989eb36ca83dd72bbeca457143936729",
+    "legacy_rows_preserved": 60,
+    "older_writer_refused": true
+  },
+  "native_scope_smoke": [
+    {
+      "case": "network-change",
+      "ms": 610,
+      "sources": [
+        "pcscope.network.adapters",
+        "pcscope.network.addresses"
+      ],
+      "snapshots": 2,
+      "gaps": []
+    },
+    {
+      "case": "device-change",
+      "ms": 252,
+      "sources": [
+        "pcscope.hardware.devices",
+        "pcscope.network.adapters",
+        "pcscope.network.addresses",
+        "pcscope.storage.volumes"
+      ],
+      "snapshots": 4,
+      "gaps": []
+    },
+    {
+      "case": "routes",
+      "ms": 112,
+      "sources": [
+        "pcscope.network.routes"
+      ],
+      "snapshots": 16,
+      "gaps": []
+    },
+    {
+      "case": "storage",
+      "ms": 1434,
+      "sources": [
+        "pcscope.hardware.driver-bindings",
+        "pcscope.hardware.driver-packages",
+        "pcscope.hardware.driver-services",
+        "pcscope.storage.disks",
+        "pcscope.storage.partitions"
+      ],
+      "snapshots": 64,
+      "gaps": [
+        {
+          "source": "pcscope.hardware.driver-packages",
+          "reason": "Native source unavailable; previous state retained []: Driver store read requires an elevated Windows token"
+        }
+      ]
+    }
+  ],
+  "bounded_production_read_sample": [
+    {
+      "source": "pcscope.shell.registrations",
+      "snapshots_sampled": 128,
+      "unique_arrays": 48,
+      "item_bytes": 6199482,
+      "unique_item_bytes": 2743788,
+      "repeated_item_percent": 55.74,
+      "read_ms": 516
+    },
+    {
+      "source": "pcscope.network.firewall-rules",
+      "snapshots_sampled": 64,
+      "unique_arrays": 16,
+      "item_bytes": 11174968,
+      "unique_item_bytes": 2793742,
+      "repeated_item_percent": 75.0,
+      "read_ms": 656
+    }
+  ],
+  "limitations": [
+    "Benchmarks are isolated unchanged-service fixtures, not a forecast of whole-machine daily size",
+    "Existing large database is not compacted or rewritten",
+    "Evidence/projection queue rows still retain one observation each; their later compaction is a separate phase",
+    "Ordinary-token driver-store check requires elevation; enhanced backend verification pending Windows UAC"
+  ],
+  "deployment": {
+    "optimized_runtime": "target/release",
+    "normal_bundle": "dist/dev",
+    "desktop_debug": "apps/desktop/src-tauri/target/debug",
+    "enhanced_backend": "Pending replacement; existing backend remains 0.2.40"
+  },
+  "remaining": [
+    "Verify enhanced backend runtime, collection intervals and content sharing after UAC",
+    "Compact completed projection metadata while preserving historical freshness and evidence addresses",
+    "Plan bounded historical deduplication/space reclamation separately; no full VACUUM on low-space live database"
+  ]
+}

@@ -17,6 +17,13 @@ pub struct Job {
     failures: u32,
     manual_after: Instant,
     refresh_requested: bool,
+    refresh_sources: std::collections::BTreeSet<String>,
+    active_sources: Option<Vec<String>>,
+    notification_after: Instant,
+    notification_failures: u32,
+    notification_requests: u64,
+    notification_runs: u64,
+    trigger: &'static str,
 }
 pub struct Schedule {
     pub jobs: Vec<Job>,
@@ -25,7 +32,7 @@ pub struct Schedule {
     pub runtime_seconds: Option<u64>,
 }
 impl Job {
-    fn due_at(&self)->Instant {if self.refresh_requested&&self.failures==0 {self.next.min(self.manual_after)}else{self.next}}
+    fn due_at(&self)->Instant {if self.refresh_requested {self.next.min(self.notification_after)}else{self.next}}
 }
 impl Schedule {
     pub fn new(ids: Vec<String>, saved: &Value) -> Result<Self> {
@@ -55,6 +62,13 @@ impl Schedule {
                 failures: 0,
                 manual_after: Instant::now(),
                 refresh_requested: false,
+                refresh_sources: Default::default(),
+                active_sources: None,
+                notification_after: Instant::now(),
+                notification_failures: 0,
+                notification_requests: 0,
+                notification_runs: 0,
+                trigger: "periodic",
             });
         }
         Ok(Self {
@@ -124,15 +138,23 @@ impl Schedule {
         j.enabled = enabled;
         j.seconds = seconds;
         j.next = Instant::now() + Duration::from_secs(seconds);
-        if !enabled {j.refresh_requested=false;}
+        if !enabled {j.refresh_requested=false;j.refresh_sources.clear();}
     }
-    pub fn request_refresh(&mut self,id:&str) {
-        if let Some(job)=self.jobs.iter_mut().find(|job|job.id==id&&job.enabled&&!job.events){job.refresh_requested=true;}
+    pub fn request_refresh(&mut self,id:&str,sources:&[&str]) {
+        if sources.is_empty(){return;}
+        if let Some(job)=self.jobs.iter_mut().find(|job|job.id==id&&job.enabled&&!job.events){
+            job.refresh_requested=true;
+            job.refresh_sources.extend(sources.iter().map(|s|s.to_string()));
+            job.notification_requests=job.notification_requests.saturating_add(1);
+        }
+    }
+    pub fn active_sources(&self,id:&str)->Option<Vec<String>> {
+        self.jobs.iter().find(|j|j.id==id).and_then(|j|j.active_sources.clone())
     }
     pub fn set_enabled(&mut self, id: &str, enabled: bool) {
         let job = self.jobs.iter_mut().find(|job|job.id==id).unwrap();
         job.enabled = enabled;
-        if !enabled { job.refresh_requested = false; }
+        if !enabled { job.refresh_requested = false;job.refresh_sources.clear(); }
     }
     // One inventory lane and one log lane bound load. Repeated manual clicks never queue duplicates.
     pub fn reserve(&mut self, events: bool, manual: Option<&str>) -> Result<Vec<String>> {
@@ -179,7 +201,13 @@ impl Schedule {
             return false;
         }
         j.phase = "running";
+        j.active_sources=if !j.manual&&j.next>Instant::now()&&j.refresh_requested {
+            j.notification_runs=j.notification_runs.saturating_add(1);
+            Some(j.refresh_sources.iter().cloned().collect())
+        }else{None};
+        j.trigger=if j.manual {"manual"}else if j.active_sources.is_some(){"notification"}else{"periodic"};
         j.refresh_requested=false;
+        j.refresh_sources.clear();
         j.started = Some(chrono::Utc::now().to_rfc3339());
         j.began = Some(Instant::now());
         true
@@ -187,14 +215,28 @@ impl Schedule {
     pub fn finish(&mut self, id: &str, mut result: Value) {
         let j = self.jobs.iter_mut().find(|j| j.id == id).unwrap();
         result["duration_ms"] = json!(j.began.take().map(|t| t.elapsed().as_millis()));
+        result["trigger"]=json!(j.trigger);
+        result["sources"]=json!(j.active_sources);
         j.result = result;
         j.finished = Some(chrono::Utc::now().to_rfc3339());
         j.phase = "idle";
+        if j.active_sources.is_some() {
+            j.notification_failures=if j.result["ok"]==false {j.notification_failures.saturating_add(1)}else{0};
+            let delay=30u64.saturating_mul(1u64<<j.notification_failures.min(6)).min(1800);
+            j.notification_after=Instant::now()+Duration::from_secs(delay);
+            j.manual_after=Instant::now()+Duration::from_secs(30);
+            j.result["retry_delay_seconds"]=json!(delay);
+            j.result["consecutive_failures"]=json!(j.notification_failures);
+            // A notification must never postpone or reset the periodic full-inventory clock.
+            return;
+        }
         let some_log_readable=j.id=="eventlog" && j.result["channels"].as_array().is_some_and(|rows|rows.iter().any(|row|row["ok"]==true));
         j.failures=if j.result["ok"]==false && !some_log_readable {j.failures.saturating_add(1)}else{0};
         let delay=if j.failures>0 {j.seconds.max(30).saturating_mul(1u64<<j.failures.saturating_sub(1).min(6)).min(1800).max(j.seconds)}else{j.seconds};
         j.next = Instant::now() + Duration::from_secs(delay);
         j.manual_after=Instant::now()+Duration::from_secs(if j.events{10}else{30});
+        j.notification_after=Instant::now()+Duration::from_secs(if j.failures>0 {delay}else{30});
+        j.notification_failures=0;
         j.result["retry_delay_seconds"]=json!(delay);
         j.result["consecutive_failures"]=json!(j.failures);
     }
@@ -207,12 +249,31 @@ impl Schedule {
         }
     }
     pub fn view(&self) -> Value {
-        json!(self.jobs.iter().map(|j|json!({"id":j.id,"enabled":j.enabled,"seconds":j.seconds,"minimum_seconds":if j.events{10}else{30},"phase":j.phase,"last_started":j.started,"last_finished":j.finished,"last_result":j.result,"next_at":if j.enabled&&j.phase=="idle"{Some((chrono::Utc::now()+chrono::Duration::from_std(j.due_at().saturating_duration_since(Instant::now())).unwrap_or_default()).to_rfc3339())}else{None}})).collect::<Vec<_>>())
+        json!(self.jobs.iter().map(|j|json!({"id":j.id,"enabled":j.enabled,"seconds":j.seconds,"minimum_seconds":if j.events{10}else{30},"phase":j.phase,"last_started":j.started,"last_finished":j.finished,"last_result":j.result,"notification_requests":j.notification_requests,"notification_runs":j.notification_runs,"next_full_at":if j.enabled{Some((chrono::Utc::now()+chrono::Duration::from_std(j.next.saturating_duration_since(Instant::now())).unwrap_or_default()).to_rfc3339())}else{None},"next_at":if j.enabled&&j.phase=="idle"{Some((chrono::Utc::now()+chrono::Duration::from_std(j.due_at().saturating_duration_since(Instant::now())).unwrap_or_default()).to_rfc3339())}else{None}})).collect::<Vec<_>>())
     }
 }
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn notification_storm_is_scoped_and_never_delays_the_full_inventory() {
+        let mut s=Schedule::new(vec!["core".into()],&json!({"_global_seconds":600})).unwrap();
+        s.configure_global(600);let deadline=s.jobs[0].next;
+        for _ in 0..10000 {s.request_refresh("core",&["devices"]);s.request_refresh("core",&["adapters"]);}
+        let ids=s.reserve(false,None).unwrap();assert!(s.begin("core"));
+        assert_eq!(s.active_sources("core"),Some(vec!["adapters".into(),"devices".into()]));
+        s.request_refresh("core",&["devices"]);
+        s.finish("core",json!({"ok":false}));s.cancel(&ids);
+        assert_eq!(s.jobs[0].next,deadline);assert_eq!(s.jobs[0].notification_runs,1);
+        assert!(s.reserve(false,None).unwrap().is_empty());
+        // Full work proceeds on its own deadline even during notification backoff.
+        s.jobs[0].next=Instant::now();let ids=s.reserve(false,None).unwrap();assert!(s.begin("core"));
+        assert_eq!(s.active_sources("core"),None);assert_eq!(s.jobs[0].trigger,"periodic");
+        s.finish("core",json!({"ok":true}));s.cancel(&ids);
+        s.request_refresh("core",&["devices"]);s.jobs[0].manual_after=Instant::now();
+        s.reserve(false,Some("core")).unwrap();assert!(s.begin("core"));
+        assert_eq!(s.active_sources("core"),None);assert_eq!(s.jobs[0].trigger,"manual");
+    }
     #[test]
     fn fresh_baseline_applies_ten_minutes_to_every_periodic_collector() {
         let saved=json!({"_global_seconds":600,"_runtime_seconds":600});
@@ -309,19 +370,19 @@ mod tests {
     fn device_refresh_is_retained_while_busy_and_respects_cooldown_backoff_and_disabled_jobs() {
         let mut s=Schedule::new(vec!["devices".into()],&json!({})).unwrap();
         let ids=s.reserve(false,None).unwrap();assert!(s.begin("devices"));
-        for _ in 0..10000 {s.request_refresh("devices");}
+        for _ in 0..10000 {s.request_refresh("devices",&["devices"]);}
         assert!(s.reserve(false,None).unwrap().is_empty());
         s.finish("devices",json!({"ok":true}));s.cancel(&ids);
         assert!(s.reserve(false,None).unwrap().is_empty());
-        s.jobs[0].manual_after=Instant::now();assert_eq!(s.reserve(false,None).unwrap(),vec!["devices"]);
+        s.jobs[0].notification_after=Instant::now();assert_eq!(s.reserve(false,None).unwrap(),vec!["devices"]);
         assert!(s.begin("devices"));assert!(!s.jobs[0].refresh_requested);
-        s.request_refresh("devices");s.finish("devices",json!({"ok":false}));s.cancel(&ids);
+        s.request_refresh("devices",&["devices"]);s.finish("devices",json!({"ok":false}));s.cancel(&ids);
         s.jobs[0].manual_after=Instant::now();assert!(s.reserve(false,None).unwrap().is_empty());
         s.jobs[0].next=Instant::now();assert_eq!(s.reserve(false,None).unwrap(),vec!["devices"]);
         s.begin("devices");s.finish("devices",json!({"ok":true}));s.cancel(&ids);
-        s.configure("devices",false,300);s.request_refresh("devices");assert!(!s.jobs[0].refresh_requested);
+        s.configure("devices",false,300);s.request_refresh("devices",&["devices"]);assert!(!s.jobs[0].refresh_requested);
         assert!(s.reserve(false,None).unwrap().is_empty());
-        s.request_refresh("eventlog");assert!(!s.jobs[1].refresh_requested);
+        s.request_refresh("eventlog",&["events"]);assert!(!s.jobs[1].refresh_requested);
     }
     #[test]
     fn independent_controls_and_manual_disabled_run() {

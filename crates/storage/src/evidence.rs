@@ -480,7 +480,7 @@ fn read_snapshot_payload(conn: &Connection, key: &str) -> Result<Value> {
         .query_row("SELECT payload FROM snapshots WHERE source=? AND scope=? AND run_id=?", params![source, scope, run], |r| r.get(0))
         .optional()?;
     match payload {
-        Some(text) => Ok(serde_json::from_str(&text)?),
+        Some(text) => crate::snapshot_content::resolve(conn,&text),
         // The raw material is gone — pruned by the retention sweep, or never committed. The input
         // is still produced with a null payload so the caller sees "the evidence is not here"
         // rather than a silently missing row.

@@ -178,6 +178,23 @@ mod tests {
     fn read(store:&Store,a:&str,b:&str)->Value{answer(&store.conn,a,b,Some("startup.service"),None,50).unwrap().data.unwrap()["objects"].clone()}
     fn value(side:&Value,id:&str)->Value{side["fields"].as_array().unwrap().iter().find(|f|f["field_id"]==id).unwrap()["value"].clone()}
     #[test]
+    fn shared_content_keeps_check_times_replay_and_historical_states() {
+        let mut s=Store::open(":memory:").unwrap();
+        let mut a=item("VSS","Volume Shadow Copy","Stopped");a["data"]["padding"]=json!("x".repeat(2048));
+        ingest(&mut s,"one","2026-10-22T00:00:00Z",json!([a]),true);
+        ingest(&mut s,"two","2026-10-22T00:10:00Z",json!([a]),true);
+        ingest(&mut s,"two","2026-10-22T00:10:00Z",json!([a]),true);
+        assert_eq!(s.conn.query_row("SELECT uses FROM snapshot_contents",[],|r|r.get::<_,i64>(0)).unwrap(),2);
+        let same=read(&s,"2026-10-22T00:00:00Z","2026-10-22T00:10:00Z");
+        assert_eq!(same[0]["right"]["checked_at"],"2026-10-22T00:10:00.000000000Z");
+        assert_eq!(value(&same[0]["left"],"state"),value(&same[0]["right"],"state"));
+        a["data"]["state"]=json!("Running");
+        ingest(&mut s,"three","2026-10-22T00:20:00Z",json!([a]),true);
+        let rows=read(&s,"2026-10-22T00:10:00Z","2026-10-22T00:20:00Z");
+        assert_eq!(value(&rows[0]["left"],"state"),"Stopped");assert_eq!(value(&rows[0]["right"],"state"),"Running");
+        assert_eq!(s.conn.query_row("SELECT count(*) FROM snapshot_contents",[],|r|r.get::<_,i64>(0)).unwrap(),2);
+    }
+    #[test]
     fn directory_reports_explicit_collection_boundary_even_before_any_objects(){
         let mut s=Store::open(":memory:").unwrap();
         let before="2026-10-21T00:00:00Z";let after="2026-10-23T00:00:00Z";

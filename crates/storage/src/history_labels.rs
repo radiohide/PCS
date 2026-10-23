@@ -29,7 +29,7 @@ impl ProcessLabelCache {
         use rusqlite::OptionalExtension;
         let payload:Option<Option<String>>=conn.prepare_cached("SELECT CASE WHEN length(payload)<=2097152 THEN payload ELSE NULL END FROM snapshots WHERE source=? AND scope=? AND run_id=?")?
             .query_row(params![source,scope,run],|r|r.get(0)).optional()?;
-        let labels=payload.flatten().and_then(|raw|serde_json::from_str::<Value>(&raw).ok()).and_then(|whole|{
+        let labels=payload.flatten().and_then(|raw|crate::snapshot_content::resolve_bounded(conn,&raw,Some(2097152)).ok()).and_then(|whole|{
             let items=whole["items"].as_array().filter(|items|items.len()<=2048)?;
             let mut labels=HashMap::new();
             for item in items {
