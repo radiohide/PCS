@@ -4,6 +4,15 @@ const PCScopeStateCompare=(()=>{
   const canonical=value=>Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])])):value;
   const equal=(a,b)=>JSON.stringify(canonical(a))===JSON.stringify(canonical(b));
   const localInput=date=>new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  function rangeIssue(from,until,boundary,now=Date.now()){
+    const a=Date.parse(from),b=Date.parse(until),start=Date.parse(boundary);
+    if(!Number.isFinite(a)||!Number.isFinite(b))return {kind:'invalid',text:'请选择完整的日期和时间。'};
+    if(a>b)return {kind:'order',text:'基准时间不能晚于对比时间，请调整时间。'};
+    if(a>now||b>now)return {kind:'future',text:`${a>now?'两个时间点都':'对比时间'}在未来，请选择当前或更早的时间。`};
+    if(Number.isFinite(start)&&a<start)return {kind:'before_collection',left:true,right:b<start,text:b<start?'两个时间点都早于采集起点，没有可对比的状态。':'基准时间早于采集起点，缺少左侧状态。'};
+    if(a===b)return {kind:'same',text:'两个时间点相同，请选择不同时间查看变化。'};
+    return null;
+  }
   function changes(pair){
     const a=pair.left,b=pair.right;
     if(['unavailable','event_only','ambiguous'].includes(a.availability)||['unavailable','event_only','ambiguous'].includes(b.availability))return 'unavailable';
@@ -16,7 +25,7 @@ const PCScopeStateCompare=(()=>{
     })?'changed':'same';
   }
   function mount(container,{query,esc,localTime,errorText,categoryNames}){
-    let disposed=false,revision=0,busy=false,applied=null,pagers=[],branches=[],groups=[],loaded=0,totals={added:0,absent:0,changed:0},onlyChanges=true;
+    let disposed=false,revision=0,busy=false,applied=null,collectionStart=null,pagers=[],branches=[],groups=[],loaded=0,totals={added:0,absent:0,changed:0},onlyChanges=true;
     try{onlyChanges=localStorage.getItem('pcscope.compareOnlyChanges')!=='false';}catch{}
     let expanded=new Set();try{const saved=JSON.parse(localStorage.getItem('pcscope.compareExpanded'));if(Array.isArray(saved))expanded=new Set(saved.filter(key=>typeof key==='string'));}catch{}
     const saveExpanded=()=>{try{localStorage.setItem('pcscope.compareExpanded',JSON.stringify([...expanded]));}catch{}};
@@ -24,6 +33,17 @@ const PCScopeStateCompare=(()=>{
     try{const saved=JSON.parse(localStorage.getItem(storageKey));if(saved?.from&&saved?.until&&Number.isFinite(Date.parse(saved.from))&&Number.isFinite(Date.parse(saved.until)))times=saved;}catch{}
     container.innerHTML=`<div class="compare-times"><label>基准时间 <small>A · 左侧</small><input data-compare-from type="datetime-local" value="${esc(times.from)}"><span>截至此时的最近检查结果</span></label><label>对比时间 <small>B · 右侧</small><input data-compare-until type="datetime-local" value="${esc(times.until)}"><span>截至此时的最近检查结果</span></label></div><div class="compare-toolbar"><p data-compare-summary>选择两个时间点，查看对象和属性的变化。</p><button data-compare-run class="primary">对比</button></div><p data-compare-message role="status"></p><div data-compare-results></div>`;
     const results=container.querySelector('[data-compare-results]'),message=container.querySelector('[data-compare-message]'),button=container.querySelector('[data-compare-run]');
+    const inputs=[container.querySelector('[data-compare-from]'),container.querySelector('[data-compare-until]')];
+    const rangeNotice=document.createElement('p');rangeNotice.className='compare-range-notice';rangeNotice.hidden=true;rangeNotice.setAttribute('role','status');rangeNotice.dataset.compareRangeNotice='';container.querySelector('.compare-times').after(rangeNotice);
+    function validateRange(){
+      const issue=rangeIssue(inputs[0].value,inputs[1].value,collectionStart);
+      rangeNotice.hidden=!issue;
+      rangeNotice.textContent=issue?(issue.kind==='before_collection'?`${issue.text} 当前数据从 ${localTime(collectionStart)} 开始，请选择此后的时间。`:issue.text):'';
+      inputs.forEach((input,i)=>{const early=issue?.kind==='before_collection'&&(i===0||issue.right);input.parentElement.classList.toggle('compare-time-warning',!!early);input.nextElementSibling.textContent=early?'此时尚未开始采集':'截至此时的最近检查结果';});
+      return issue;
+    }
+    for(const input of inputs)input.addEventListener('input',()=>{validateRange();if(applied&&(inputs[0].value!==applied.from||inputs[1].value!==applied.until))message.textContent='时间已修改，请点击“对比”更新下方结果。';});
+    validateRange();
     const filter=document.createElement('label');filter.className='compare-filter';filter.innerHTML='<input type="checkbox" role="switch" data-compare-only-changes>只看变化';button.before(filter);
     const toggle=filter.querySelector('input');toggle.checked=onlyChanges;
     const progress=document.createElement('div');progress.className='compare-progress';progress.hidden=true;progress.innerHTML='<span data-compare-progress-label role="status"></span><progress data-compare-progress aria-label="已展开类型的对比进度"></progress>';container.querySelector('.compare-toolbar').after(progress);
@@ -106,18 +126,21 @@ const PCScopeStateCompare=(()=>{
       // A selected historical cutoff is fixed. Background polling must not move the comparison.
       if(automatic||busy||!alive())return;
       const from=container.querySelector('[data-compare-from]').value,until=container.querySelector('[data-compare-until]').value;
-      if(!from||!until||!Number.isFinite(Date.parse(from))||!Number.isFinite(Date.parse(until))){message.textContent='请选择完整的日期和时间。';return;}
-      if(new Date(from)>new Date(until)){message.textContent='基准时间不能晚于对比时间。';return;}
+      const issue=validateRange();
+      if(issue){message.textContent=applied?'下方保留上次对比结果。':'';return;}
       busy=true;button.disabled=true;message.textContent='正在读取对比目录…';const current=revision+1;
       progress.hidden=false;progressBar.removeAttribute('value');progressLabel.textContent='正在读取对比目录…';
       try{
         const request={from:new Date(from).toISOString(),until:new Date(until).toISOString(),revision:current};
         const response=await query({query:'state_compare',from:request.from,until:request.until});
         if(!alive())return;
+        if(inputs[0].value!==from||inputs[1].value!==until){summary();message.textContent='时间已修改，请点击“对比”更新下方结果。';return;}
         if(!['loaded','empty','partial'].includes(response.status))throw Error('历史对比暂时无法读取，请重试。');
         revision=current;for(const pager of pagers)pager.dispose();pagers=[];branches=[];groups=[];request.watermark=response.data?.watermark;
+        collectionStart=response.data?.collection_started_at||null;
         applied={from,until};try{localStorage.setItem(storageKey,JSON.stringify(applied));}catch{}
         results.replaceChildren();loaded=0;totals={added:0,absent:0,changed:0};
+        if(validateRange()){applied=null;summary();container.querySelector('[data-compare-summary]').textContent='请调整时间后重新对比。';message.textContent='';return;}
         const header=document.createElement('div');header.className='compare-pair compare-tree-head';header.innerHTML=[['基准',from],['对比',until]].map(([label,time])=>`<div class="compare-cell"><strong>本机 · ${label}</strong><span>${esc(localTime(time))}</span></div>`).join('');results.append(header);
         const categories=new Map();for(const entry of response.data?.branches||[]){
           if(!categories.has(entry.category)){
@@ -125,13 +148,13 @@ const PCScopeStateCompare=(()=>{
           }
           branch(categories.get(entry.category),entry,request);
         }
-        message.textContent=categories.size?'左右同步展开，逐行查看对象和属性。':'所选时间内没有对象记录。';summary();
+        message.textContent=categories.size?'左右同步展开，逐行查看对象和属性。':'所选时间点尚无对象记录，请选择更晚的时间或等待首次采集完成。';summary();
       }catch(error){if(alive()){summary();message.textContent=errorText(error)+(applied?' 已保留上次对比结果。':'');}}
       finally{busy=false;if(alive())button.disabled=false;}
     }
     button.onclick=()=>reload();
     return {reload,dispose(){disposed=true;revision++;for(const pager of pagers)pager.dispose();}};
   }
-  return {mount,changes,equal};
+  return {mount,changes,equal,rangeIssue};
 })();
 if(typeof module!=='undefined')module.exports=PCScopeStateCompare;

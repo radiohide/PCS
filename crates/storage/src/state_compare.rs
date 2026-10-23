@@ -61,10 +61,16 @@ pub(super) fn answer_at(conn:&Connection,from:&str,until:&str,typ:Option<&str>,c
     let evidence_bound:i64=mark.split("-e").nth(1).and_then(|s|s.split('i').next()).and_then(|s|s.parse().ok()).unwrap_or(0);
     let bound=instance_bound(&mark);
     let Some(typ)=typ else {
+        // Only the explicit fresh-instance boundary describes when collection started.
+        // Do not infer it from the oldest remaining object (retention may have removed history).
+        let baseline:Option<String>=conn.query_row("SELECT value FROM settings WHERE key='collection_baseline'",[],|r|r.get(0)).optional()?;
+        let collection_started_at=baseline.and_then(|raw|serde_json::from_str::<Value>(&raw).ok())
+            .filter(|v|v["version"]==1&&v["event_history"]=="from_baseline")
+            .and_then(|v|v["started_at"].as_str().and_then(|s|time(s).ok()));
         let mut stmt=conn.prepare_cached("SELECT i.type_id,i.category,count(*) FROM object_instances i
             WHERE i.instance_id<=? AND pcscope_compare_time(i.first_observed_at)<=pcscope_compare_time(?) GROUP BY i.type_id,i.category ORDER BY i.category,i.type_id")?;
         let rows=stmt.query_map(params![bound,until],|r|Ok(json!({"type_id":r.get::<_,String>(0)?,"category":r.get::<_,String>(1)?,"count":r.get::<_,i64>(2)?})))?.collect::<rusqlite::Result<Vec<_>>>()?;
-        return Ok(response(if rows.is_empty(){ResponseStatus::Empty}else{ResponseStatus::Loaded},json!({"from":from,"until":until,"watermark":mark,"branches":rows}),None,None));
+        return Ok(response(if rows.is_empty(){ResponseStatus::Empty}else{ResponseStatus::Loaded},json!({"from":from,"until":until,"watermark":mark,"branches":rows,"collection_started_at":collection_started_at}),None,None));
     };
     let limit=limit.clamp(1,50);
     let mut stmt=conn.prepare_cached("SELECT instance_id,type_id,category,machine_id,installation_id,scope,native_key,first_observed_at,identity_status FROM object_instances
@@ -171,6 +177,22 @@ mod tests {
     fn item(id:&str,name:&str,state:&str)->Value{json!({"id":id,"data":{"name":id,"display_name":name,"state":state,"start_mode":"Manual"}})}
     fn read(store:&Store,a:&str,b:&str)->Value{answer(&store.conn,a,b,Some("startup.service"),None,50).unwrap().data.unwrap()["objects"].clone()}
     fn value(side:&Value,id:&str)->Value{side["fields"].as_array().unwrap().iter().find(|f|f["field_id"]==id).unwrap()["value"].clone()}
+    #[test]
+    fn directory_reports_explicit_collection_boundary_even_before_any_objects(){
+        let mut s=Store::open(":memory:").unwrap();
+        let before="2026-10-21T00:00:00Z";let after="2026-10-23T00:00:00Z";
+        assert!(answer(&s.conn,before,after,None,None,50).unwrap().data.unwrap()["collection_started_at"].is_null());
+        s.conn.execute("INSERT INTO settings VALUES('collection_baseline',?)",[json!({"version":1,"event_history":"from_baseline","started_at":"2026-10-22T12:17:21.772+08:00"}).to_string()]).unwrap();
+        for until in [before,after] {
+            let data=answer(&s.conn,before,until,None,None,50).unwrap().data.unwrap();
+            assert_eq!(data["collection_started_at"],"2026-10-22T04:17:21.772000000Z");assert_eq!(data["branches"],json!([]));
+        }
+        ingest(&mut s,"one","2026-10-22T05:00:00Z",json!([item("A","A","Running")]),true);
+        s.conn.execute("DELETE FROM settings WHERE key='collection_baseline'",[]).unwrap();
+        assert!(answer(&s.conn,before,after,None,None,50).unwrap().data.unwrap()["collection_started_at"].is_null());
+        s.conn.execute("INSERT INTO settings VALUES('collection_baseline','invalid json')",[]).unwrap();
+        assert!(answer(&s.conn,before,after,None,None,50).unwrap().data.unwrap()["collection_started_at"].is_null());
+    }
     #[test]
     fn historical_cutoffs_use_original_names_states_and_exact_boundaries(){
         let mut s=Store::open(":memory:").unwrap();

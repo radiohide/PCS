@@ -18,7 +18,7 @@ try{
    if(q.query!=='state_compare')return structuredClone(samples[q.query]||{status:'empty',data:[]});
    qa.calls.push(q);if(qa.delay)await new Promise(r=>setTimeout(r,qa.delay));if(qa.fail){qa.fail=false;throw Error('读取超时');}
    const envelope=data=>({status:'loaded',data});
-   if(!q.type_id)return envelope({watermark:'fixed',branches:[{type_id:'startup.service',category:'startup',count:qa.filterPages?5:2},...(qa.extraType?[{type_id:'startup.scheduled_task',category:'startup',count:2}]:[]),{type_id:'network.adapter',category:'network',count:1}]});
+   if(!q.type_id)return envelope({watermark:'fixed',collection_started_at:qa.baseline||null,branches:qa.empty?[]:[{type_id:'startup.service',category:'startup',count:qa.filterPages?5:2},...(qa.extraType?[{type_id:'startup.scheduled_task',category:'startup',count:2}]:[]),{type_id:'network.adapter',category:'network',count:1}]});
    if(qa.branchFail){qa.branchFail=false;throw '查询超时，请重试';}
    if(q.cursor&&qa.holdNext)await new Promise(resolve=>{qa.releaseNext=resolve;});
    if(q.cursor&&qa.failNext){qa.failNext=false;throw '后续读取超时';}
@@ -50,7 +50,7 @@ try{
  const positions=await row.locator('.compare-property').first().locator('.compare-cell').evaluateAll(nodes=>nodes.map(n=>n.getBoundingClientRect().y));assert.equal(positions[0],positions[1]);
  await row.locator('button').nth(1).click();assert.equal(await row.locator('.compare-fields').isVisible(),false);await row.locator('button').nth(0).click();
  const before=await page.evaluate(()=>qa.calls.length);await page.evaluate(()=>state.reloadPage({automatic:true}));assert.equal(await page.evaluate(()=>qa.calls.length),before,'fixed cutoffs are not polled');
- await page.locator('[data-compare-until]').fill('2026-10-22T12:00');await page.locator('[data-compare-run]').click();assert.match(await page.locator('[data-compare-message]').innerText(),/不能晚于/);assert.equal(await row.count(),1);
+ await page.locator('[data-compare-until]').fill('2026-10-22T12:00');await page.locator('[data-compare-run]').click();assert.match(await page.locator('[data-compare-range-notice]').innerText(),/不能晚于/);assert.equal(await row.count(),1);
  await page.locator('[data-compare-until]').fill('2026-10-22T15:00');await page.evaluate(()=>qa.fail=true);await page.locator('[data-compare-run]').click();await page.waitForFunction(()=>document.querySelector('[data-compare-message]').textContent.includes('保留上次'));assert.equal(await row.count(),1);
  await page.locator('[data-compare-run]').click();await page.waitForFunction(()=>!document.querySelector('[data-compare-run]').disabled);await openTree();await page.locator('[data-compare-object="2"]').waitFor();assert.equal(await page.locator('[data-compare-object]').count(),2,'automatic paging includes next objects');
  await page.locator('[data-compare-object="1"] button').first().click();await page.screenshot({path:path.join(root,'target/state-compare-dark.png')});
@@ -83,9 +83,21 @@ try{
  await page.locator('.compare-category-row button').first().click();assert.deepEqual(await badges('.compare-category-row'),['4 项不同','4 项不同'],'collapsed category retains total');
  await page.locator('.compare-category-row button').first().click();await page.locator('[data-compare-only-changes]').uncheck();await page.locator('[data-compare-only-changes]').check();assert.deepEqual(await badges('.compare-category-row'),['4 项不同','4 项不同'],'filter does not double count');
  await page.locator('[data-compare-run]').click();await page.locator('[data-compare-object="11"]').waitFor();await page.locator('[data-compare-object="2"]').waitFor();assert.deepEqual(await badges('.compare-category-row'),['4 项不同','4 项不同'],'refresh resets counts');
+ await page.evaluate(()=>qa.baseline=new Date('2026-10-22T14:00').toISOString());
+ await page.locator('[data-compare-run]').click();await page.waitForFunction(()=>document.querySelector('[data-compare-range-notice]').textContent.includes('缺少左侧状态'));
+ assert.equal(await page.locator('.compare-object').count(),0,'out-of-baseline range does not generate misleading first records');assert.equal(await page.locator('.compare-time-warning').count(),1);
+ assert.match(await page.locator('[data-compare-range-notice]').innerText(),/当前数据从.*开始/);await page.screenshot({path:path.join(root,'target/state-compare-range-warning.png')});
+ await page.locator('[data-compare-until]').fill('2026-10-22T13:30');assert.match(await page.locator('[data-compare-range-notice]').innerText(),/两个时间点都早于/);assert.equal(await page.locator('.compare-time-warning').count(),2);
+ await page.locator('[data-compare-from]').fill('2026-10-22T14:30');await page.locator('[data-compare-until]').fill('2026-10-22T15:00');await page.locator('[data-compare-run]').click();await page.locator('[data-compare-object="2"]').waitFor();assert.equal(await page.locator('[data-compare-range-notice]').isVisible(),false);
+ const rangeCalls=await page.evaluate(()=>qa.calls.length);
+ await page.locator('[data-compare-until]').fill('2099-01-01T00:00');await page.locator('[data-compare-run]').click();assert.match(await page.locator('[data-compare-range-notice]').innerText(),/在未来/);assert.match(await page.locator('[data-compare-message]').innerText(),/上次对比结果/);assert.equal(await page.evaluate(()=>qa.calls.length),rangeCalls);
+ await page.locator('[data-compare-until]').fill('2026-10-22T14:30');await page.locator('[data-compare-run]').click();assert.match(await page.locator('[data-compare-range-notice]').innerText(),/两个时间点相同/);assert.equal(await page.evaluate(()=>qa.calls.length),rangeCalls);
+ await page.locator('[data-compare-until]').fill('2026-10-22T16:00');await page.evaluate(()=>qa.empty=true);await page.locator('[data-compare-run]').click();await page.waitForFunction(()=>document.querySelector('[data-compare-message]').textContent.includes('尚无对象记录'));assert.equal(await page.locator('.compare-category').count(),0);
+ await page.evaluate(()=>{qa.empty=false;qa.delay=150;});await page.locator('[data-compare-run]').click();await page.locator('[data-compare-until]').fill('2026-10-22T17:00');await page.waitForFunction(()=>!document.querySelector('[data-compare-run]').disabled);assert.equal(await page.locator('.compare-category').count(),0,'late response cannot apply to edited inputs');assert.match(await page.locator('[data-compare-message]').innerText(),/时间已修改/);
  await page.locator('[data-compare-from]').fill('2026-10-22T15:00');
  await page.evaluate(()=>qa.delay=100);await page.locator('[data-compare-run]').click();await page.locator('[data-page="overview"]').click();await page.waitForTimeout(200);assert.equal(await page.locator('#state-compare').count(),0,'late reply does not replace destination');
  assert.deepEqual(errors,[]);
+ const {rangeIssue}=require('../apps/desktop/ui/state-compare.js');const now=Date.parse('2026-10-23T00:00:00Z');assert.equal(rangeIssue('2026-10-22T12:00:00+08:00','2026-10-22T05:00:00Z','2026-10-22T04:00:00Z',now),null,'equal boundary and explicit timezone are valid');assert.equal(rangeIssue('bad','bad',null,now).kind,'invalid');assert.equal(rangeIssue('2026-10-22T00:00:00Z','2026-10-22T01:00:00Z',null,now),null,'missing metadata never invents a start');
  const {changes,equal}=require('../apps/desktop/ui/state-compare.js');assert(equal({b:2,a:1},{a:1,b:2}));assert.equal(changes({left:{availability:'not_recorded'},right:{availability:'recorded'}}),'added');assert.equal(changes({left:{availability:'unavailable'},right:{availability:'recorded'}}),'unavailable');
  console.log('State comparison: calendars, validation, lazy loading, synchronized rows, fixed watermark, paging, refresh stability, retries, navigation and both themes passed.');
 }finally{await browser?.close();server.close();}

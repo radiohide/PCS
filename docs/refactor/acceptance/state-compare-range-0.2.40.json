@@ -1,0 +1,32 @@
+{
+  "version": "0.2.40",
+  "feature": "Actionable state comparison range notices",
+  "changes": [
+    "Show exact explicit collection start and mark the side selected before it; do not load misleading first-record branches",
+    "Reject future, identical, reversed and incomplete times before querying",
+    "Show empty history guidance; identify retained old results after input edits or failures",
+    "Ignore a directory response if the selected times changed while it was loading",
+    "Retain existing scoped type read failures, retry controls and missing-history counts"
+  ],
+  "data_rules": [
+    "Collection start comes only from the configured instance explicit baseline setting",
+    "No guessed start from oldest retained objects; missing or invalid metadata stays unknown",
+    "No history mutation or schema change; no extra per-object query"
+  ],
+  "tests": {
+    "storage_state_compare": 10,
+    "frontend": "passed: before-baseline sides, date correction, exact boundary, offsets, future, equal times, unavailable metadata, empty directory, late input edits, retained prior results, existing paging/retry/filter/count/alignment cases",
+    "front_refresh": "passed",
+    "native_build": "release workspace bins and examples passed",
+    "desktop_build": "passed",
+    "visual": "warning checked at minimum 960px width"
+  },
+  "read_only_live": {
+    "directory_ms": 37,
+    "collection_started_at": "2026-10-22T04:17:21.772000000Z",
+    "types_checked": 76,
+    "errors": 0,
+    "source": "configured native-v2 only"
+  },
+  "deployment": "0.2.40 staged; enhanced backend remains 0.2.38 pending UAC. Baseline notice requires new backend metadata."
+}
