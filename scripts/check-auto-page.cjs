@@ -10,11 +10,12 @@ const root=path.resolve(__dirname,'..');
   await page.addScriptTag({path:path.join(root,'apps/desktop/ui/auto-page.js')});
   await page.evaluate(()=>{
    window.qa={calls:[],active:0,max:0,fail:false,repeat:false,empty:false,delay:0};
-   window.install=(name,{count=20,hasMore=true,visible=true}={})=>{
+   window.install=(name,{count=20,hasMore=true,visible=true,eager=false}={})=>{
     const box=document.createElement('div');box.className='box';box.hidden=!visible;
     const list=document.createElement('div'),anchor=document.createElement('div');box.append(list,anchor);document.querySelector('#fixture').append(box);
     const record={name,box,list,anchor,pages:0};
     record.pager=PCScopeAutoPage.mount(anchor,{
+     eager,active:()=>!eager||!box.hidden,
      query:async cursor=>{
       qa.calls.push({name,cursor,remaining:box.scrollHeight-box.clientHeight-box.scrollTop});qa.active++;qa.max=Math.max(qa.max,qa.active);
       try{if(qa.delay)await new Promise(resolve=>setTimeout(resolve,qa.delay));if(qa.fail&&cursor)throw Error('failure');
@@ -31,6 +32,8 @@ const root=path.resolve(__dirname,'..');
   await page.evaluate(()=>{example.box.scrollTop=180;});await page.waitForFunction(()=>example.pages===2);
   assert((await page.evaluate(()=>qa.calls[1].remaining))>200,'next page is read before the nested list reaches its bottom');
   await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>qa.calls.length),2,'terminal page must stop');
+  await page.evaluate(async()=>{clear();window.example=install('eager',{eager:true});await example.pager.reset();});await page.waitForFunction(()=>example.pages===2);assert.equal(await page.evaluate(()=>example.box.scrollTop),0,'eager branch finishes without scrolling');
+  await page.evaluate(async()=>{clear();window.example=install('eager-hidden',{eager:true,visible:false});await example.pager.reset();});await page.waitForTimeout(250);assert.equal(await page.evaluate(()=>qa.calls.length),0,'collapsed eager branches stay idle');await page.evaluate(()=>{example.box.hidden=false;example.pager.reset();});await page.waitForFunction(()=>example.pages===2);
   await page.evaluate(async()=>{clear();const outer=document.createElement('div');outer.className='box';const spacer=document.createElement('div');spacer.style.height='300px';document.querySelector('#fixture').append(outer);window.example=install('clipped');outer.append(spacer,example.box);window.outer=outer;await example.pager.reset();example.box.scrollTop=180;});
   await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>qa.calls.length),1,'an outer scroll container still hides the inner list');
   await page.evaluate(()=>outer.scrollTop=300);await page.waitForFunction(()=>example.pages===2);

@@ -26,6 +26,8 @@ const PCScopeStateCompare=(()=>{
     const results=container.querySelector('[data-compare-results]'),message=container.querySelector('[data-compare-message]'),button=container.querySelector('[data-compare-run]');
     const filter=document.createElement('label');filter.className='compare-filter';filter.innerHTML='<input type="checkbox" role="switch" data-compare-only-changes>只看变化';button.before(filter);
     const toggle=filter.querySelector('input');toggle.checked=onlyChanges;
+    const progress=document.createElement('div');progress.className='compare-progress';progress.hidden=true;progress.innerHTML='<span data-compare-progress-label role="status"></span><progress data-compare-progress aria-label="已展开类型的对比进度"></progress>';container.querySelector('.compare-toolbar').after(progress);
+    const progressLabel=progress.querySelector('span'),progressBar=progress.querySelector('progress');
     const isChange=kind=>['added','absent','changed'].includes(kind);
     function filterObjects(){
       for(const shell of results.querySelectorAll('.compare-object'))shell.hidden=onlyChanges&&!isChange(shell.dataset.compareKind);
@@ -34,9 +36,12 @@ const PCScopeStateCompare=(()=>{
     toggle.onchange=()=>{onlyChanges=toggle.checked;try{localStorage.setItem('pcscope.compareOnlyChanges',String(onlyChanges));}catch{}filterObjects();summary();for(const pager of pagers)pager.resume();};
     const alive=()=>!disposed&&container.isConnected;
     function summary(){
-      const failed=branches.filter(b=>b.failed()).length,reading=branches.some(b=>b.reading()),node=container.querySelector('[data-compare-summary]');
-      if(!loaded){node.textContent=failed?'部分类型读取失败，请在对应类型下重试。':reading?'正在对比对象…':branches.length?'展开对象类型，查看这两个时间点的变化。':'所选时间内没有对象记录。';return;}
-      node.innerHTML=`已对比 ${loaded} 个对象 <span class="compare-changed">${totals.changed} 项变化</span><span class="compare-added">${totals.added} 项首次记录</span><span class="compare-absent">${totals.absent} 项退出清单</span>${failed?`<span>${failed} 类读取失败，请重试</span>`:''}`;
+      const started=branches.map(b=>b.status()).filter(b=>b.started),pending=started.filter(b=>!b.complete),failed=started.filter(b=>b.failed).length,total=started.reduce((n,b)=>n+b.total,0),node=container.querySelector('[data-compare-summary]');
+      progress.hidden=!started.length;progressBar.max=Math.max(1,total);progressBar.value=pending.length?Math.min(loaded,Math.max(0,total-1)):total;
+      progressLabel.textContent=`${failed?'对比未完成':pending.length?(pending.some(b=>b.open)?'正在对比':'已暂停，展开类型后继续'):'已展开类型对比完成'} · ${loaded} / ${total} 个对象${failed?' · 读取失败，请重试':''}`;
+      results.setAttribute('aria-busy',String(pending.some(b=>b.open&&!b.failed)));
+      if(!loaded){node.textContent=failed?'部分类型读取失败，请在对应类型下重试。':pending.length?'正在对比对象…':branches.length?'展开对象类型，查看这两个时间点的变化。':'所选时间内没有对象记录。';return;}
+      node.innerHTML=`${pending.length?'已发现':'已展开类型中'} <span class="compare-changed">${totals.changed} 项变化</span><span class="compare-added">${totals.added} 项首次记录</span><span class="compare-absent">${totals.absent} 项退出清单</span>${failed?`<span>${failed} 类读取失败，请重试</span>`:''}`;
     }
     function pairRow(parent,labelLeft,labelRight,kind='branch',tailLeft='',tailRight=''){
       const row=document.createElement('div');row.className='compare-pair compare-'+kind;
@@ -44,7 +49,7 @@ const PCScopeStateCompare=(()=>{
     }
     function expandable(row,body,onOpen=()=>{},key=null){
       const controls=[...row.querySelectorAll('button')];body.hidden=true;
-      const setOpen=open=>{body.hidden=!open;controls.forEach(b=>b.setAttribute('aria-expanded',String(open)));if(open)onOpen();};
+      const setOpen=open=>{body.hidden=!open;controls.forEach(b=>b.setAttribute('aria-expanded',String(open)));if(open)onOpen();if(key)summary();};
       controls.forEach(control=>control.onclick=()=>{const open=body.hidden;if(key){if(open)expanded.add(key);else expanded.delete(key);saveExpanded();}setOpen(open);});
       if(key&&expanded.has(key))setOpen(true);
     }
@@ -63,6 +68,8 @@ const PCScopeStateCompare=(()=>{
       shell.dataset.compareKind=kind;shell.hidden=onlyChanges&&!isChange(kind);
       const row=pairRow(shell,title(left),title(right),'object-row',status(left),status(right));row.classList.add('compare-'+kind);
       const body=document.createElement('div');body.className='compare-fields';shell.append(body);
+      // Build property rows only when the user opens this object.
+      const buildFields=()=>{
       const checks=document.createElement('div');checks.className='compare-pair compare-checks';checks.innerHTML=[left,right].map(s=>`<div class="compare-cell">${esc(s.checked_at?(s.availability==='event_only'?'日志记录于 ':'检查于 ')+localTime(s.checked_at):s.availability==='not_recorded'?'此时间点尚无记录':s.availability==='ambiguous'?`此对象对应 ${s.source_record_count} 条来源记录，需先区分对象。`:'未保留可用的历史检查')}</div>`).join('');body.append(checks);
       const a=new Map((left.fields||[]).map(f=>[f.field_id,f])),b=new Map((right.fields||[]).map(f=>[f.field_id,f]));
       const ids=[...new Set([...a.keys(),...b.keys()])];
@@ -74,14 +81,15 @@ const PCScopeStateCompare=(()=>{
         line.innerHTML=[[left,l],[right,r]].map(([side,f])=>`<div class="compare-cell"><span class="compare-property-label">${esc(label)}</span><strong>${esc(value(side,f))}</strong>${changed?'<small>已变化</small>':''}</div>`).join('');body.append(line);
       }
       if(!ids.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='这两个时间点没有可对比的属性。';body.append(empty);}
-      expandable(row,body);loaded++;if(Object.hasOwn(totals,kind))totals[kind]++;
+      };
+      let built=false;expandable(row,body,()=>{if(!built){built=true;buildFields();}});loaded++;if(Object.hasOwn(totals,kind))totals[kind]++;
     }
     function branch(parent,entry,request){
       const shell=document.createElement('section');shell.className='compare-type';parent.append(shell);
       const label=PCScopeObjectNames.typeName(entry),row=pairRow(shell,label,label,'type-row',`${entry.count} 个历史对象`,`${entry.count} 个历史对象`),body=document.createElement('div');shell.append(body);
       const objects=document.createElement('div'),note=document.createElement('p'),anchor=document.createElement('div');note.className='compare-filter-note';note.hidden=true;body.append(objects,note,anchor);let started=false,complete=false,reading=false,failed=false;
-      const paint=()=>{const nodes=[...objects.children],visible=nodes.some(n=>!n.hidden),unavailable=nodes.filter(n=>n.dataset.compareKind==='unavailable').length;note.hidden=!onlyChanges||(!complete&&!unavailable)||(visible&&!unavailable);note.textContent=[!visible&&complete?(unavailable?'暂无可显示的变化':'没有变化'):'',unavailable?`${unavailable} 个对象缺少可对比记录，关闭“只看变化”可查看`:''].filter(Boolean).join(' · ');};branches.push({paint,reading:()=>reading,failed:()=>failed});
-      const pager=PCScopeAutoPage.mount(anchor,{active:()=>alive()&&!body.hidden&&!parent.hidden&&request.revision===revision,query:cursor=>query({query:'state_compare',from:request.from,until:request.until,watermark:request.watermark,type_id:entry.type_id,limit:50,...(cursor?{cursor}:{})}),onStart:()=>{reading=true;failed=false;summary();},apply:(response,{append})=>{if(request.revision!==revision)return;if(!append)objects.replaceChildren();for(const pair of response.data?.objects||[])object(objects,pair);complete=!response.page?.has_more;reading=false;failed=false;paint();summary();},onError:()=>{if(request.revision!==revision)return;reading=false;failed=true;summary();},endLabel:'此类型已全部检查'});pagers.push(pager);
+      const paint=()=>{const nodes=[...objects.children],visible=nodes.some(n=>!n.hidden),unavailable=nodes.filter(n=>n.dataset.compareKind==='unavailable').length;note.hidden=!onlyChanges||(!complete&&!unavailable)||(visible&&!unavailable);note.textContent=[!visible&&complete?(unavailable?'暂无可显示的变化':'没有变化'):'',unavailable?`${unavailable} 个对象缺少可对比记录，关闭“只看变化”可查看`:''].filter(Boolean).join(' · ');};branches.push({paint,status:()=>({started,complete,failed,open:!body.hidden&&!parent.hidden,total:entry.count})});
+      const pager=PCScopeAutoPage.mount(anchor,{eager:true,active:()=>alive()&&!body.hidden&&!parent.hidden&&request.revision===revision,query:cursor=>query({query:'state_compare',from:request.from,until:request.until,watermark:request.watermark,type_id:entry.type_id,limit:50,...(cursor?{cursor}:{})}),onStart:()=>{reading=true;failed=false;summary();},apply:(response,{append})=>{if(request.revision!==revision)return;if(!append){for(const shell of objects.children){loaded--;if(Object.hasOwn(totals,shell.dataset.compareKind))totals[shell.dataset.compareKind]--;}objects.replaceChildren();}for(const pair of response.data?.objects||[])object(objects,pair);complete=!response.page?.has_more;reading=false;failed=false;paint();summary();},onError:()=>{if(request.revision!==revision)return;reading=false;failed=true;summary();},endLabel:'此类型已全部检查'});pagers.push(pager);
       const start=()=>{if(parent.hidden||body.hidden)return;if(!started){started=true;pager.reset();}else pager.resume();};
       shell.startCompare=start;expandable(row,body,start,'type:'+entry.type_id);
     }
@@ -92,6 +100,7 @@ const PCScopeStateCompare=(()=>{
       if(!from||!until||!Number.isFinite(Date.parse(from))||!Number.isFinite(Date.parse(until))){message.textContent='请选择完整的日期和时间。';return;}
       if(new Date(from)>new Date(until)){message.textContent='基准时间不能晚于对比时间。';return;}
       busy=true;button.disabled=true;message.textContent='正在读取对比目录…';const current=revision+1;
+      progress.hidden=false;progressBar.removeAttribute('value');progressLabel.textContent='正在读取对比目录…';
       try{
         const request={from:new Date(from).toISOString(),until:new Date(until).toISOString(),revision:current};
         const response=await query({query:'state_compare',from:request.from,until:request.until});
@@ -108,7 +117,7 @@ const PCScopeStateCompare=(()=>{
           branch(categories.get(entry.category),entry,request);
         }
         message.textContent=categories.size?'左右同步展开，逐行查看对象和属性。':'所选时间内没有对象记录。';summary();
-      }catch(error){if(alive())message.textContent=errorText(error)+(applied?' 已保留上次对比结果。':'');}
+      }catch(error){if(alive()){summary();message.textContent=errorText(error)+(applied?' 已保留上次对比结果。':'');}}
       finally{busy=false;if(alive())button.disabled=false;}
     }
     button.onclick=()=>reload();

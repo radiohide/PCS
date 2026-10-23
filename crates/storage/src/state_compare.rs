@@ -6,10 +6,39 @@ use std::collections::{BTreeMap, HashMap};
 
 fn time(raw:&str)->Result<String>{Ok(chrono::DateTime::parse_from_rfc3339(raw)?.with_timezone(&chrono::Utc).to_rfc3339_opts(chrono::SecondsFormat::Nanos,true))}
 
+// Snapshot items share one timestamp and are inserted atomically by record_snapshot_items.
+// Read each run's timestamp once per page, then verify the selected item's own row and bound.
+// The item check is essential: a reference to a sibling's snapshot is not this object's evidence.
+const ITEM_AT_ADDRESS: &str = "SELECT 1 FROM evidence INDEXED BY evidence_source_address
+    WHERE source=? AND evidence_id=? AND item_id=? AND kind='snapshot' AND seq<=?";
+
 #[derive(Default)]
 struct Cache {
     snapshots: crate::evidence::SnapshotCache,
     observations: HashMap<(String,String), Vec<ObservationCandidate>>,
+    headers: HashMap<(String,String),Option<(String,i64)>>,
+    timings: [std::time::Duration;5],
+}
+fn latest_address(conn:&Connection,object:i64,source:&str,item:&str,cutoff:&str,bound:i64,cache:&mut Cache)->Result<Option<String>> {
+    let mut refs=conn.prepare_cached("SELECT evidence_id FROM evidence_refs WHERE subject_kind='observation' AND subject_id=? AND evidence_kind='snapshot'")?;
+    let addresses=refs.query_map([object.to_string()],|r|r.get::<_,String>(0))?.collect::<rusqlite::Result<Vec<_>>>()?;
+    let mut header=conn.prepare_cached("SELECT observed_at,seq FROM evidence INDEXED BY evidence_source_address WHERE source=? AND evidence_id=? AND kind='snapshot' ORDER BY item_id LIMIT 1")?;
+    let mut candidates=Vec::new();
+    for address in addresses {
+        let key=(source.to_owned(),address.clone());
+        if !cache.headers.contains_key(&key) {
+            let row:Option<(String,i64)>=header.query_row(params![source,address],|r|Ok((r.get(0)?,r.get(1)?))).optional()?;
+            let row=row.and_then(|(raw,seq)|time(&raw).ok().map(|at|(at,seq)));
+            cache.headers.insert(key.clone(),row);
+        }
+        if let Some((at,seq))=&cache.headers[&key] {if at.as_str()<=cutoff {candidates.push((at.clone(),*seq,address));}}
+    }
+    candidates.sort_unstable_by(|a,b|b.cmp(a));
+    let mut item_row=conn.prepare_cached(ITEM_AT_ADDRESS)?;
+    for (_,_,address) in candidates {
+        if item_row.query_row(params![source,address,item,bound],|_|Ok(())).optional()?.is_some(){return Ok(Some(address))}
+    }
+    Ok(None)
 }
 struct Object { id:i64, typ:String, category:String, machine:String, installation:String, scope:String, key:String, first:String, identity:String }
 
@@ -51,28 +80,29 @@ pub(super) fn answer_at(conn:&Connection,from:&str,until:&str,typ:Option<&str>,c
         bytes+=size;last=object.id;rows.push(row);
     }
     let more=objects.len()>rows.len();
+    if std::env::var_os("PCSCOPE_COMPARE_PROFILE").is_some(){eprintln!("compare phases ms (bindings, lookup, decode, fields, lifecycle): {:?}",(0..5).map(|i|(left_cache.timings[i]+right_cache.timings[i]).as_millis()).collect::<Vec<_>>());}
     Ok(response(if rows.is_empty(){ResponseStatus::Empty}else{ResponseStatus::Loaded},json!({"from":from,"until":until,"objects":rows}),Some(Page{next_cursor:more.then(||encode_cursor(&mark,typ,last)),limit,watermark:mark,has_more:more}),None))
 }
 
 fn at(conn:&Connection,object:&Object,cutoff:&str,evidence_bound:i64,action_bound:i64,cache:&mut Cache)->Result<Value> {
+    let start=std::time::Instant::now();
     let first=time(&object.first)?;
     if first.as_str()>cutoff {return Ok(json!({"availability":"not_recorded","fields":[]}))}
     // One indexed address lookup per binding. A snapshot address contains many items, so the
     // item join is mandatory: a sibling's evidence must never stand in for this object.
     let mut stmt=conn.prepare_cached("SELECT DISTINCT b.source,b.item_id FROM source_bindings b WHERE b.instance_id=? AND pcscope_compare_time(b.valid_from)<=pcscope_compare_time(?)")?;
     let bindings=stmt.query_map(params![object.id,cutoff],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;
+    cache.timings[0]+=start.elapsed();
     // Legacy provisional identities can group several source records. Never compare unrelated
     // records as one object. A single stable binding can still be compared as its own record.
     if object.identity!="confirmed"&&bindings.len()>1 {return Ok(json!({"availability":"ambiguous","source_record_count":bindings.len(),"fields":[],"summary":{"type_id":object.typ,"identity_status":object.identity}}))}
     let single_binding=bindings.len()==1;
     let mut fields:BTreeMap<String,Value>=BTreeMap::new();let mut observed:Option<String>=None;
-    let mut latest=conn.prepare_cached("SELECT e.evidence_id FROM evidence_refs r CROSS JOIN evidence e
-        ON e.evidence_id=r.evidence_id AND e.kind=r.evidence_kind
-        WHERE r.subject_kind='observation' AND r.subject_id=? AND e.source=? AND e.item_id=? AND e.kind='snapshot'
-          AND e.seq<=? AND pcscope_compare_time(e.observed_at)<=pcscope_compare_time(?)
-        ORDER BY pcscope_compare_time(e.observed_at) DESC,e.seq DESC LIMIT 1")?;
     for (source,item) in bindings {
-        let Some(address)=latest.query_row(params![object.id.to_string(),source,item,evidence_bound,cutoff],|r|r.get::<_,String>(0)).optional()? else{continue};
+        let lookup=std::time::Instant::now();
+        let address=latest_address(conn,object.id,&source,&item,cutoff,evidence_bound,cache)?;
+        cache.timings[1]+=lookup.elapsed();let Some(address)=address else{continue};
+        let decode=std::time::Instant::now();
         let key=(address.clone(),item.clone());
         if !cache.observations.contains_key(&key) {
             let decoded=if let (Some(input),Some(adapter))=(crate::evidence::input_at_cached(conn,&address,&item,&mut cache.snapshots)?.filter(|input|!input.payload.is_null()&&input.decoding.available),pcscope_contracts::reference::adapter_for(&source)) {
@@ -81,6 +111,7 @@ fn at(conn:&Connection,object:&Object,cutoff:&str,evidence_bound:i64,action_boun
             } else {Vec::new()};
             cache.observations.insert(key.clone(),decoded);
         }
+        cache.timings[2]+=decode.elapsed();let fields_time=std::time::Instant::now();
         for observation in &cache.observations[&key] {
             if observation.identity.type_id!=object.typ||observation.identity.scope!=object.scope {continue}
             let Some(strategy)=pcscope_contracts::identity::TypeStrategy::for_type(&object.typ)else{continue};
@@ -104,17 +135,19 @@ fn at(conn:&Connection,object:&Object,cutoff:&str,evidence_bound:i64,action_boun
                 fields.insert(field.field_id.clone(),view);
             }
         }
+        cache.timings[3]+=fields_time.elapsed();
     }
-    let absent:Option<String>=conn.query_row("SELECT observed_at FROM object_actions WHERE instance_id=? AND action_id='observed.no_longer_observed' AND action_row<=? AND pcscope_compare_time(observed_at)<=pcscope_compare_time(?) ORDER BY pcscope_compare_time(observed_at) DESC,action_row DESC LIMIT 1",params![object.id,action_bound,cutoff],|r|r.get(0)).optional()?;
+    let lifecycle_time=std::time::Instant::now();
+    let absent:Option<String>=conn.query_row("SELECT observed_at FROM object_actions INDEXED BY object_actions_instance WHERE instance_id=? AND action_id='observed.no_longer_observed' AND action_row<=? AND pcscope_compare_time(observed_at)<=pcscope_compare_time(?) ORDER BY pcscope_compare_time(observed_at) DESC,action_row DESC LIMIT 1",params![object.id,action_bound,cutoff],|r|r.get(0)).optional()?;
     let absent=absent.map(|s|time(&s)).transpose()?;
     let mut lifecycle=if absent.as_ref().is_some_and(|a|observed.as_ref().is_none_or(|t|a>=t)){"not_observed"}else if observed.is_some(){"active"}else{"unknown"};
     let mut checked=if lifecycle=="not_observed"{absent.clone()}else{observed.clone()};
     // The same explicit end actions used by projection may close an instance between inventories.
-    let ended:Option<(String,String)>=conn.query_row("SELECT action_id,observed_at FROM object_actions WHERE instance_id=? AND action_row<=? AND action_id IN ('startup.task_deleted','identity.account_deleted','files.deleted','files.deleted_archived','execution.process_stopped') AND pcscope_compare_time(observed_at)<=pcscope_compare_time(?) AND pcscope_compare_time(coalesce(occurred_at,observed_at))<=pcscope_compare_time(?) ORDER BY pcscope_compare_time(observed_at) DESC,action_row DESC LIMIT 1",params![object.id,action_bound,cutoff,cutoff],|r|Ok((r.get(0)?,r.get(1)?))).optional()?;
+    let ended:Option<(String,String)>=conn.query_row("SELECT action_id,observed_at FROM object_actions INDEXED BY object_actions_instance WHERE instance_id=? AND action_row<=? AND action_id IN ('startup.task_deleted','identity.account_deleted','files.deleted','files.deleted_archived','execution.process_stopped') AND pcscope_compare_time(observed_at)<=pcscope_compare_time(?) AND pcscope_compare_time(coalesce(occurred_at,observed_at))<=pcscope_compare_time(?) ORDER BY pcscope_compare_time(observed_at) DESC,action_row DESC LIMIT 1",params![object.id,action_bound,cutoff,cutoff],|r|Ok((r.get(0)?,r.get(1)?))).optional()?;
     if let Some((action,at))=ended {let at=time(&at)?;if checked.as_ref().is_none_or(|c|&at>c){lifecycle=if action=="execution.process_stopped"{"ended"}else{"removed"};checked=Some(at)}}
     let mut event_name=None;let mut event_only=false;
     if checked.is_none() {
-        let event:Option<(i64,String,String)>=conn.query_row("SELECT action_row,action_id,observed_at FROM object_actions WHERE instance_id=? AND action_row<=? AND action_id NOT LIKE 'observed.%' AND pcscope_compare_time(observed_at)<=pcscope_compare_time(?) ORDER BY pcscope_compare_time(observed_at) DESC,action_row DESC LIMIT 1",params![object.id,action_bound,cutoff],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).optional()?;
+        let event:Option<(i64,String,String)>=conn.query_row("SELECT action_row,action_id,observed_at FROM object_actions INDEXED BY object_actions_instance WHERE instance_id=? AND action_row<=? AND action_id NOT LIKE 'observed.%' AND pcscope_compare_time(observed_at)<=pcscope_compare_time(?) ORDER BY pcscope_compare_time(observed_at) DESC,action_row DESC LIMIT 1",params![object.id,action_bound,cutoff],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).optional()?;
         if let Some((id,action,at))=event {
             let context=query_views::action_context(conn,id,Some(object.id),Some(&object.typ),&action,None,&mut HistoryLabelCache::new())?;
             if context["subject_basis"]=="event_evidence" {event_name=context["subject_label"].as_str().map(str::to_owned)}
@@ -123,6 +156,7 @@ fn at(conn:&Connection,object:&Object,cutoff:&str,evidence_bound:i64,action_boun
     }
     let fields:Vec<Value>=fields.into_values().collect();
     let name=fields.iter().find(|f|matches!(f["field_id"].as_str(),Some("display_name"|"name"))&&f["status"]=="known").and_then(|f|f["value"].as_str()).or(event_name.as_deref());
+    cache.timings[4]+=lifecycle_time.elapsed();
     Ok(json!({"availability":if event_only{"event_only"}else if checked.is_some(){"recorded"}else{"unavailable"},"checked_at":checked,"summary":{"instance_id":object.id,"type_id":object.typ,"category":object.category,"display_name":name,"identity_status":object.identity,"lifecycle":lifecycle,"record_basis":if event_only{"event_only"}else{"observation"},"key_facts":fields},"fields":fields}))
 }
 
@@ -148,6 +182,36 @@ mod tests {
         assert_eq!(value(&rows[0]["left"],"display_name"),"Old name");
         assert_eq!(rows[0]["left"]["checked_at"],"2026-10-22T00:00:00.000000000Z");
         let same=read(&s,"2026-10-22T01:00:00Z","2026-10-22T01:00:00Z");assert_eq!(same[0]["left"],same[0]["right"]);
+    }
+    #[test]
+    fn history_lookup_addresses_one_item_in_a_shared_inventory(){
+        let mut s=Store::open(":memory:").unwrap();
+        let items:Vec<Value>=(0..128).map(|n|item(&format!("service-{n}"),&format!("Service {n}"),"Stopped")).collect();
+        ingest(&mut s,"one","2026-10-22T00:00:00Z",json!(items),true);
+        // Later material for siblings must not replace the missing item's own earlier state.
+        ingest(&mut s,"two","2026-10-22T01:00:00Z",json!([item("service-1","Service 1","Running")]),true);
+        let rows=read(&s,"2026-10-22T00:00:00Z","2026-10-22T01:30:00Z");
+        let target=rows.as_array().unwrap().iter().find(|p|value(&p["left"],"name")=="service-0").unwrap();
+        assert_eq!(value(&target["right"],"state"),"Stopped");
+        assert_eq!(target["right"]["summary"]["lifecycle"],"not_observed");
+        let mut plan=s.conn.prepare(&format!("EXPLAIN QUERY PLAN {ITEM_AT_ADDRESS}")).unwrap();
+        let steps=plan.query_map(params!["pcscope.startup.services","address","service-0",i64::MAX],|r|r.get::<_,String>(3)).unwrap().collect::<rusqlite::Result<Vec<_>>>().unwrap();
+        assert!(steps.iter().any(|s|s.contains("evidence_source_address")&&s.contains("item_id=?")),"{steps:?}");
+    }
+    #[test]
+    fn shared_headers_preserve_same_time_order_watermarks_and_missing_items(){
+        let mut s=Store::open(":memory:").unwrap();
+        let at="2026-10-22T00:00:00Z";
+        ingest(&mut s,"one",at,json!([item("A","A","Stopped"),item("B","B","Running")]),true);
+        let directory=answer(&s.conn,at,at,None,None,50).unwrap();let mark=directory.data.unwrap()["watermark"].as_str().unwrap().to_owned();
+        ingest(&mut s,"two",at,json!([item("B","B","Stopped"),item("A","A","Running")]),true);
+        let rows=read(&s,at,at);assert_eq!(value(&rows[0]["right"],"state"),"Running");
+        let bounded=answer_at(&s.conn,at,at,Some("startup.service"),None,50,Some(&mark)).unwrap().data.unwrap();assert_eq!(value(&bounded["objects"][0]["right"],"state"),"Stopped");
+        ingest(&mut s,"three","2026-10-22T01:00:00Z",json!([item("B","B","Paused")]),true);
+        let a=rows[0]["instance_id"].as_i64().unwrap();
+        s.conn.execute("INSERT OR IGNORE INTO evidence_refs(subject_kind,subject_id,evidence_kind,evidence_id) SELECT 'observation',?,'snapshot',evidence_id FROM evidence WHERE item_id='B'",[a.to_string()]).unwrap();
+        let rows=read(&s,at,"2026-10-22T01:30:00Z");assert_eq!(value(&rows[0]["right"],"state"),"Running");
+        assert_eq!(rows[0]["right"]["summary"]["lifecycle"],"not_observed");
     }
     #[test]
     fn absent_reappearing_and_first_observation_are_distinct(){

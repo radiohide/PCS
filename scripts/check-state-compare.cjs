@@ -18,8 +18,10 @@ try{
    if(q.query!=='state_compare')return structuredClone(samples[q.query]||{status:'empty',data:[]});
    qa.calls.push(q);if(qa.delay)await new Promise(r=>setTimeout(r,qa.delay));if(qa.fail){qa.fail=false;throw Error('读取超时');}
    const envelope=data=>({status:'loaded',data});
-   if(!q.type_id)return envelope({watermark:'fixed',branches:[{type_id:'startup.service',category:'startup',count:2},{type_id:'network.adapter',category:'network',count:1}]});
+   if(!q.type_id)return envelope({watermark:'fixed',branches:[{type_id:'startup.service',category:'startup',count:qa.filterPages?5:2},{type_id:'network.adapter',category:'network',count:1}]});
    if(qa.branchFail){qa.branchFail=false;throw '查询超时，请重试';}
+   if(q.cursor&&qa.holdNext)await new Promise(resolve=>{qa.releaseNext=resolve;});
+   if(q.cursor&&qa.failNext){qa.failNext=false;throw '后续读取超时';}
    if(qa.branchDelay)await new Promise(r=>setTimeout(r,qa.branchDelay));
    function side(state){const fields=[{field_id:'display_name',label:'名称',value:'Volume Shadow Copy',status:'known'},{field_id:'state',label:'运行状态',value:state,status:'known'},{field_id:'start_mode',label:'启动方式',value:'Manual',status:'known'}];return {availability:'recorded',checked_at:'2026-10-22T05:00:00Z',fields,summary:{type_id:q.type_id,identity_status:'confirmed',display_name:'Volume Shadow Copy',lifecycle:'active',record_basis:'observation',key_facts:fields}};}
    if(qa.filterPages){const n=Number(q.cursor||1);const result=envelope({objects:[{instance_id:n,type_id:q.type_id,left:side('Stopped'),right:qa.same?side('Stopped'):n===5?{availability:'unavailable'}:side(n===4?'Running':'Stopped')}]});result.page={has_more:n<5,next_cursor:n<5?String(n+1):null};return result;}
@@ -32,7 +34,11 @@ try{
  assert.equal(await page.locator('[data-compare-only-changes]').isChecked(),true,'changes only is enabled by default');
  assert.equal(await page.evaluate(()=>qa.calls.filter(q=>q.type_id).length),0,'collapsed branches are lazy');
  assert.doesNotMatch(await page.locator('[data-compare-summary]').innerText(),/0 项变化/,'unread is not zero changes');
+ await page.evaluate(()=>qa.holdNext=true);
  await openTree();await page.locator('[data-compare-object="1"]').waitFor();
+ await page.waitForFunction(()=>qa.releaseNext);assert.equal(await page.locator('[data-compare-progress]').getAttribute('value'),'1');assert.equal(await page.locator('[data-compare-progress]').getAttribute('max'),'2');assert.match(await page.locator('[data-compare-summary]').innerText(),/已发现.*1 项变化/s);assert.doesNotMatch(await page.locator('[data-compare-progress-label]').innerText(),/完成/);
+ assert.equal(await page.locator('.compare-property').count(),0,'collapsed properties are not rendered');
+ await page.evaluate(()=>{qa.holdNext=false;qa.releaseNext();});await page.locator('[data-compare-object="2"]').waitFor();assert.equal(await page.locator('[data-compare-progress]').getAttribute('value'),'2');assert.match(await page.locator('[data-compare-progress-label]').innerText(),/已展开类型对比完成/);
  assert.equal(await page.evaluate(()=>qa.calls.find(q=>q.type_id).watermark),'fixed');
  const row=page.locator('[data-compare-object="1"]');await row.locator('button').nth(0).click();assert.deepEqual(await row.locator('button').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('aria-expanded'))),['true','true']);
  assert.match(await row.innerText(),/已停止/);assert.match(await row.innerText(),/运行中/);
@@ -59,6 +65,7 @@ try{
  await page.evaluate(()=>{qa.filterPages=false;qa.branchFail=true;});await page.locator('[data-compare-run]').click();await page.waitForFunction(()=>document.querySelector('[data-compare-summary]').textContent.includes('读取失败'));
  assert.doesNotMatch(await page.locator('[data-compare-summary]').innerText(),/0 项变化/,'read failure is not zero changes');assert.match(await page.locator('.compare-type').first().locator('.auto-page pre').textContent(),/查询超时/,'string IPC error is visible');
  await page.locator('.compare-type').first().locator('.auto-page button').click();await page.locator('[data-compare-object="2"]').waitFor();
+ await page.evaluate(()=>qa.failNext=true);await page.locator('[data-compare-run]').click();await page.waitForFunction(()=>document.querySelector('[data-compare-progress-label]').textContent.includes('读取失败'));assert.equal(await page.locator('[data-compare-progress]').getAttribute('value'),'1','failed append preserves partial progress');assert.equal(await page.locator('[data-compare-object="1"]').count(),1);await page.locator('.compare-type').first().locator('.auto-page button').click();await page.locator('[data-compare-object="2"]').waitFor();assert.equal(await page.locator('[data-compare-progress]').getAttribute('value'),'2');
  await page.evaluate(()=>qa.branchDelay=300);await page.locator('[data-page="overview"]').click();await page.locator('[data-page="compare"]').click();await page.waitForFunction(()=>document.querySelector('[data-compare-summary]')?.textContent==='正在对比对象…');await page.locator('[data-compare-object="2"]').waitFor();assert.equal(await page.locator('.compare-type-row button').first().getAttribute('aria-expanded'),'true','tree reopens and loads after navigation');
  await page.locator('.compare-category-row button').first().click();await page.locator('[data-page="overview"]').click();const beforeCollapsed=await page.evaluate(()=>qa.calls.filter(q=>q.type_id).length);await page.locator('[data-page="compare"]').click();await page.locator('.compare-category').first().waitFor();assert.equal(await page.evaluate(()=>qa.calls.filter(q=>q.type_id).length),beforeCollapsed,'restored child stays idle under collapsed parent');await openTree();await page.locator('[data-compare-object="2"]').waitFor();
  await page.locator('[data-compare-from]').fill('2026-10-22T15:00');
