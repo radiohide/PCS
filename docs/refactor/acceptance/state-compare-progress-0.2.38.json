@@ -31,7 +31,31 @@
     "objects": 281,
     "objects_sha256": "1c730fb24d070741ba7f52d9984a813cb2a3c1dc3e3d50e909ce2d0ac269c7dc",
     "identical_results": true,
-    "live_ui_after": "pending enhanced backend update"
+    "live_ui_after": {
+      "desktop_version": "0.2.38",
+      "backend_version": "0.2.38",
+      "enhanced": true,
+      "from": "2026-10-22T06:20:00Z",
+      "until": "2026-10-22T09:20:00Z",
+      "elapsed_ms": 2762.7999999523163,
+      "request_return_ms": 2061.2000000476837,
+      "page_request_ms": [
+        399.7000000476837,
+        314.5,
+        332.89999997615814,
+        329.7000000476837,
+        312.89999997615814,
+        263.39999997615814
+      ],
+      "objects": 281,
+      "changes": 5,
+      "identical_results": true,
+      "progress": "已展开类型对比完成 · 281 / 281 个对象",
+      "paired_rows_aligned": true,
+      "details_expanded": true,
+      "measurement": "One complete comparison in the running desktop after enhanced backend replacement; collection active; no scrolling needed to finish pages",
+      "checked_at": "2026-10-23T10:37:41.4150064+08:00"
+    }
   },
   "reusable_tools": [
     "crates/storage/examples/state-compare-page-bench.rs: read-only full-branch timing and result digest with an optional fixed watermark",
