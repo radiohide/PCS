@@ -129,7 +129,7 @@ const PCScopeTimelineGroups=(()=>{
       const group=button.closest('.timeline-group');if(!group)return;
       const state=stateOf(group);
       const folding=button.hasAttribute('data-timeline-toggle')||button.hasAttribute('data-timeline-time-toggle');
-      const scroller=folding?root.closest('main'):null,anchor=group.querySelector('[data-timeline-toggle]');
+      const scroller=root.closest('main'),anchor=group.querySelector('.timeline-when');
       const before=scroller?anchor.getBoundingClientRect().top:null;
       if(folding)state.collapsed=!state.collapsed;
       else if(button.hasAttribute('data-timeline-show-all'))state.muted.clear();
@@ -138,7 +138,9 @@ const PCScopeTimelineGroups=(()=>{
       }
       else {const category=button.dataset.timelineCategoryToggle;if(state.muted.has(category))state.muted.delete(category);else state.muted.add(category);}
       update(group);
-      // Keep a sticky time control within reach when its long list is collapsed or restored.
+      // Filtering can shorten a group just like folding it. Anchor the whole time card,
+      // including when every category is hidden, instead of leaving the old scroll offset
+      // in the following group. Its sticky position is clamped by the new group height.
       if(scroller)scroller.scrollTop+=anchor.getBoundingClientRect().top-before;
     };
     root.addEventListener('click',onClick);

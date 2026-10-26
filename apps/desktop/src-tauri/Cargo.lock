@@ -2168,7 +2168,7 @@ dependencies = [
 
 [[package]]
 name = "pcscope-contracts"
-version = "0.2.43"
+version = "0.2.44"
 dependencies = [
  "anyhow",
  "serde",
@@ -2179,7 +2179,7 @@ dependencies = [
 
 [[package]]
 name = "pcscope-desktop"
-version = "0.2.43"
+version = "0.2.44"
 dependencies = [
  "pcscope-ipc",
  "serde_json",
@@ -2191,7 +2191,7 @@ dependencies = [
 
 [[package]]
 name = "pcscope-ipc"
-version = "0.2.43"
+version = "0.2.44"
 dependencies = [
  "anyhow",
  "pcscope-contracts",

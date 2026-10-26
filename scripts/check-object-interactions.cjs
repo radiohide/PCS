@@ -344,12 +344,12 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   checks.push('expanded and collapsed controls retain position and size at desktop, narrow and mobile widths; a sticky group can be toggled twice at the same pointer location without queries');
   await page.setViewportSize({width:1440,height:1000});
   const allTypes=require('../model/catalog.json').types.map((type,index)=>({...timelineRows[0],instance_id:index+1,context:{type_id:type.id,subject_label:'类型示例 '+index,attribution_status:'stored'}}));
-  await page.evaluate(data=>{window.__qa.timeline=data;},allTypes);await page.locator('[data-page="timeline"]').click();await page.waitForFunction(()=>document.querySelectorAll('.timeline-entry').length===101);
-  assert.equal(await page.locator('.timeline-category-count').evaluateAll(nodes=>nodes.reduce((total,node)=>total+Number(node.textContent),0)),101,'every known type contributes to the counters');
+  await page.evaluate(data=>{window.__qa.timeline=data;},allTypes);await page.locator('[data-page="timeline"]').click();await page.waitForFunction(total=>document.querySelectorAll('.timeline-entry').length===total,allTypes.length);
+  assert.equal(await page.locator('.timeline-category-count').evaluateAll(nodes=>nodes.reduce((total,node)=>total+Number(node.textContent),0)),allTypes.length,'every known type contributes to the counters');
   const categoryLayout=await page.locator('.timeline-category-controls').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,width:el.clientWidth,contentWidth:el.scrollWidth}));
   assert(categoryLayout.scroll>categoryLayout.height);assert(categoryLayout.contentWidth<=categoryLayout.width+1,'many category names remain within the rail');
   await page.locator('.timeline-category-toggle').last().click();assert.equal(await page.locator('.timeline-category-toggle[aria-pressed=false]').count(),1,'the last category remains reachable');
-  checks.push('narrow layouts fold correctly and all 101 object types remain reachable in bounded category controls');
+  checks.push('narrow layouts fold correctly and all catalog types remain reachable in bounded category controls');
 
   const colorsByTheme={};
   for(const theme of ['dark','light']){
@@ -562,10 +562,11 @@ const server=http.createServer((req,res)=>{const file=path.resolve(ui,'.'+decode
   checks.push('module-file history scroll appends earlier checks without a paging button');
   await page.locator('[data-page="health"]').click();await page.locator('#source-readings details').first().waitFor();await page.locator('#readings-next').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelectorAll('#source-readings .source-reading-records > details').length===3);
   checks.push('resource readings append pages instead of replacing earlier records');
-  const actionRows=[{action_id:'observed.configuration_changed',field_id:'display_version',before:'1.0',after:'2.0',context:{type_id:'software.installation_registration'}},{action_id:'observed.configuration_changed',field_id:'display_version',before:'2.0',after:'3.0',context:{type_id:'software.installation_registration'}}];
-  await page.evaluate(rows=>{window.__qa.actionPages=[{status:'loaded',data:rows.slice(0,1),page:{has_more:true,next_cursor:'older-actions'}},{status:'loaded',data:rows.slice(1),page:{has_more:false}}];},actionRows);
-  await page.locator('[data-page="compare"]').click();await page.locator('#compare-instance').selectOption(rows[0].alias);await page.locator('#compare-more').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelectorAll('#compare-results tbody>tr').length===4);
-  checks.push('state comparison automatically reads beyond the first action-history page');
+  // Historical comparison now has two time cutoffs; its tree/paging has its own
+  // real-router suite in check-state-compare.cjs. Keep this navigation check current.
+  await page.locator('[data-page="compare"]').click();await page.locator('[data-compare-from]').waitFor();
+  assert.equal(await page.locator('[data-compare-until]').getAttribute('type'),'datetime-local');
+  checks.push('navigation from readings opens the current two-time comparison controls');
   const bucketPerformance=await page.evaluate(base=>{
     const input=Array.from({length:1000},(_,i)=>({...base,instance_id:i+1,occurred_at:'2026-10-15T08:09:'+String(i%60).padStart(2,'0')+'Z'}));
     const root=document.createElement('div');root.style.display='none';document.body.append(root);
