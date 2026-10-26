@@ -21,6 +21,7 @@ mod device_notify;
 mod read_api;
 mod replacement;
 mod startup_report;
+mod history_reset;
 #[cfg(all(test, windows))]
 mod read_api_tests;
 
@@ -345,6 +346,8 @@ fn start_collection(state: Arc<State>, manual: Option<&str>) -> Result<()> {
 }
 
 fn dispatch(state: &Arc<State>, request: Request) -> Result<Value> {
+    if let Request::HistoryDeletionStatus=&request {return history_reset::status(&state.data_dir);}
+    if let Request::DeleteHistory{history_id,confirmation}=&request {return history_reset::request(state,history_id,confirmation);}
     if read_api::handles(&request) { return read_api::dispatch(state, &request); }
     // A shutdown acknowledgment contains no source data and must not wait for a writer or even
     // require a readable database after notifying the graceful shutdown path.
@@ -494,6 +497,7 @@ fn dispatch_raw(state: &Arc<State>, request: Request) -> Result<Value> {
             Ok(json!({"scheduled":true}))
         }
         Request::Retention => anyhow::bail!("retention is answered by the read-only path"),
+        Request::DeleteHistory{..}|Request::HistoryDeletionStatus => anyhow::bail!("history deletion has its own serialized path"),
         Request::RepairSnapshotAppearance { limit } => {
             anyhow::ensure!(!state.stopping.load(Ordering::SeqCst),"后台正在退出，请稍后重试");
             state.store.try_lock().map_err(|_|anyhow::anyhow!("后台正在处理采集，请稍后重试"))?.repair_snapshot_appearance(limit)
@@ -570,6 +574,7 @@ async fn run(data:PathBuf,endpoint:pcscope_ipc::Endpoint,report:&mut startup_rep
         });
     }
     report.phase("opening_history");
+    history_reset::resume(&data,&endpoint.instance_id).context("finishing requested history deletion")?;
     let store = pcscope_storage::Store::open_program(data.join("history.db")).context("opening history database")?;
     report.phase("reading_schedule");
     let schedule = schedule::Schedule::new(

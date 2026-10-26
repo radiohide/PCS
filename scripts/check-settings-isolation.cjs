@@ -6,6 +6,7 @@ const {chromium}=require(process.env.PCSCOPE_PLAYWRIGHT||'playwright');
  try{
   const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.setContent('<main></main>');
+  for(const name of ['health-storage.js','history-delete.js'])await page.addScriptTag({path:path.resolve(__dirname,'../apps/desktop/ui',name)});
   await page.addScriptTag({path:path.resolve(__dirname,'../apps/desktop/ui/settings.js')});
   await page.evaluate(()=>{
    const qa=window.qa={calls:[],retentionAttempts:0};

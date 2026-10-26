@@ -212,9 +212,9 @@ async function render(){
       // permission or availability problem; material that arrived and could not be turned into
       // objects is an adapter that does not understand what it was given. One number for both
       // would tell the reader nothing about which to fix.
-      content.innerHTML=head('采集健康','查看哪些信息已读取、哪些可能遗漏，以及对异常判断的影响。')+`<section class="panel status-panel"><h2>存储占用</h2><div id="health-storage"></div></section><section class="panel status-panel"><h2>监控覆盖</h2><div id="health-coverage">正在读取…</div></section><section class="panel status-panel"><h2>记录处理</h2><div id="health-projection">正在读取…</div></section>`;
-      const storage=PCScopeHealthStorage.mount(content.querySelector('#health-storage'),{api,localTime,categoryNames,canRefresh:()=>state.autoRefresh&&Boolean(state.status)});
-      state.disposePage=storage.dispose;state.syncPageStatus=storage.tick;
+      content.innerHTML=head('采集健康','查看哪些信息已读取、哪些可能遗漏，以及对异常判断的影响。')+`<section class="panel status-panel"><h2>监控覆盖</h2><div id="health-coverage">正在读取…</div></section><section class="panel status-panel"><h2>记录处理</h2><div id="health-projection">正在读取…</div></section>`;
+
+
       const healthLoaded=new Set(),healthFailures=new Map();
       const loadHealth=async(selector,query,format,{automatic=false}={})=>{
         const target=content.querySelector(selector);if(!target?.isConnected)return;
@@ -232,15 +232,17 @@ async function render(){
         },
         onError:(error,{append})=>{if(!append)readingPanel.innerHTML=errorHtml(error);}
       });
+      state.disposePage=readingsPager.dispose;
       const loadReadings=()=>readingsPager.reset();
       readingSelect.onchange=loadReadings;
-      state.reloadPage=async(options={})=>{await Promise.all([storage.reload(options),loadHealth('#health-coverage','source_coverage',PCScopeModelView.coverage,options),loadHealth('#health-projection','projection_status',PCScopeModelView.projection,options),loadReadings()]);};
+      state.reloadPage=async(options={})=>{await Promise.all([loadHealth('#health-coverage','source_coverage',PCScopeModelView.coverage,options),loadHealth('#health-projection','projection_status',PCScopeModelView.projection,options),loadReadings()]);};
       await state.reloadPage();
     }else if(page==='settings'){
       content.innerHTML=head('系统配置','管理界面、历史存储、采集权限与隐私显示。')+'<section id="launch-settings" class="panel"></section><div id="settings-content">正在读取监控设置…</div>';
       PCScopeLaunchSettings.mount(content.querySelector('#launch-settings'));
       const settingsContent=content.querySelector('#settings-content');
-      PCScopeSettings.mount(settingsContent,{api,esc,localTime,notice,errorText,getTheme:()=>state.theme,setTheme:value=>{state.theme=value;localStorage.setItem('pcscope.theme',value);theme();},onPrivacy:()=>{state.events=[];state.selected=null;}});
+      const settings=PCScopeSettings.mount(settingsContent,{api,esc,localTime,notice,errorText,categoryNames,canRefresh:()=>state.autoRefresh&&Boolean(state.status),getTheme:()=>state.theme,setTheme:value=>{state.theme=value;localStorage.setItem('pcscope.theme',value);theme();},onPrivacy:()=>{state.events=[];state.selected=null;}});
+      state.disposePage=settings.dispose;state.syncPageStatus=settings.tick;state.reloadPage=settings.reload;
 
     }
   }catch(error){if(state.page===page&&revision===renderRevision){content.innerHTML=head(pages.find(p=>p[0]===page)[2],'')+`<section class="panel empty">${errorHtml(error)}<br><br><button id="page-retry">重新读取</button></section>`;content.querySelector('#page-retry').onclick=()=>render();}}

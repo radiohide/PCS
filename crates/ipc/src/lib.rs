@@ -69,6 +69,8 @@ pub enum Request {
     },
     Shutdown,
     Retention,
+    HistoryDeletionStatus,
+    DeleteHistory { history_id: String, confirmation: String },
     PrivacySettings,
     SetPrivacySettings {
         show_sensitive: bool,

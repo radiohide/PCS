@@ -1,7 +1,8 @@
 (function(){
   let active='general';
   const tabs=[['general','常规'],['storage','历史存储'],['monitoring','采集权限'],['privacy','隐私显示']];
-  function mount(container,{api,esc,localTime,notice,errorText,getTheme,setTheme,onPrivacy}){
+  function mount(container,{api,esc,localTime,notice,errorText,getTheme,setTheme,onPrivacy,categoryNames={},canRefresh=()=>true}){
+    let storage=null,deletion=null,disposed=false;
     const row=(title,description,control)=>`<div class="settings-row"><div>${title}<p>${description}</p></div><div class="settings-control">${control}</div></div>`;
     container.innerHTML=`<div class="settings-tabs" role="tablist" aria-label="系统配置分类">${tabs.map(([id,label])=>`<button id="settings-tab-${id}" role="tab" aria-controls="settings-${id}" data-settings-tab="${id}">${label}</button>`).join('')}</div>
       <section id="settings-general" class="panel settings-section" role="tabpanel" aria-labelledby="settings-tab-general"><h2>常规</h2>${row('<label for="setting-theme">界面主题</label>','立即应用，并记住你的选择。','<select id="setting-theme"><option value="dark">深色</option><option value="light">浅色</option></select>')}</section>
@@ -14,7 +15,7 @@
       const panel=container.querySelector(`#settings-${id}`);
       pending.add(id);panel.innerHTML='<p role="status">正在读取…</p>';
       try{
-        if(id==='storage'){const retention=await api('retention');if(!container.isConnected)return;mountStorage(panel,retention);}
+        if(id==='storage'){const retention=await api('retention');if(disposed||!container.isConnected)return;mountStorage(panel,retention);}
         else if(id==='privacy'){const privacy=await api('privacy_settings');if(!container.isConnected)return;mountPrivacy(panel,privacy);}
         else if(id==='monitoring'){await PCScopeMonitoring.mount(panel);}
         loaded.add(id);
@@ -30,16 +31,19 @@
     const theme=container.querySelector('#setting-theme');theme.value=getTheme();theme.onchange=()=>setTheme(theme.value);
     function mountStorage(container,retention){
       container.innerHTML=`<h2>历史存储</h2>
-      <div class="settings-metrics"><div><span>当前占用</span><strong>${(retention.physical_bytes/1e9).toFixed(3)} GB</strong></div><div><span>已清理记录批次</span><strong>${retention.pruned_units}</strong></div><div><span>最早保留记录</span><strong>${esc(retention.earliest_retained_observation?localTime(retention.earliest_retained_observation):'暂无历史')}</strong></div></div>
+      <div id="settings-storage-usage"></div>
       ${row('<label for="retention-mode">保留策略</label>','达到限额后删除最旧记录；无限模式会持续占用磁盘。',`<select id="retention-mode"><option value="rolling" ${retention.mode==='rolling'?'selected':''}>限额 · 滚动删除</option><option value="unlimited" ${retention.mode==='unlimited'?'selected':''}>无限增长</option></select>`)}
       ${row('<label for="quota">容量上限</label>','默认 5 GB。超过上限会清理最旧记录。',`<div class="settings-number"><input id="quota" type="number" min="0.034" max="16000" step="0.001" value="${retention.quota_bytes/1e9}"><span>GB</span></div>`)}
       <details class="settings-details"><summary>空间计算说明</summary><p>当前版本将约三分之一配额用于数据库，其余预留给事务日志与整理。导出文件不计入。无限模式仍受物理磁盘剩余空间限制。</p></details>
       <details class="settings-details" id="migration-status"><summary>数据处理详情</summary><div id="migration-body" role="status">展开后读取。</div></details>
-      <div class="settings-actions"><label id="prune-confirm"><input id="allow-prune" type="checkbox"> 我理解启用或降低限额可能立即删除最旧历史。</label><button id="save-retention" class="primary">保存容量策略</button><span role="status" id="retention-feedback"></span></div>`;
+      <div class="settings-actions"><label id="prune-confirm"><input id="allow-prune" type="checkbox"> 我理解启用或降低限额可能立即删除最旧历史。</label><button id="save-retention" class="primary">保存容量策略</button><span role="status" id="retention-feedback"></span></div><section class="history-delete" id="settings-delete-history"></section>`;
+    let initial=retention;
+    storage=PCScopeHealthStorage.mount(container.querySelector('#settings-storage-usage'),{api:op=>{if(initial){const value=initial;initial=null;return Promise.resolve(value);}return api(op);},localTime,categoryNames,canRefresh:()=>active==='storage'&&canRefresh()});void storage.reload();
+    deletion=PCScopeHistoryDelete.mount(container.querySelector('#settings-delete-history'),{api,retention,errorText,onComplete:async()=>{Object.assign(retention,await api('retention'));onPrivacy();await storage.reload();}});
     const mode=container.querySelector('#retention-mode'),quota=container.querySelector('#quota'),confirm=container.querySelector('#allow-prune');
     function sync(){quota.disabled=mode.value==='unlimited';const required=mode.value==='rolling'&&(retention.mode!=='rolling'||Number(quota.value)*1e9<retention.quota_bytes);container.querySelector('#prune-confirm').hidden=!required;return required;}
     mode.onchange=()=>{confirm.checked=false;sync();};quota.oninput=()=>{confirm.checked=false;sync();};sync();
-    container.querySelector('#save-retention').onclick=async()=>{const button=container.querySelector('#save-retention'),feedback=container.querySelector('#retention-feedback');button.disabled=true;try{const value=mode.value==='unlimited'?retention.quota_bytes/1e9:Number(quota.value);if(!Number.isFinite(value)||value<0.034||value>16000)throw new Error('容量请输入 0.034 至 16000 GB。');if(sync()&&!confirm.checked)throw new Error('请先确认最旧历史可能被清理。');await api('set_retention',{mode:mode.value,quota_bytes:Math.round(value*1e9)});retention.mode=mode.value;retention.quota_bytes=Math.round(value*1e9);sync();feedback.textContent='容量策略已保存';}catch(e){feedback.textContent=errorText(e);}finally{button.disabled=false;}};
+    container.querySelector('#save-retention').onclick=async()=>{const button=container.querySelector('#save-retention'),feedback=container.querySelector('#retention-feedback');button.disabled=true;try{const value=mode.value==='unlimited'?retention.quota_bytes/1e9:Number(quota.value);if(!Number.isFinite(value)||value<0.034||value>16000)throw new Error('容量请输入 0.034 至 16000 GB。');if(sync()&&!confirm.checked)throw new Error('请先确认最旧历史可能被清理。');await api('set_retention',{mode:mode.value,quota_bytes:Math.round(value*1e9)});retention.mode=mode.value;retention.quota_bytes=Math.round(value*1e9);sync();feedback.textContent='容量策略已保存';await storage.reload();}catch(e){feedback.textContent=errorText(e);}finally{button.disabled=false;}};
     // Loaded when the reader opens it. The plan asks the settings page to keep its four tabs and
     // link the migration state rather than cover the page with internal parameters, and this is
     // that link: one collapsed line, and the detail behind it only for someone asking for it.
@@ -64,6 +68,7 @@
       <div class="settings-actions"><button id="save-privacy" class="primary">保存显示设置</button><span role="status" id="privacy-feedback"></span></div>`;
     container.querySelector('#save-privacy').onclick=async()=>{const button=container.querySelector('#save-privacy'),feedback=container.querySelector('#privacy-feedback');button.disabled=true;try{const show_sensitive=container.querySelector('#show-sensitive').checked;await api('set_privacy_settings',{show_sensitive});onPrivacy();feedback.textContent=show_sensitive?'已开启明文显示':'已恢复敏感信息遮罩';}catch(e){feedback.textContent=errorText(e);}finally{button.disabled=false;}};
     }
+    return {tick:()=>storage?.tick(),reload:()=>active==='storage'?storage?.reload():undefined,dispose(){disposed=true;storage?.dispose();deletion?.dispose();}};
   }
   window.PCScopeSettings={mount,openPermissions(){active='monitoring';}};
 })();

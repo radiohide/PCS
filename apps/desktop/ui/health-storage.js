@@ -8,7 +8,7 @@ const PCScopeHealthStorage=(()=>{
   }
   function mount(host,{api,localTime,categoryNames={},canRefresh=()=>true}){
     let active=true,pending=null,lastAttempt=0,loaded=false,failures=0;
-    host.innerHTML='<div class="settings-metrics health-storage-metrics"><div><span>历史数据占用</span><strong data-storage-bytes>正在读取…</strong></div><div><span>保留策略</span><strong data-storage-policy>正在读取…</strong></div></div><p class="muted" data-storage-impact></p><small class="muted" data-storage-checked></small><div data-storage-error role="status" hidden><span>存储占用读取失败，请重试。</span> <button type="button">重试</button></div><details class="settings-details"><summary>统计范围</summary><p>包含当前历史数据库及其写入缓存，不含备份、导出文件和程序文件。按文件大小统计，1 GB = 10 亿字节。</p></details>';
+    host.innerHTML='<div class="settings-metrics health-storage-metrics"><div><span>历史数据占用</span><strong data-storage-bytes>正在读取…</strong></div><div><span>保留策略</span><strong data-storage-policy>正在读取…</strong></div><div><span>最早保留记录</span><strong data-storage-earliest>正在读取…</strong></div></div><p class="muted" data-storage-impact></p><small class="muted" data-storage-checked></small><div data-storage-error role="status" hidden><span>存储占用读取失败，请重试。</span> <button type="button">重试</button></div><details class="settings-details"><summary>统计范围</summary><p>包含当前历史数据库及其写入缓存，不含备份、导出文件和程序文件。按文件大小统计，1 GB = 10 亿字节。</p></details>';
     const text=(selector,value)=>{const node=host.querySelector(selector);if(node.textContent!==value)node.textContent=value;};
     const error=host.querySelector('[data-storage-error]');
     const usageHost=document.createElement('section');usageHost.className='health-storage-breakdown';
@@ -55,6 +55,7 @@ const PCScopeHealthStorage=(()=>{
           if(!active||!host.isConnected)return;
           if(typeof data?.physical_bytes!=='number'||!Number.isFinite(data.physical_bytes)||data.physical_bytes<0)throw Error('missing storage size');
           text('[data-storage-bytes]',bytes(data.physical_bytes));
+          text('[data-storage-earliest]',data.earliest_retained_observation?localTime(data.earliest_retained_observation):'暂无记录');
           const rolling=data.mode==='rolling',unlimited=data.mode==='unlimited';
           text('[data-storage-policy]',rolling?`上限 ${bytes(data.quota_bytes)}`:unlimited?'不限容量':'暂未取得');
           text('[data-storage-impact]',rolling?'达到容量限额后，自动清理最旧历史。':unlimited?'保留全部历史，存储占用会随采集增加。':'');

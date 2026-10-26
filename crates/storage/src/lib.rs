@@ -1,4 +1,5 @@
 mod storage_metrics;
+pub mod history_reset;
 mod compact;
 mod self_activity;
 mod snapshot_content;
@@ -273,6 +274,7 @@ impl Store {
         // rather than a constant so a machine that collects faster than it projects can be tuned
         // without a rebuild.
         conn.execute("INSERT OR IGNORE INTO settings VALUES('max_pending_projections','200000')", [])?;
+        conn.execute("INSERT OR IGNORE INTO settings VALUES('history_id',lower(hex(randomblob(16))))", [])?;
         // Catalog-dependent tables rebuild only when the catalog fingerprint changes, so a restart
         // is a no-op and a rule change never rewrites the original evidence.
         model::ensure_catalog(&mut conn)?;
@@ -1276,7 +1278,7 @@ impl Store {
             )
             .optional()?;
         Ok(
-            json!({"mode":self.setting("retention_mode")?,"quota_bytes":self.setting("quota_bytes")?.parse::<u64>().unwrap_or(DEFAULT_QUOTA),"physical_bytes":self.physical_bytes()?,"live_bytes":self.live_bytes()?,"pruned_units":self.setting("pruned_units")?.parse::<u64>()?,"earliest_retained_observation":earliest,"budget_policy":"one-third database budget; remainder reserved for WAL and maintenance","minimum_quota_bytes":MIN_QUOTA,"content_usage":storage_metrics::report(&self.conn)?}),
+            json!({"mode":self.setting("retention_mode")?,"quota_bytes":self.setting("quota_bytes")?.parse::<u64>().unwrap_or(DEFAULT_QUOTA),"physical_bytes":self.physical_bytes()?,"live_bytes":self.live_bytes()?,"pruned_units":self.setting("pruned_units")?.parse::<u64>()?,"earliest_retained_observation":earliest,"budget_policy":"one-third database budget; remainder reserved for WAL and maintenance","minimum_quota_bytes":MIN_QUOTA,"content_usage":storage_metrics::report(&self.conn)?,"history_id":self.history_id()?,"can_delete_history":true}),
         )
     }
 

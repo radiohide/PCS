@@ -1,4 +1,13 @@
 use super::*;
+
+#[test]
+fn history_deletion_requires_explicit_confirmation_and_current_database() {
+    let state=fixture();let id=state.store.lock().unwrap().history_id().unwrap();
+    assert!(dispatch(&state,Request::DeleteHistory{history_id:id,confirmation:String::new()}).is_err());
+    assert!(dispatch(&state,Request::DeleteHistory{history_id:"stale".into(),confirmation:"DELETE ALL HISTORY".into()}).is_err());
+    assert_eq!(dispatch(&state,Request::HistoryDeletionStatus).unwrap()["state"],"idle");
+    assert!(!state.stopping.load(Ordering::SeqCst));
+}
 use std::sync::mpsc;
 
 fn fixture() -> Arc<State> {
