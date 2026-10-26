@@ -39,7 +39,7 @@ fn clamp(limit: usize) -> usize {
 /// page sequences together. The state part bounds the window, so rows arriving later stay out of a
 /// walk already under way instead of being spliced into a page the caller has passed.
 fn watermark(conn: &Connection, fingerprint: &str) -> Result<String> {
-    let evidence: i64 = conn.query_row("SELECT coalesce(max(seq),0) FROM evidence", [], |r| r.get(0))?;
+    let evidence: i64 = crate::compact::watermark(conn)?;
     let instances: i64 = conn.query_row("SELECT coalesce(max(instance_id),0) FROM object_instances", [], |r| r.get(0))?;
     let actions: i64 = conn.query_row("SELECT coalesce(max(action_row),0) FROM object_actions", [], |r| r.get(0))?;
     Ok(format!("{fingerprint}-e{evidence}i{instances}a{actions}"))
@@ -694,7 +694,8 @@ fn timeline_with_scope_plan(conn: &Connection, filter: &ActionFilter, use_scope:
         args.push(Box::new(since.clone()));
     }
     if let Some(source) = &filter.source {
-        clauses.push("EXISTS(SELECT 1 FROM evidence_refs r JOIN evidence e ON e.evidence_id=r.evidence_id WHERE r.subject_kind = 'action' AND r.subject_id=CAST(a.action_row AS TEXT) AND e.source=?)".into());
+        clauses.push("EXISTS(SELECT 1 FROM evidence_refs r WHERE r.subject_kind='action' AND r.subject_id=CAST(a.action_row AS TEXT) AND (EXISTS(SELECT 1 FROM evidence e WHERE e.evidence_id=r.evidence_id AND e.source=?) OR EXISTS(SELECT 1 FROM observation_runs o WHERE o.evidence_id=r.evidence_id AND o.source_key=(SELECT id FROM storage_strings WHERE value=?))))".into());
+        args.push(Box::new(source.clone()));
         args.push(Box::new(source.clone()));
     }
     if filter.cursor.is_some() {
@@ -787,7 +788,7 @@ fn action_detail(conn: &Connection, id: i64) -> Result<QueryResponse> {
 pub fn evidence(conn: &Connection, reference: &EvidenceRef) -> Result<QueryResponse> {
     let row: Option<(String, Option<String>, String, Option<String>, String, String, String, Option<String>)> = conn
         .query_row(
-            "SELECT evidence_id,source_time,observed_at,ingested_at,decoding,source,kind,pruned_at FROM evidence WHERE evidence_id=? LIMIT 1",
+            "SELECT evidence_id,source_time,observed_at,ingested_at,decoding,source,kind,pruned_at FROM all_evidence WHERE evidence_id=? LIMIT 1",
             params![reference.id],
             |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?, row.get(5)?, row.get(6)?, row.get(7)?)),
         )
@@ -847,9 +848,9 @@ pub fn source_readings(conn: &Connection, source: Option<&str>, cursor: Option<&
     };
     let bound=walk.split("-e").nth(1).and_then(|value|value.split('i').next()).and_then(|value|value.parse::<i64>().ok()).unwrap_or(0);
     let where_sql="source IN ('pcscope.execution.module-file-state','pcscope.execution.module-scan-status','pcscope.execution.resources','pcscope.collector.scoped-configuration','pcscope.collector.event-channel-coverage','pcscope.usn.watch-list') AND (?1 IS NULL OR source=?1) AND seq<=?2 AND pruned_at IS NULL";
-    let count:i64=conn.query_row(&format!("SELECT count(*) FROM evidence WHERE {where_sql}"),params![source,bound],|row|row.get(0))?;
+    let count:i64=conn.query_row(&format!("SELECT count(*) FROM all_evidence WHERE {where_sql}"),params![source,bound],|row|row.get(0))?;
     let limit=clamp(limit);
-    let mut statement=conn.prepare_cached(&format!("SELECT seq,evidence_id,item_id,source,source_scope,observed_at FROM evidence WHERE {where_sql} AND seq<?3 ORDER BY seq DESC LIMIT ?4"))?;
+    let mut statement=conn.prepare_cached(&format!("SELECT seq,evidence_id,item_id,source,source_scope,observed_at FROM all_evidence WHERE {where_sql} AND seq<?3 ORDER BY seq DESC LIMIT ?4"))?;
     let mut rows=statement.query_map(params![source,bound,before,(limit+1) as i64],|row|Ok((row.get::<_,i64>(0)?,row.get::<_,String>(1)?,row.get::<_,String>(2)?,row.get::<_,String>(3)?,row.get::<_,String>(4)?,row.get::<_,String>(5)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;
     let has_more=rows.len()>limit;rows.truncate(limit);
     let next=if has_more { rows.last().map(|row|encode_cursor(&walk,"reading",row.0)) } else { None };
@@ -902,11 +903,11 @@ pub fn projection(conn: &Connection) -> Result<QueryResponse> {
     // The dashboard needs outstanding work, not a count of every completed item retained over
     // the lifetime of the installation. Both seeks stay in the small indexed live ranges.
     let (pending,failed):(i64,i64)=conn.query_row(
-        "SELECT (SELECT count(*) FROM projection_queue WHERE projection=?1 AND state='pending'),
-                (SELECT count(*) FROM projection_queue WHERE projection=?1 AND state='failed')",
+        "SELECT (SELECT count(*) FROM projection_queue WHERE projection=?1 AND state='pending')+(SELECT coalesce(sum(item_count),0) FROM compact_counts WHERE state='pending'),
+                (SELECT count(*) FROM projection_queue WHERE projection=?1 AND state='failed')+(SELECT coalesce(sum(item_count),0) FROM compact_counts WHERE state='failed')",
         [crate::evidence::OBJECT_PROJECTION],|row|Ok((row.get(0)?,row.get(1)?)))?;
     let last_error: Option<String> = conn.query_row(
-        "SELECT last_error FROM projection_queue WHERE projection=? AND state='failed' ORDER BY queue_id DESC LIMIT 1",
+        "SELECT last_error FROM (SELECT last_error,updated_at AS at FROM projection_queue WHERE projection=? AND state='failed' UNION ALL SELECT e.error,r.ingested_at FROM observation_errors e JOIN observation_runs r ON r.id=e.run) ORDER BY at DESC LIMIT 1",
         [crate::evidence::OBJECT_PROJECTION], |r|r.get(0)).optional()?.flatten();
     for entry in &mut entries {
         if matches!(entry["projection"].as_str(), Some("objects" | "facts" | "actions")) {
@@ -1264,9 +1265,9 @@ mod tests {
         assert!(detail(&store)["presentation"]["record_label"].is_null(),"protected names stay protected");
         store.conn.execute("DELETE FROM objects WHERE source=?",[source]).unwrap();
         assert_eq!(detail(&store)["presentation"]["record_label"],"example.exe","an exited process can retain its exact original snapshot");
-        store.conn.execute("UPDATE evidence SET pruned_at='2026-10-13' WHERE source=?",[source]).unwrap();
+        store.conn.execute("UPDATE all_evidence SET pruned_at='2026-10-13' WHERE source=?",[source]).unwrap();
         assert!(detail(&store)["presentation"]["record_label"].is_null(),"pruned evidence is not reconstructed");
-        store.conn.execute("UPDATE evidence SET pruned_at=NULL WHERE source=?",[source]).unwrap();
+        store.conn.execute("UPDATE all_evidence SET pruned_at=NULL WHERE source=?",[source]).unwrap();
         store.conn.execute("DELETE FROM snapshots WHERE source=?",[source]).unwrap();
         assert!(detail(&store)["presentation"]["record_label"].is_null(),"missing material is not reconstructed");
         store.conn.execute("INSERT INTO source_bindings(instance_id,source,item_id,scope,native_record_id,valid_from) SELECT instance_id,source,'42/2026-10-13T01:00:00Z',scope,'42/2026-10-13T01:00:00Z','2026-10-13' FROM source_bindings WHERE instance_id=? LIMIT 1",[id]).unwrap();
@@ -1307,7 +1308,7 @@ mod tests {
         let detail=store.query(&QueryRequest::InstanceDetail{instance:id.to_string()}).unwrap().data.unwrap();
         assert_eq!(detail["summary"]["presentation"]["record_status"],"event_incomplete");
         assert!(detail["summary"]["presentation"]["record_label"].is_null());
-        store.conn.execute("UPDATE evidence SET pruned_at='2026-10-13'",[]).unwrap();
+        store.conn.execute("UPDATE all_evidence SET pruned_at='2026-10-13'",[]).unwrap();
         let detail=store.query(&QueryRequest::InstanceDetail{instance:id.to_string()}).unwrap().data.unwrap();
         assert!(detail["summary"]["presentation"]["record_label"].is_null());
     }
@@ -1347,7 +1348,7 @@ mod tests {
         let result=timeline(&store,ActionFilter::default());
         assert!(result.data.as_ref().unwrap()[0]["context"]["subject_label"].is_null());
         assert!(!result.data.unwrap().to_string().contains("not-displayable"));
-        store.conn.execute("UPDATE evidence SET pruned_at='2026-10-12T03:00:00Z'",[]).unwrap();
+        store.conn.execute("UPDATE all_evidence SET pruned_at='2026-10-12T03:00:00Z'",[]).unwrap();
         let context=&timeline(&store,ActionFilter::default()).data.unwrap()[0]["context"];
         assert_eq!(context["subject_basis"],"unavailable");
         assert_eq!(context["attribution_status"],"unassigned");
@@ -1422,7 +1423,7 @@ mod tests {
         let instance=store.conn.query_row("SELECT min(instance_id) FROM object_instances",[],|r|r.get::<_,i64>(0)).unwrap();
         add_action(&store,"startup.task_started","2026-10-12T02:00:00Z",Some(instance),None);
         let row=store.conn.last_insert_rowid();
-        store.conn.execute("INSERT INTO evidence_refs(subject_kind,subject_id,evidence_kind,evidence_id) SELECT 'action',?,'event',evidence_id FROM evidence WHERE source='pcscope.eventlog.application'",[row.to_string()]).unwrap();
+        store.conn.execute("INSERT INTO evidence_refs(subject_kind,subject_id,evidence_kind,evidence_id) SELECT 'action',?,'event',evidence_id FROM all_evidence WHERE source='pcscope.eventlog.application'",[row.to_string()]).unwrap();
         let response=timeline(&store,ActionFilter::default()).data.unwrap();
         assert_eq!(response[0]["action_id"],"windows.event");assert_eq!(response[0]["title"],"系统事件");
         assert!(response[0]["instance_id"].is_null());assert!(response[0]["context"]["subject_label"].is_null());
@@ -1461,7 +1462,7 @@ mod tests {
         let wrong=store.query(&QueryRequest::SourceReadings{source:Some(readings[0].into()),cursor:Some(next),limit:3}).unwrap();assert_eq!(wrong.status,ResponseStatus::VersionMismatch);
         let fresh=store.query(&QueryRequest::SourceReadings{source:Some(readings[0].into()),cursor:None,limit:20}).unwrap();assert_eq!(fresh.counts.unwrap().source_records,2);
         let detail=store.query(&QueryRequest::InstanceList(InstanceFilter{type_id:Some("file.watched_directory".into()),..Default::default()})).unwrap();assert_eq!(detail.counts.unwrap().instances,1);
-        assert_eq!(store.reader().query_row("SELECT count(*) FROM projection_queue WHERE state='failed'",[],|row|row.get::<_,i64>(0)).unwrap(),0);
+        assert_eq!(store.reader().query_row("SELECT count(*) FROM all_projection_queue WHERE state='failed'",[],|row|row.get::<_,i64>(0)).unwrap(),0);
     }
 
     #[test]
@@ -1784,14 +1785,14 @@ mod tests {
     #[test]
     fn evidence_reports_its_own_address_after_the_material_is_gone() {
         let store = seeded(1);
-        let address: String = store.conn.query_row("SELECT evidence_id FROM evidence LIMIT 1", [], |r| r.get(0)).unwrap();
+        let address: String = store.conn.query_row("SELECT evidence_id FROM all_evidence LIMIT 1", [], |r| r.get(0)).unwrap();
         let reference = EvidenceRef { kind: pcscope_contracts::adapter::EvidenceKind::Snapshot, id: address.clone() };
         let response = store.query(&QueryRequest::EvidenceDetail { evidence: reference }).unwrap();
         assert_eq!(response.status, ResponseStatus::Loaded);
         assert_eq!(response.data.as_ref().unwrap()["state"], "available");
 
         // Mark it pruned, as the retention sweep does, and ask again.
-        store.conn.execute("UPDATE evidence SET pruned_at='2026-09-12T02:00:00Z'", []).unwrap();
+        store.conn.execute("UPDATE all_evidence SET pruned_at='2026-09-12T02:00:00Z'", []).unwrap();
         let response = store.query(&QueryRequest::EvidenceDetail { evidence: EvidenceRef { kind: pcscope_contracts::adapter::EvidenceKind::Snapshot, id: address } }).unwrap();
         assert_eq!(response.data.as_ref().unwrap()["state"], "pruned");
         assert_eq!(response.data.as_ref().unwrap()["raw_available"], false);

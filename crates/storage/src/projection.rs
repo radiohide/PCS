@@ -52,17 +52,15 @@ pub struct Report {
 /// Work is taken in queue order and each entry is finished or marked failed before the next is
 /// read, so a single unreadable item cannot hold up the ones behind it.
 pub fn project_pending(tx: &Connection, machine_id: &str, installation_id: &str, limit: usize) -> Result<Report> {
-    let pending: Vec<(i64, String, String)> = {
-        let mut statement = tx.prepare(
-            "SELECT queue_id,evidence_id,item_id FROM projection_queue
-             WHERE projection=? AND state='pending' ORDER BY queue_id LIMIT ?",
-        )?;
-        let rows = statement.query_map(params![crate::evidence::OBJECT_PROJECTION, limit as i64], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))?;
-        rows.collect::<rusqlite::Result<_>>()?
-    };
+    let pending = crate::compact::pending(tx,crate::evidence::OBJECT_PROJECTION,limit)?;
     // Which collection items are switched off right now. A disabled item is not a disappearance:
     // the material it already produced is still projected, and its absence from later rounds must
     // not be read as the object having gone away.
+    let completions=std::cell::RefCell::new(Vec::new());
+    let finish=|tx:&Connection,queue:i64,state:&str,error:Option<&str>|->Result<()> {
+        if queue<0 {completions.borrow_mut().push((queue,state.to_owned(),error.map(str::to_owned)));Ok(())}
+        else {crate::projection::finish(tx,queue,state,error)}
+    };
     let disabled = disabled_items(tx);
     let mut report = Report::default();
     let mut snapshot_cache = evidence::SnapshotCache::default();
@@ -142,6 +140,8 @@ pub fn project_pending(tx: &Connection, machine_id: &str, installation_id: &str,
             report.duplicate += 1;
         }
     }
+    crate::compact::finish_many(tx,&completions.into_inner())?;
+    crate::compact::compact_done(tx,limit)?;
     Ok(report)
 }
 
@@ -157,6 +157,7 @@ fn disabled_items(conn: &Connection) -> std::collections::BTreeSet<String> {
 }
 
 fn finish(tx: &Connection, queue_id: i64, state: &str, error: Option<&str>) -> Result<()> {
+    if queue_id<0{return crate::compact::finish(tx,queue_id,state,error)}
     tx.execute(
         "UPDATE projection_queue SET state=?,attempts=attempts+1,last_error=?,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE queue_id=?",
         params![state, error, queue_id],
@@ -1101,7 +1102,7 @@ mod tests {
         assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.reappeared'"),1);
         assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.no_longer_observed'"),2);
         assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.reappeared' AND precision='interval' AND occurred_at IS NULL AND interval_from='2026-10-19T01:00:02.000Z'"),1);
-        store.conn.execute("UPDATE projection_queue SET state='pending'",[]).unwrap();drain(&store);
+        store.conn.execute("UPDATE all_projection_queue SET state='pending'",[]).unwrap();drain(&store);
         assert_eq!(count(&store,"SELECT count(*) FROM object_actions"),4,"historical replay must not manufacture another return");
         assert_eq!(count(&store,"SELECT count(*) FROM object_instances WHERE lifecycle='not_observed'"),1);
     }
@@ -1116,7 +1117,7 @@ mod tests {
         assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.no_longer_observed' AND target_type='account.group_membership'"),3);
         assert_eq!(count(&store,"SELECT count(*) FROM object_instances WHERE type_id='account.group' AND lifecycle='active'"),1);
         assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE target_type='account.group'"),0);
-        store.conn.execute("UPDATE projection_queue SET state='pending'",[]).unwrap();drain(&store);
+        store.conn.execute("UPDATE all_projection_queue SET state='pending'",[]).unwrap();drain(&store);
         assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id IN ('observed.first_seen','observed.no_longer_observed','observed.reappeared')"),4);
     }
     #[test]
@@ -1203,7 +1204,7 @@ mod tests {
         let batch=envelope(json!({"protocol_version":1,"request_id":"sysmon-native","type":"event_batch","source":source,"epoch":"first","batch_seq":1,"checkpoint":"26","events":events}));
         store.ingest(&batch).unwrap();drain(&store);store.ingest(&batch).unwrap();drain(&store);
         assert_eq!(count(&store,"SELECT count(*) FROM object_actions"),8);
-        assert_eq!(count(&store,"SELECT count(*) FROM projection_queue WHERE state='failed'"),0);
+        assert_eq!(count(&store,"SELECT count(*) FROM all_projection_queue WHERE state='failed'"),0);
         let rows=store.query(&QueryRequest::ActionTimeline(ActionFilter{..Default::default()})).unwrap().data.unwrap();
         for row in rows.as_array().unwrap(){assert_ne!(row["context"]["classification_status"],"unverified");
             if row["action_id"]=="files.created" {assert_eq!(row["context"]["subject_label"],"file.txt");}
@@ -1250,7 +1251,7 @@ mod tests {
         assert_eq!(count(&store,"SELECT count(*) FROM object_instances WHERE lifecycle='not_observed'"),2,"historical inventory must not revive objects");
         store.conn.execute("DELETE FROM settings WHERE key='projection.baseline_cursor.v1'",[]).unwrap();
         store.prepare_snapshot_baselines(64).unwrap();
-        store.conn.execute("UPDATE projection_queue SET state='pending' WHERE evidence_id LIKE 'snapshot-baseline:%'",[]).unwrap();drain(&store);
+        store.conn.execute("UPDATE all_projection_queue SET state='pending' WHERE evidence_id LIKE 'snapshot-baseline:%'",[]).unwrap();drain(&store);
         assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.first_seen'"),2);
         let after:String=store.conn.query_row("SELECT group_concat(data) FROM records WHERE kind='baseline.observed'",[],|r|r.get(0)).unwrap();assert_eq!(before,after);
     }
@@ -1295,7 +1296,7 @@ mod tests {
         let mut store=Store::open(":memory:").unwrap();let source="pcscope.network.tcp";
         store.ingest(&network_snapshot(source,"baseline","2026-10-15T01:00:00Z",json!([]))).unwrap();drain(&store);
         store.ingest(&network_snapshot(source,"added","2026-10-15T01:00:03Z",json!([tcp_item(50001,"Established")]))).unwrap();
-        store.conn.execute("DELETE FROM projection_queue WHERE evidence_id LIKE 'snapshot-appearance:%'",[]).unwrap();
+        store.conn.execute("DELETE FROM all_projection_queue WHERE evidence_id LIKE 'snapshot-appearance:%'",[]).unwrap();
         store.conn.execute("DELETE FROM evidence WHERE evidence_id LIKE 'snapshot-appearance:%'",[]).unwrap();drain(&store);
         let text:String=store.conn.query_row("SELECT data FROM records WHERE kind='object.first_seen'",[],|row|row.get(0)).unwrap();
         let mut legacy:Value=serde_json::from_str(&text).unwrap();legacy.as_object_mut().unwrap().remove("_snapshot_appearance_v1");
@@ -1328,7 +1329,7 @@ mod tests {
         store.conn.execute("DELETE FROM records WHERE object_id='tcp-50001'",[]).unwrap();
         let report=store.project_pending(MACHINE,INSTALL,100).unwrap();assert_eq!(report.rejected,1);
         assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.first_seen'"),1);
-        assert_eq!(count(&store,"SELECT count(*) FROM projection_queue WHERE state='pending'"),0,"a missing historical record must not cause a retry loop");
+        assert_eq!(count(&store,"SELECT count(*) FROM all_projection_queue WHERE state='pending'"),0,"a missing historical record must not cause a retry loop");
     }
 
     fn envelope(value: Value) -> Envelope {
@@ -1342,7 +1343,7 @@ mod tests {
         store.ingest(&absent).unwrap();
         // Simulate pre-fix ingestion only in this isolated fixture: raw difference exists, but
         // it was never queued for projection and has no new-format marker.
-        store.conn.execute("DELETE FROM projection_queue WHERE evidence_id LIKE 'snapshot-absence:%'",[]).unwrap();
+        store.conn.execute("DELETE FROM all_projection_queue WHERE evidence_id LIKE 'snapshot-absence:%'",[]).unwrap();
         store.conn.execute("DELETE FROM evidence WHERE evidence_id LIKE 'snapshot-absence:%'",[]).unwrap();
         let(seq,text):(i64,String)=store.conn.query_row("SELECT seq,data FROM records WHERE kind='object.no_longer_observed'",[],|row|Ok((row.get(0)?,row.get(1)?))).unwrap();
         let mut data:Value=serde_json::from_str(&text).unwrap();data.as_object_mut().unwrap().remove("_snapshot_absence_v1");
@@ -1412,7 +1413,7 @@ mod tests {
     }
 
     fn pending(store: &Store) -> i64 {
-        count(store, "SELECT count(*) FROM projection_queue WHERE state='pending'")
+        count(store, "SELECT count(*) FROM all_projection_queue WHERE state='pending'")
     }
 
     fn drain(store: &Store) -> Report {
@@ -1467,7 +1468,7 @@ mod tests {
         assert_eq!(fact(&store,second,"enabled").unwrap().0,"true");
         assert_eq!(count(&store,"SELECT count(*) FROM object_actions"),4,"no duplicate synthetic state event");
         assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE instance_id IS NULL"),1);
-        store.conn.execute("UPDATE projection_queue SET state='pending'",[]).unwrap();drain(&store);
+        store.conn.execute("UPDATE all_projection_queue SET state='pending'",[]).unwrap();drain(&store);
         assert_eq!(count(&store,"SELECT count(*) FROM object_actions"),4);
         assert_eq!(fact(&store,first,"enabled").unwrap().0,"false");
     }
@@ -1578,7 +1579,7 @@ mod tests {
         for id in [ids[1].0,ids[2].0] {assert_eq!(store.instance_summary(id).unwrap().unwrap()["lifecycle"],"active");}
         assert_eq!(fact(&store,ids[0].0,"privilege").unwrap().0,json!("SeBackupPrivilege").to_string(),"last observed fact is retained");
         assert_eq!(count(&store,"SELECT count(*) FROM evidence_refs WHERE subject_kind='observation'"),9,"each current or absent child cites the complete parent list");
-        store.conn.execute("UPDATE projection_queue SET state='pending'",[]).unwrap();
+        store.conn.execute("UPDATE all_projection_queue SET state='pending'",[]).unwrap();
         drain(&store);
         assert_eq!(count(&store,"SELECT count(*) FROM object_instances"),3);
         assert_eq!(count(&store,"SELECT count(*) FROM source_bindings"),3);
@@ -1634,7 +1635,7 @@ mod tests {
             let mut result=adapter_for(source).unwrap().adapt(&input,&context);
             result.observations.truncate(1);
             apply(&store.conn,&input,&context,&result,&Default::default()).unwrap();
-            store.conn.execute("UPDATE projection_queue SET state='done'",[]).unwrap();
+            store.conn.execute("UPDATE all_projection_queue SET state='done'",[]).unwrap();
             let old_key:String=store.conn.query_row("SELECT native_key FROM object_instances",[],|r|r.get(0)).unwrap();
             assert_eq!(count(&store,"SELECT count(*) FROM source_bindings"),1);
             store.ingest(&account_snapshot(source,"recovered","2026-10-13T02:00:00Z",json!([initial]))).unwrap();
@@ -1981,7 +1982,7 @@ mod tests {
         assert_eq!(count(&store, "SELECT count(*) FROM object_actions"), 1);
         assert_eq!(count(&store, "SELECT count(*) FROM fact_history"), 1);
         let refs = count(&store, "SELECT count(*) FROM evidence_refs");
-        store.conn.execute("UPDATE projection_queue SET state='pending'", []).unwrap();
+        store.conn.execute("UPDATE all_projection_queue SET state='pending'", []).unwrap();
         let replay = drain(&store);
         assert_eq!(replay.rejected, 0);
         assert_eq!(replay.projected, 0);
@@ -2051,7 +2052,7 @@ mod tests {
         );
         // The queue is put back the way a crash before the commit would have left it, and drained
         // again. The same evidence has to produce the same state, not a second copy of it.
-        store.conn.execute("UPDATE projection_queue SET state='pending'", []).unwrap();
+        store.conn.execute("UPDATE all_projection_queue SET state='pending'", []).unwrap();
         let report = drain(&store);
         assert_eq!(report.duplicate + report.projected, 2);
         let after = (
@@ -2081,7 +2082,7 @@ mod tests {
         assert_eq!(report.unadapted, 1);
         let reason: String = store
             .conn
-            .query_row("SELECT last_error FROM projection_queue WHERE state='failed'", [], |r| r.get(0))
+            .query_row("SELECT last_error FROM all_projection_queue WHERE state='failed'", [], |r| r.get(0))
             .unwrap();
         assert!(reason.contains("no adapter for source pcscope.unconverted.thing"), "{reason}");
         // The material itself is still stored and still readable: an unadapted source is a gap in

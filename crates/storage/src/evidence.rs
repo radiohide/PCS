@@ -88,27 +88,7 @@ pub fn record_snapshot_items(
     items: &[pcscope_contracts::Item],
     decoding: &Decoding,
 ) -> Result<usize> {
-    let evidence = EvidenceRef::snapshot(source, scope, run_id);
-    let decoded = serde_json::to_string(decoding)?;
-    let mut queued = 0;
-    for item in items {
-        let payload_ref = format!("snapshot:{source}|{scope}|{run_id}|{}", item.id);
-        queued += insert(
-            tx,
-            &evidence.id,
-            &item.id,
-            evidence.kind,
-            source,
-            scope,
-            &item.id,
-            None,
-            observed_at,
-            ingested_at,
-            &decoded,
-            &payload_ref,
-        )?;
-    }
-    Ok(queued)
+    crate::compact::store(tx,source,scope,run_id,observed_at,ingested_at,items,&serde_json::to_string(decoding)?)
 }
 
 /// Records the evidence for one event, and queues it for projection.
@@ -319,7 +299,7 @@ pub fn inputs(conn: &Connection, after_seq: i64, limit: usize) -> Result<Vec<Evi
     let mut statement = conn.prepare(
         "SELECT seq,evidence_id,item_id,kind,source,structure_version,source_scope,native_record_id,
                 source_time,observed_at,ingested_at,decoding,payload_ref
-         FROM evidence WHERE seq>? ORDER BY seq LIMIT ?",
+         FROM all_evidence WHERE seq>? ORDER BY seq LIMIT ?",
     )?;
     let rows = statement.query_map(params![after_seq, limit as i64], |row| {
         Ok((
@@ -361,10 +341,11 @@ pub(crate) struct SnapshotCache {
 
 pub(crate) fn input_at_cached(conn: &Connection, evidence_id: &str, item_id: &str, cache: &mut SnapshotCache) -> Result<Option<EvidenceInput>> {
     let stored: Option<(i64, StoredEvidence)> = conn
-        .query_row(
+        .prepare_cached(
             "SELECT seq,evidence_id,item_id,kind,source,structure_version,source_scope,native_record_id,
                     source_time,observed_at,ingested_at,decoding,payload_ref
-             FROM evidence WHERE evidence_id=? AND item_id=?",
+             FROM all_evidence WHERE evidence_id=? AND item_id=?")?
+        .query_row(
             params![evidence_id, item_id],
             |row| {
                 Ok((
@@ -524,12 +505,20 @@ pub fn mark_pruned_for_unit(conn: &Connection, unit: i64, pruned_at: &str) -> Re
             params![pruned_at, kind, evidence_id],
         )?;
     }
-    Ok(addresses.len())
+    let mut q=conn.prepare("SELECT r.evidence_id,r.item_count FROM snapshots s JOIN observation_runs r ON r.evidence_id=s.source||'|'||s.scope||'|'||s.run_id WHERE s.unit_id=? AND r.pruned_at IS NULL")?;
+    let runs=q.query_map([unit],|r|Ok((r.get::<_,String>(0)?,r.get::<_,usize>(1)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;
+    let mut count=addresses.len();
+    for (address,items) in runs {
+        conn.execute("UPDATE observation_runs SET pruned_at=? WHERE evidence_id=?",params![pruned_at,address])?;
+        conn.execute("UPDATE evidence_refs SET pruned_at=? WHERE evidence_id=? AND evidence_kind='snapshot' AND pruned_at IS NULL",params![pruned_at,address])?;
+        count+=items;
+    }
+    Ok(count)
 }
 
 /// Queue depth and state counts, for the collection-health view.
 pub fn queue_summary(conn: &Connection, projection: &str) -> Result<Value> {
-    let mut statement = conn.prepare("SELECT state,count(*) FROM projection_queue WHERE projection=? GROUP BY state")?;
+    let mut statement = conn.prepare("SELECT state,sum(n) FROM (SELECT state,count(*) AS n FROM projection_queue WHERE projection=?1 GROUP BY state UNION ALL SELECT state,item_count FROM compact_counts WHERE ?1='object_model') GROUP BY state HAVING sum(n)>0")?;
     let rows = statement.query_map(params![projection], |row| Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)?)))?;
     let mut counts = serde_json::Map::new();
     let mut total = 0;

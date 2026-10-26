@@ -213,7 +213,7 @@ async function render(){
       // objects is an adapter that does not understand what it was given. One number for both
       // would tell the reader nothing about which to fix.
       content.innerHTML=head('采集健康','查看哪些信息已读取、哪些可能遗漏，以及对异常判断的影响。')+`<section class="panel status-panel"><h2>存储占用</h2><div id="health-storage"></div></section><section class="panel status-panel"><h2>监控覆盖</h2><div id="health-coverage">正在读取…</div></section><section class="panel status-panel"><h2>记录处理</h2><div id="health-projection">正在读取…</div></section>`;
-      const storage=PCScopeHealthStorage.mount(content.querySelector('#health-storage'),{api,localTime,canRefresh:()=>state.autoRefresh&&Boolean(state.status)});
+      const storage=PCScopeHealthStorage.mount(content.querySelector('#health-storage'),{api,localTime,categoryNames,canRefresh:()=>state.autoRefresh&&Boolean(state.status)});
       state.disposePage=storage.dispose;state.syncPageStatus=storage.tick;
       const healthLoaded=new Set(),healthFailures=new Map();
       const loadHealth=async(selector,query,format,{automatic=false}={})=>{

@@ -31,6 +31,18 @@ for(const value of [undefined,null,-1,NaN,Infinity,'100'])assert.equal(bytes(val
     assert.equal(await page.locator('[data-storage-bytes]').innerText(),'0 B');
     assert.equal(await page.locator('[data-storage-policy]').innerText(),'上限 5 GB');
     assert.equal(await page.locator('details').getAttribute('open'),'','refresh retains expanded detail');
+    await page.evaluate(async()=>{
+      qa.data.content_usage={available:true,started_at:'2026-10-26T00:00:00Z',categories:[{category:'network',retained_bytes:1200000},{category:'security',retained_bytes:800000}],sources:[{category:'network',name:'网络连接',retained_bytes:1200000},{category:'security',name:'<img src=x onerror=alert(1)>',retained_bytes:800000}]};
+      await qa.card.reload();
+    });
+    assert.match(await page.locator('.health-storage-breakdown').innerText(),/1.2 MB/);
+    assert.match(await page.locator('[data-usage-scope]').innerText(),/不含此前历史及数据库索引/);
+    const category=page.locator('.health-storage-breakdown details').first();await category.locator('summary').click();
+    await page.evaluate(async()=>{qa.data.content_usage.categories[0].retained_bytes=1300000;qa.data.content_usage.sources[0].retained_bytes=1300000;await qa.card.reload();});
+    assert.equal(await category.getAttribute('open'),'','category expansion survives refresh');
+    assert.match(await category.innerText(),/网络连接 · 1.3 MB/);
+    assert.equal(await page.locator('.health-storage-breakdown img').count(),0,'names are rendered as text');
+    assert.match(await page.locator('.health-storage-breakdown li').last().textContent(),/<img/);
     await page.evaluate(async()=>{qa.data={mode:'unlimited'};await qa.card.reload();});
     assert.equal(await page.locator('[data-storage-bytes]').innerText(),'0 B','missing value must not become zero or overwrite last result');
     const count=await page.evaluate(()=>qa.calls.length);

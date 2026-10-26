@@ -1,0 +1,324 @@
+{
+  "production_access": false,
+  "paired_runs": [
+    {
+      "before": {
+        "actions": 200,
+        "database_bytes": 11153408,
+        "evidence": 6000,
+        "facts": 600,
+        "first_round_bytes": 1736704,
+        "fixture": "unchanged services except one stopped round then reversion",
+        "growth_per_round": 159605,
+        "ingest": {
+          "p50_ms": 30.206799999999998,
+          "p95_ms": 85.18480000000001,
+          "total_ms": 1957.8532000000002
+        },
+        "items_per_round": 100,
+        "production_access": false,
+        "projection": {
+          "p50_ms": 45.451699999999995,
+          "p95_ms": 56.3281,
+          "total_ms": 2766.1018000000004
+        },
+        "queries": {
+          "comparison": {
+            "p50_ms": 13.5835,
+            "p95_ms": 14.791500000000001,
+            "total_ms": 273.73069999999996
+          },
+          "health": {
+            "p50_ms": 0.0487,
+            "p95_ms": 0.2094,
+            "total_ms": 1.165
+          },
+          "timeline": {
+            "p50_ms": 1.8812,
+            "p95_ms": 2.5275,
+            "total_ms": 38.44439999999999
+          }
+        },
+        "rounds": 60,
+        "schema": 11,
+        "version": "0.2.42"
+      },
+      "after": {
+        "actions": 200,
+        "database_bytes": 6045696,
+        "evidence": 6000,
+        "facts": 600,
+        "first_round_bytes": 1736704,
+        "fixture": "unchanged services except one stopped round then reversion",
+        "growth_per_round": 73033,
+        "ingest": {
+          "p50_ms": 24.8696,
+          "p95_ms": 89.0825,
+          "total_ms": 1684.7181000000003
+        },
+        "items_per_round": 100,
+        "production_access": false,
+        "projection": {
+          "p50_ms": 48.2735,
+          "p95_ms": 61.053999999999995,
+          "total_ms": 2960.7611
+        },
+        "queries": {
+          "comparison": {
+            "p50_ms": 13.557599999999999,
+            "p95_ms": 14.2303,
+            "total_ms": 270.7106
+          },
+          "health": {
+            "p50_ms": 0.0631,
+            "p95_ms": 0.2512,
+            "total_ms": 1.5002
+          },
+          "timeline": {
+            "p50_ms": 2.0787,
+            "p95_ms": 2.7714,
+            "total_ms": 41.841
+          }
+        },
+        "rounds": 60,
+        "schema": 12,
+        "version": "0.2.43"
+      }
+    },
+    {
+      "before": {
+        "actions": 200,
+        "database_bytes": 11153408,
+        "evidence": 6000,
+        "facts": 600,
+        "first_round_bytes": 1736704,
+        "fixture": "unchanged services except one stopped round then reversion",
+        "growth_per_round": 159605,
+        "ingest": {
+          "p50_ms": 33.4587,
+          "p95_ms": 95.82350000000001,
+          "total_ms": 2222.6506999999997
+        },
+        "items_per_round": 100,
+        "production_access": false,
+        "projection": {
+          "p50_ms": 54.4501,
+          "p95_ms": 69.4418,
+          "total_ms": 3357.316
+        },
+        "queries": {
+          "comparison": {
+            "p50_ms": 14.4907,
+            "p95_ms": 17.3243,
+            "total_ms": 289.8287000000001
+          },
+          "health": {
+            "p50_ms": 0.0455,
+            "p95_ms": 0.19190000000000002,
+            "total_ms": 1.1091
+          },
+          "timeline": {
+            "p50_ms": 2.2184,
+            "p95_ms": 2.9991000000000003,
+            "total_ms": 46.0209
+          }
+        },
+        "rounds": 60,
+        "schema": 11,
+        "version": "0.2.42"
+      },
+      "after": {
+        "actions": 200,
+        "database_bytes": 6045696,
+        "evidence": 6000,
+        "facts": 600,
+        "first_round_bytes": 1736704,
+        "fixture": "unchanged services except one stopped round then reversion",
+        "growth_per_round": 73033,
+        "ingest": {
+          "p50_ms": 25.3261,
+          "p95_ms": 92.62289999999999,
+          "total_ms": 1736.3042000000003
+        },
+        "items_per_round": 100,
+        "production_access": false,
+        "projection": {
+          "p50_ms": 49.1281,
+          "p95_ms": 62.7923,
+          "total_ms": 2990.5887999999995
+        },
+        "queries": {
+          "comparison": {
+            "p50_ms": 20.498800000000003,
+            "p95_ms": 43.0927,
+            "total_ms": 438.2226999999999
+          },
+          "health": {
+            "p50_ms": 0.1035,
+            "p95_ms": 0.3883,
+            "total_ms": 2.4649
+          },
+          "timeline": {
+            "p50_ms": 2.1168,
+            "p95_ms": 4.0894,
+            "total_ms": 45.32569999999999
+          }
+        },
+        "rounds": 60,
+        "schema": 12,
+        "version": "0.2.43"
+      }
+    },
+    {
+      "before": {
+        "actions": 200,
+        "database_bytes": 11153408,
+        "evidence": 6000,
+        "facts": 600,
+        "first_round_bytes": 1736704,
+        "fixture": "unchanged services except one stopped round then reversion",
+        "growth_per_round": 159605,
+        "ingest": {
+          "p50_ms": 35.3392,
+          "p95_ms": 102.47439999999999,
+          "total_ms": 2419.6901000000003
+        },
+        "items_per_round": 100,
+        "production_access": false,
+        "projection": {
+          "p50_ms": 56.088499999999996,
+          "p95_ms": 72.6909,
+          "total_ms": 3523.8875000000003
+        },
+        "queries": {
+          "comparison": {
+            "p50_ms": 13.5741,
+            "p95_ms": 14.5779,
+            "total_ms": 275.104
+          },
+          "health": {
+            "p50_ms": 0.045200000000000004,
+            "p95_ms": 0.2131,
+            "total_ms": 1.0974000000000002
+          },
+          "timeline": {
+            "p50_ms": 2.1119,
+            "p95_ms": 3.8684000000000003,
+            "total_ms": 44.39439999999999
+          }
+        },
+        "rounds": 60,
+        "schema": 11,
+        "version": "0.2.42"
+      },
+      "after": {
+        "actions": 200,
+        "database_bytes": 6045696,
+        "evidence": 6000,
+        "facts": 600,
+        "first_round_bytes": 1736704,
+        "fixture": "unchanged services except one stopped round then reversion",
+        "growth_per_round": 73033,
+        "ingest": {
+          "p50_ms": 25.6526,
+          "p95_ms": 90.4428,
+          "total_ms": 1740.0986999999993
+        },
+        "items_per_round": 100,
+        "production_access": false,
+        "projection": {
+          "p50_ms": 47.494099999999996,
+          "p95_ms": 65.8059,
+          "total_ms": 2956.4675999999995
+        },
+        "queries": {
+          "comparison": {
+            "p50_ms": 13.7669,
+            "p95_ms": 15.2888,
+            "total_ms": 276.46739999999994
+          },
+          "health": {
+            "p50_ms": 0.0614,
+            "p95_ms": 0.3514,
+            "total_ms": 1.5852999999999997
+          },
+          "timeline": {
+            "p50_ms": 2.1527,
+            "p95_ms": 2.5184,
+            "total_ms": 43.177099999999996
+          }
+        },
+        "rounds": 60,
+        "schema": 12,
+        "version": "0.2.43"
+      }
+    }
+  ],
+  "fixture": "100 services, 60 checks; one stop and reversion",
+  "semantic_tables_identical": [
+    "snapshots",
+    "snapshot_contents",
+    "records",
+    "object_instances",
+    "object_facts",
+    "fact_history",
+    "object_actions"
+  ],
+  "upgrade": {
+    "history_preserved": true,
+    "old_content_not_recounted": true,
+    "mixed_history_items": 6100,
+    "older_writer_refused": true,
+    "raw_history_sha256": "385e9126f9718f565fa58d706e5c54cbe5587aac183268c9bee2ff0585b34d95"
+  },
+  "rust_tests": {
+    "workspace_passed": 592,
+    "storage_passed": 259,
+    "note": "Ordinary integrity test copies; IPC ACL regression also passed."
+  },
+  "ui_tests": [
+    "check-health-storage.cjs: passed; category amounts, expansion, refresh stability, HTML escaping, errors/recovery"
+  ],
+  "summary": {
+    "before": {
+      "version": "0.2.42",
+      "database_bytes": 11153408,
+      "growth_bytes_per_round": 159605,
+      "ingest": {
+        "p50_ms": 33.459,
+        "p95_ms": 95.824,
+        "total_ms": 2222.651
+      },
+      "projection": {
+        "p50_ms": 54.45,
+        "p95_ms": 69.442,
+        "total_ms": 3357.316
+      },
+      "query_p95_ms": {
+        "timeline": 2.999,
+        "comparison": 14.792,
+        "health": 0.209
+      }
+    },
+    "after": {
+      "version": "0.2.43",
+      "database_bytes": 6045696,
+      "growth_bytes_per_round": 73033,
+      "ingest": {
+        "p50_ms": 25.326,
+        "p95_ms": 90.443,
+        "total_ms": 1736.304
+      },
+      "projection": {
+        "p50_ms": 48.273,
+        "p95_ms": 62.792,
+        "total_ms": 2960.761
+      },
+      "query_p95_ms": {
+        "timeline": 2.771,
+        "comparison": 15.289,
+        "health": 0.351
+      }
+    }
+  }
+}

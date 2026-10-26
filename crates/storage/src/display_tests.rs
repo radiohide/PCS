@@ -19,7 +19,7 @@ fn event_scope_backfill_cost_is_independent_of_other_events_with_the_same_item()
         INSERT INTO source_bindings(instance_id,source,item_id,scope,native_record_id,valid_from)
         SELECT b.instance_id,b.source,b.item_id,b.scope,'noise-'||n.x,b.valid_from FROM (SELECT * FROM source_bindings LIMIT 1) b CROSS JOIN n;
         DELETE FROM object_collection_scopes;
-        UPDATE display_build SET evidence_cursor=0,evidence_bound=(SELECT max(seq) FROM evidence);") .unwrap();
+        UPDATE display_build SET evidence_cursor=0,evidence_bound=(SELECT max(seq) FROM all_evidence);") .unwrap();
     let calls=std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));let capture=calls.clone();
     c.progress_handler(100,Some(move||capture.fetch_add(1,std::sync::atomic::Ordering::Relaxed)>100));
     let result=historical_scopes(c,1,Duration::from_secs(1));
@@ -126,7 +126,7 @@ fn scopes_use_exact_collection_addresses_and_history_recovery_does_not_cross_sha
     crate::coverage::record_attempt(store.reader(),"pcscope.startup.tasks","machine:OTHER/schema:1/context:/shard:99",true,false,"2026-10-16T03:00:00Z").unwrap();
     let before=list(&store);assert_eq!(before[0]["coverage"].as_array().unwrap().len(),1);
     assert_eq!(before[0]["coverage"][0]["scope"],SCOPE);
-    store.reader().execute_batch("DELETE FROM object_collection_scopes; UPDATE display_build SET evidence_cursor=0,evidence_bound=(SELECT max(seq) FROM evidence);").unwrap();
+    store.reader().execute_batch("DELETE FROM object_collection_scopes; UPDATE display_build SET evidence_cursor=0,evidence_bound=(SELECT max(seq) FROM all_evidence);").unwrap();
     finish(&store);assert_eq!(before,list(&store));
 }
 

@@ -45,7 +45,7 @@ fn split_shared_task_history_preserves_actions_current_state_and_replay_identity
     assert_eq!(conn.query_row("SELECT count(*) FROM source_bindings WHERE instance_id=? AND valid_to IS NULL",[legacy],|r|r.get::<_,i64>(0)).unwrap(),0);
     assert_eq!(repair(&store,1)["repaired"],2);
     // Replaying all retained raw events after correction must not create more actions.
-    conn.execute("UPDATE projection_queue SET state='pending'",[]).unwrap();
+    conn.execute("UPDATE all_projection_queue SET state='pending'",[]).unwrap();
     while store.project_pending("M","I",64).unwrap().examined>0 {}
     assert_eq!(conn.query_row("SELECT count(*) FROM object_actions",[],|r|r.get::<_,i64>(0)).unwrap(),2);
     assert_eq!(conn.query_row("SELECT count(*) FROM records",[],|r|r.get::<_,i64>(0)).unwrap(),2);

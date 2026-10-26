@@ -13,7 +13,7 @@ use anyhow::{Context, Result};
 use rusqlite::{params, Connection, OptionalExtension};
 use serde_json::Value;
 
-pub const SCHEMA_VERSION: i64 = 11;
+pub const SCHEMA_VERSION: i64 = 12;
 pub(crate) const OBSERVATION_ADDRESS_INDEX: &str = "evidence_refs_observation_address";
 /// Settings key holding the fingerprint of the catalog this database was last projected against.
 pub const CATALOG_FINGERPRINT_KEY: &str = "model_catalog_v1";

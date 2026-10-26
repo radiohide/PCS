@@ -59,7 +59,7 @@ pub(crate) fn cleanup(path: &std::path::Path) {
     fn a_failed_batch_leaves_no_trace() {
         let mut store = Store::open(":memory:").unwrap();
         store.ingest(&snapshot("run-1", &["task-00"])).unwrap();
-        let before = (count(&store, "SELECT count(*) FROM evidence"), count(&store, "SELECT count(*) FROM snapshots"), count(&store, "SELECT count(*) FROM projection_queue"));
+        let before = (count(&store, "SELECT count(*) FROM all_evidence"), count(&store, "SELECT count(*) FROM snapshots"), count(&store, "SELECT count(*) FROM all_projection_queue"));
         // A run id already taken with different content is refused, which rolls the whole batch back.
         let mut conflicting = snapshot("run-1", &["task-99"]);
         if let pcscope_contracts::Message::Snapshot { items, .. } = &mut conflicting.message {
@@ -67,7 +67,7 @@ pub(crate) fn cleanup(path: &std::path::Path) {
         }
         assert!(store.ingest(&conflicting).is_err(), "a reused run id with different content must be refused");
         assert_eq!(
-            (count(&store, "SELECT count(*) FROM evidence"), count(&store, "SELECT count(*) FROM snapshots"), count(&store, "SELECT count(*) FROM projection_queue")),
+            (count(&store, "SELECT count(*) FROM all_evidence"), count(&store, "SELECT count(*) FROM snapshots"), count(&store, "SELECT count(*) FROM all_projection_queue")),
             before,
             "a failed batch must not leave evidence, material or work behind"
         );
@@ -80,7 +80,7 @@ pub(crate) fn cleanup(path: &std::path::Path) {
         let (store, path) = temporary_store("abandoned");
         let mut writer = Store::open(&path).unwrap();
         writer.ingest(&snapshot("run-1", &["task-00"])).unwrap();
-        let committed = count(&writer, "SELECT count(*) FROM evidence");
+        let committed = count(&writer, "SELECT count(*) FROM all_evidence");
 
         // A transaction that is begun and never committed, dropped as a process death would drop it.
         {
@@ -90,8 +90,8 @@ pub(crate) fn cleanup(path: &std::path::Path) {
         }
         // A second store, opened fresh, sees the committed state and no ghost.
         let reader = Store::open(&path).unwrap();
-        assert_eq!(count(&reader, "SELECT count(*) FROM evidence"), committed);
-        assert_eq!(count(&reader, "SELECT count(*) FROM evidence WHERE evidence_id='ghost'"), 0);
+        assert_eq!(count(&reader, "SELECT count(*) FROM all_evidence"), committed);
+        assert_eq!(count(&reader, "SELECT count(*) FROM all_evidence WHERE evidence_id='ghost'"), 0);
         drop(store);
         cleanup(&path);
     }
@@ -136,8 +136,8 @@ pub(crate) fn cleanup(path: &std::path::Path) {
         assert_eq!(report.projected, 3, "both readable observations and the added task reach projection");
         assert_eq!(count(&store,"SELECT count(*) FROM object_actions WHERE action_id='observed.first_seen'"),1,"the later task is new, rather than part of the initial baseline");
         assert_eq!(report.unadapted, 1, "the unreadable one is reported, not dropped");
-        assert_eq!(count(&store, "SELECT count(distinct source) FROM evidence"), 2, "the source whose material failed is still retained");
-        assert_eq!(count(&store, "SELECT count(*) FROM evidence WHERE source='pcscope.unconverted.thing'"), 1);
+        assert_eq!(count(&store, "SELECT count(distinct source) FROM all_evidence"), 2, "the source whose material failed is still retained");
+        assert_eq!(count(&store, "SELECT count(*) FROM all_evidence WHERE source='pcscope.unconverted.thing'"), 1);
     }
 
     /// Work that failed and is run again duplicates nothing.
@@ -149,7 +149,7 @@ pub(crate) fn cleanup(path: &std::path::Path) {
         let settled = (count(&store, "SELECT count(*) FROM object_facts"), count(&store, "SELECT count(*) FROM object_actions"));
 
         // The queue is put back as a retry would: the work item outstanding again.
-        store.conn.execute("UPDATE projection_queue SET state='pending'", []).unwrap();
+        store.conn.execute("UPDATE all_projection_queue SET state='pending'", []).unwrap();
         store.project_pending("M", "I", 100).unwrap();
         assert_eq!(
             (count(&store, "SELECT count(*) FROM object_facts"), count(&store, "SELECT count(*) FROM object_actions")),
@@ -192,7 +192,7 @@ pub(crate) fn cleanup(path: &std::path::Path) {
         // never written or a delete that left rows behind.
         let missing: i64 = store.conn.query_row(
             "SELECT count(*) FROM evidence_refs r WHERE r.pruned_at IS NULL AND r.subject_kind='observation'
-               AND NOT EXISTS (SELECT 1 FROM evidence e WHERE e.evidence_id=r.evidence_id)",
+               AND NOT EXISTS (SELECT 1 FROM all_evidence e WHERE e.evidence_id=r.evidence_id)",
             [],
             |r| r.get(0),
         ).unwrap();

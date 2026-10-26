@@ -1,3 +1,5 @@
+mod storage_metrics;
+mod compact;
 mod self_activity;
 mod snapshot_content;
 mod baseline;
@@ -262,7 +264,9 @@ impl Store {
             association_repair::ensure(&tx)?;
             event_association::ensure(&tx)?;
             snapshot_content::ensure_schema(&tx)?;
-            tx.execute_batch("PRAGMA user_version=11;")?;
+            compact::ensure(&tx)?;
+            storage_metrics::ensure(&tx)?;
+            tx.execute_batch("PRAGMA user_version=12;")?;
             tx.commit()?;
         }
         // How deep the projection backlog may get before ingest stops accepting more. A default
@@ -296,6 +300,7 @@ impl Store {
         // as if it were complete.
         let version:i64=conn.query_row("PRAGMA user_version",[],|r|r.get(0))?;
         if version>model::SCHEMA_VERSION {bail!("database schema version {version} is newer than this application ({})",model::SCHEMA_VERSION);}
+        if version<12 {bail!("历史数据需要新版后台完成存储升级。请启动新版后台后重试；已有历史会保留。");}
         conn.busy_timeout(std::time::Duration::from_millis(250))?;
         conn.execute_batch("PRAGMA query_only=ON;")?;
         let deadline=std::time::Instant::now()+budget;
@@ -337,7 +342,7 @@ impl Store {
         // rolls it back entirely, so nothing is lost: the source still holds the material and can
         // re-send it. The alternative — accepting forever and pruning the backlog itself — would
         // throw away the raw evidence the object model is built on.
-        let backlog: i64 = self.conn.query_row("SELECT count(*) FROM projection_queue WHERE state='pending'", [], |r| r.get(0))?;
+        let backlog: i64 = self.conn.query_row("SELECT (SELECT count(*) FROM projection_queue WHERE state='pending')+(SELECT coalesce(sum(item_count),0) FROM compact_counts WHERE state='pending')", [], |r| r.get(0))?;
         let max_pending: i64 = self.setting("max_pending_projections")?.parse()?;
         if !control_plane && backlog > max_pending {
             bail!("projection backlog is {backlog} items, above the limit of {max_pending}; run the projection or raise max_pending_projections");
@@ -1271,7 +1276,7 @@ impl Store {
             )
             .optional()?;
         Ok(
-            json!({"mode":self.setting("retention_mode")?,"quota_bytes":self.setting("quota_bytes")?.parse::<u64>().unwrap_or(DEFAULT_QUOTA),"physical_bytes":self.physical_bytes()?,"live_bytes":self.live_bytes()?,"pruned_units":self.setting("pruned_units")?.parse::<u64>()?,"earliest_retained_observation":earliest,"budget_policy":"one-third database budget; remainder reserved for WAL and maintenance","minimum_quota_bytes":MIN_QUOTA}),
+            json!({"mode":self.setting("retention_mode")?,"quota_bytes":self.setting("quota_bytes")?.parse::<u64>().unwrap_or(DEFAULT_QUOTA),"physical_bytes":self.physical_bytes()?,"live_bytes":self.live_bytes()?,"pruned_units":self.setting("pruned_units")?.parse::<u64>()?,"earliest_retained_observation":earliest,"budget_policy":"one-third database budget; remainder reserved for WAL and maintenance","minimum_quota_bytes":MIN_QUOTA,"content_usage":storage_metrics::report(&self.conn)?}),
         )
     }
 
@@ -1992,10 +1997,10 @@ mod tests {
         s.conn.query_row(sql, [], |r| r.get(0)).unwrap()
     }
     fn evidence_count(s: &Store) -> i64 {
-        count(s, "SELECT count(*) FROM evidence")
+        count(s, "SELECT count(*) FROM all_evidence")
     }
     fn pending_count(s: &Store) -> i64 {
-        count(s, "SELECT count(*) FROM projection_queue WHERE state='pending'")
+        count(s, "SELECT count(*) FROM all_projection_queue WHERE state='pending'")
     }
     fn event(id: &str, epoch: &str, data: Value) -> Envelope {
         message(
@@ -2049,7 +2054,7 @@ mod tests {
         // the new event is a different address rather than a collision with the old one.
         assert_eq!(store.ingest(&event("1", "2", json!({"value":"after-reset"}))).unwrap(), 1);
         let addresses: Vec<String> = {
-            let mut q = store.conn.prepare("SELECT evidence_id FROM evidence ORDER BY seq").unwrap();
+            let mut q = store.conn.prepare("SELECT evidence_id FROM all_evidence ORDER BY seq").unwrap();
             let rows = q.query_map([], |r| r.get(0)).unwrap();
             rows.collect::<rusqlite::Result<_>>().unwrap()
         };
@@ -2064,7 +2069,7 @@ mod tests {
         assert_eq!(store.ingest(&event("1", "1", json!({"blob":marker}))).unwrap(), 1);
         // One row per item, and none of them carries the payload: it lives in `records`/`snapshots`.
         let rows: Vec<(String, String, String)> = {
-            let mut q = store.conn.prepare("SELECT evidence_id,item_id,payload_ref FROM evidence").unwrap();
+            let mut q = store.conn.prepare("SELECT evidence_id,item_id,payload_ref FROM all_evidence").unwrap();
             let rows = q.query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?))).unwrap();
             rows.collect::<rusqlite::Result<_>>().unwrap()
         };
@@ -2269,7 +2274,7 @@ mod s08_tests {
         // The action itself is untouched: it keeps its own values and observation time, and the loss
         // is stated rather than left as a pointer into a row that is gone.
         assert_eq!(count(&store, "SELECT count(*) FROM object_actions"), 1);
-        assert_eq!(count(&store, "SELECT count(*) FROM evidence WHERE pruned_at IS NOT NULL"), 1);
+        assert_eq!(count(&store, "SELECT count(*) FROM all_evidence WHERE pruned_at IS NOT NULL"), 1);
     }
 
     #[test]
@@ -2297,3 +2302,5 @@ mod s08_tests {
         assert_eq!(count(&store, "SELECT count(*) FROM snapshots"), 3);
     }
 }
+
+#[cfg(test)] mod compact_tests;

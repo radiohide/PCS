@@ -43,8 +43,8 @@ fn inputs(conn: &Connection) -> Result<Value> {
                 sum(CASE WHEN q.state='failed' THEN 1 ELSE 0 END) AS failed,
                 sum(CASE WHEN q.state='pending' THEN 1 ELSE 0 END) AS pending,
                 sum(CASE WHEN q.queue_id IS NULL THEN 1 ELSE 0 END) AS unqueued
-         FROM evidence e
-         LEFT JOIN projection_queue q ON q.evidence_id=e.evidence_id AND q.item_id=e.item_id
+         FROM all_evidence e
+         LEFT JOIN all_projection_queue q ON q.evidence_id=e.evidence_id AND q.item_id=e.item_id
          GROUP BY e.source ORDER BY e.source",
     )?;
     let rows = statement.query_map([], |row| {
@@ -67,7 +67,7 @@ fn inputs(conn: &Connection) -> Result<Value> {
 fn failures(conn: &Connection) -> Result<Value> {
     let mut statement = conn.prepare(
         "SELECT e.source, coalesce(q.last_error,'（未记录原因）') AS reason, count(*) AS count
-         FROM projection_queue q JOIN evidence e ON e.evidence_id=q.evidence_id AND e.item_id=q.item_id
+         FROM all_projection_queue q JOIN all_evidence e ON e.evidence_id=q.evidence_id AND e.item_id=q.item_id
          WHERE q.state='failed'
          GROUP BY e.source, reason ORDER BY count DESC, e.source",
     )?;
@@ -88,16 +88,16 @@ fn failures(conn: &Connection) -> Result<Value> {
 /// it as absent rather than as outstanding.
 fn unprocessed(conn: &Connection) -> Result<Value> {
     let rows: i64 = conn.query_row(
-        "SELECT count(*) FROM evidence e
-         LEFT JOIN projection_queue q ON q.evidence_id=e.evidence_id AND q.item_id=e.item_id
+        "SELECT count(*) FROM all_evidence e
+         LEFT JOIN all_projection_queue q ON q.evidence_id=e.evidence_id AND q.item_id=e.item_id
          WHERE q.queue_id IS NULL",
         [],
         |r| r.get(0),
     )?;
     let sample: Vec<Value> = {
         let mut statement = conn.prepare(
-            "SELECT e.evidence_id, e.source, e.ingested_at FROM evidence e
-             LEFT JOIN projection_queue q ON q.evidence_id=e.evidence_id AND q.item_id=e.item_id
+            "SELECT e.evidence_id, e.source, e.ingested_at FROM all_evidence e
+             LEFT JOIN all_projection_queue q ON q.evidence_id=e.evidence_id AND q.item_id=e.item_id
              WHERE q.queue_id IS NULL ORDER BY e.seq LIMIT 20",
         )?;
         let rows = statement.query_map([], |row| Ok(json!({"evidence_id": row.get::<_, String>(0)?, "source": row.get::<_, String>(1)?, "ingested_at": row.get::<_, String>(2)?}))) ?;
@@ -121,7 +121,7 @@ fn field_trace(conn: &Connection) -> Result<Value> {
     let dangling: i64 = conn.query_row(
         "SELECT count(*) FROM evidence_refs r
          WHERE r.subject_kind='observation' AND r.pruned_at IS NULL
-           AND NOT EXISTS (SELECT 1 FROM evidence e WHERE e.evidence_id=r.evidence_id)",
+           AND NOT EXISTS (SELECT 1 FROM all_evidence e WHERE e.evidence_id=r.evidence_id)",
         [],
         |r| r.get(0),
     )?;
@@ -139,7 +139,7 @@ fn field_trace(conn: &Connection) -> Result<Value> {
         "SELECT count(*) FROM object_facts f
          WHERE f.value_status IN ('known','conflicting','masked')
            AND EXISTS (
-             SELECT 1 FROM evidence_refs r JOIN evidence e ON e.evidence_id=r.evidence_id
+             SELECT 1 FROM evidence_refs r JOIN all_evidence e ON e.evidence_id=r.evidence_id
              WHERE r.subject_kind='observation' AND r.subject_id=CAST(f.instance_id AS TEXT)
                AND e.observed_at > f.observed_at)",
         [],
@@ -195,14 +195,14 @@ fn identity(conn: &Connection) -> Result<Value> {
 /// material that arrived during the migration has to be finished before the run is called complete,
 /// and this is the comparison that says whether it was.
 fn watermarks(conn: &Connection) -> Result<Value> {
-    let evidence: i64 = conn.query_row("SELECT coalesce(max(seq),0) FROM evidence", [], |r| r.get(0))?;
+    let evidence: i64 = conn.query_row("SELECT coalesce(max(seq),0) FROM all_evidence", [], |r| r.get(0))?;
     let queued: i64 = conn.query_row(
-        "SELECT coalesce(max(e.seq),0) FROM projection_queue q JOIN evidence e ON e.evidence_id=q.evidence_id AND e.item_id=q.item_id",
+        "SELECT coalesce(max(e.seq),0) FROM all_projection_queue q JOIN all_evidence e ON e.evidence_id=q.evidence_id AND e.item_id=q.item_id",
         [],
         |r| r.get(0),
     )?;
-    let pending: i64 = conn.query_row("SELECT count(*) FROM projection_queue WHERE state='pending'", [], |r| r.get(0))?;
-    let failed: i64 = conn.query_row("SELECT count(*) FROM projection_queue WHERE state='failed'", [], |r| r.get(0))?;
+    let pending: i64 = conn.query_row("SELECT count(*) FROM all_projection_queue WHERE state='pending'", [], |r| r.get(0))?;
+    let failed: i64 = conn.query_row("SELECT count(*) FROM all_projection_queue WHERE state='failed'", [], |r| r.get(0))?;
     Ok(json!({
         "evidence_watermark": evidence,
         "queued_watermark": queued,

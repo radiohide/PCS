@@ -91,7 +91,7 @@ pub(super) fn legacy_process_label_cached(conn:&Connection, instance:i64, scope:
         use rusqlite::OptionalExtension;
         for (reference,pruned) in refs {
             if pruned.is_some() {return Ok(None);}
-            let evidence=conn.query_row("SELECT source_scope,payload_ref,decoding,pruned_at FROM evidence WHERE evidence_id=? AND item_id=? AND source=? AND kind='snapshot'",params![reference,item,source],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?,r.get::<_,Option<String>>(3)?))).optional()?;
+            let evidence=conn.query_row("SELECT source_scope,payload_ref,decoding,pruned_at FROM all_evidence WHERE evidence_id=? AND item_id=? AND source=? AND kind='snapshot'",params![reference,item,source],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?,r.get::<_,Option<String>>(3)?))).optional()?;
             let Some((collected,address,decoding,pruned))=evidence else{continue;};
             if pruned.is_some() {return Ok(None);}
             let Ok(decoded)=serde_json::from_str::<Decoding>(&decoding) else{return Ok(None);};

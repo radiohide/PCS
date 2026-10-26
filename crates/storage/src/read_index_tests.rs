@@ -20,13 +20,13 @@ fn online_read_indexes_preserve_history_and_progress_and_existing_writer() {
     assert_eq!(store.conn.query_row("SELECT group_concat(payload) FROM snapshots",[],|r|r.get::<_,String>(0)).unwrap(),raw);
     assert_eq!(store.conn.query_row("PRAGMA user_version",[],|r|r.get::<_,i64>(0)).unwrap(),crate::model::SCHEMA_VERSION);
     let plan=|sql:&str|store.conn.prepare(&format!("EXPLAIN QUERY PLAN {sql}")).unwrap().query_map([],|r|r.get::<_,String>(3)).unwrap().collect::<rusqlite::Result<Vec<_>>>().unwrap().join("\n");
-    assert!(plan("SELECT count(*) FROM projection_queue WHERE state='pending'").contains("projection_queue_pending"));
+    assert!(plan("SELECT count(*) FROM all_projection_queue WHERE state='pending'").contains("projection_queue_pending"));
     assert!(plan("SELECT 1 FROM object_actions a JOIN evidence_refs r ON r.subject_kind='action' AND r.subject_id=CAST(a.action_row AS TEXT) WHERE a.instance_id=1 AND r.evidence_id='missing'").contains("evidence_refs_action_address"));
     // The already-open writer need not know about the added index to keep it correct.
     store.ingest(&fixture("three",true)).unwrap();
-    assert!(store.conn.query_row("SELECT count(*) FROM projection_queue INDEXED BY projection_queue_pending WHERE state='pending'",[],|r|r.get::<_,i64>(0)).unwrap()>0);
+    assert!(store.conn.query_row("SELECT count(*) FROM all_projection_queue WHERE state='pending'",[],|r|r.get::<_,i64>(0)).unwrap()>0);
     store.project_pending("M","I",100).unwrap();
-    assert_eq!(store.conn.query_row("SELECT count(*) FROM projection_queue INDEXED BY projection_queue_pending WHERE state='pending'",[],|r|r.get::<_,i64>(0)).unwrap(),0);
+    assert_eq!(store.conn.query_row("SELECT count(*) FROM all_projection_queue WHERE state='pending'",[],|r|r.get::<_,i64>(0)).unwrap(),0);
     store.conn.execute_batch("DROP INDEX projection_queue_pending; UPDATE settings SET value='foreign' WHERE key='native_program_identity';").unwrap();
     assert!(Store::install_read_indexes(&path).is_err());
     assert_eq!(store.conn.query_row("SELECT count(*) FROM sqlite_schema WHERE name='projection_queue_pending'",[],|r|r.get::<_,i64>(0)).unwrap(),0);

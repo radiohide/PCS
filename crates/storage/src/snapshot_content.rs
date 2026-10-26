@@ -36,9 +36,11 @@ pub(crate) fn store(conn: &Connection, source: &str, scope: &str, run: &str, pay
         return Ok(());
     }
     let hash=crate::digest(&text);
-    conn.execute("INSERT INTO snapshot_contents(digest,items,uses) VALUES(?,?,0) ON CONFLICT(digest) DO NOTHING",params![hash,text])?;
+    let added=conn.execute("INSERT INTO snapshot_contents(digest,items,uses) VALUES(?,?,0) ON CONFLICT(digest) DO NOTHING",params![hash,text])?;
     let (id,stored):(i64,String)=conn.query_row("SELECT id,items FROM snapshot_contents WHERE digest=?",[hash],|r|Ok((r.get(0)?,r.get(1)?)))?;
     ensure!(stored==text,"snapshot content digest conflict");
+    let metered:bool=conn.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE name='storage_source_bytes')",[],|r|r.get(0))?;
+    if added>0&&metered {crate::storage_metrics::content(conn,id,source,text.len())?;}
     header[POINTER]=json!(id);
     conn.execute("INSERT INTO snapshots(source,scope,run_id,payload,unit_id) VALUES(?,?,?,?,?)",params![source,scope,run,header.to_string(),unit])?;
     conn.execute("INSERT INTO snapshot_content_refs VALUES(?,?,?,?)",params![source,scope,run,id])?;

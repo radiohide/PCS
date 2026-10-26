@@ -81,7 +81,7 @@ pub(crate) fn ensure(conn: &Connection) -> Result<()> {
     // the semantic cursors; the independent, exact source-scope index keeps its progress.
     let changed=conn.execute("INSERT INTO display_build(id,revision,object_bound,action_bound,evidence_bound)
         SELECT 1,?,coalesce((SELECT max(instance_id) FROM object_instances),0),
-        coalesce((SELECT max(action_row) FROM object_actions),0),coalesce((SELECT max(seq) FROM evidence),0)
+        coalesce((SELECT max(action_row) FROM object_actions),0),coalesce((SELECT seq FROM sqlite_sequence WHERE name='evidence'),0)
         ON CONFLICT(id) DO UPDATE SET revision=excluded.revision,object_cursor=0,action_cursor=0,
         published=0,object_bound=excluded.object_bound,action_bound=excluded.action_bound
         WHERE display_build.revision<>excluded.revision", [revision()])?;
@@ -175,7 +175,7 @@ fn historical_scopes(conn:&Connection,limit:usize,budget:Duration)->Result<usize
     let started=Instant::now();
     let (cursor,bound):(i64,i64)=conn.query_row("SELECT evidence_cursor,evidence_bound FROM display_build WHERE id=1",[],|r|Ok((r.get(0)?,r.get(1)?)))?;
     if cursor>=bound{return Ok(0);}
-    let rows={let mut q=conn.prepare("SELECT seq,evidence_id,source,item_id,native_record_id,source_scope,kind FROM evidence WHERE seq>? AND seq<=? ORDER BY seq LIMIT ?")?;
+    let rows={let mut q=conn.prepare("SELECT seq,evidence_id,source,item_id,native_record_id,source_scope,kind FROM all_evidence WHERE seq>? AND seq<=? ORDER BY seq LIMIT ?")?;
         let rows=q.query_map(params![cursor,bound,limit as i64],|r|Ok((r.get::<_,i64>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?,r.get::<_,String>(3)?,r.get::<_,String>(4)?,r.get::<_,String>(5)?,r.get::<_,String>(6)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;rows};
     let mut insert=conn.prepare_cached("INSERT OR IGNORE INTO object_collection_scopes(instance_id,source,scope)
             SELECT DISTINCT b.instance_id,?,? FROM source_bindings b

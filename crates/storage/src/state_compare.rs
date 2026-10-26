@@ -9,7 +9,7 @@ fn time(raw:&str)->Result<String>{Ok(chrono::DateTime::parse_from_rfc3339(raw)?.
 // Snapshot items share one timestamp and are inserted atomically by record_snapshot_items.
 // Read each run's timestamp once per page, then verify the selected item's own row and bound.
 // The item check is essential: a reference to a sibling's snapshot is not this object's evidence.
-const ITEM_AT_ADDRESS: &str = "SELECT 1 FROM evidence INDEXED BY evidence_source_address
+const ITEM_AT_ADDRESS: &str = "SELECT 1 FROM all_evidence
     WHERE source=? AND evidence_id=? AND item_id=? AND kind='snapshot' AND seq<=?";
 
 #[derive(Default)]
@@ -22,7 +22,7 @@ struct Cache {
 fn latest_address(conn:&Connection,object:i64,source:&str,item:&str,cutoff:&str,bound:i64,cache:&mut Cache)->Result<Option<String>> {
     let mut refs=conn.prepare_cached("SELECT evidence_id FROM evidence_refs WHERE subject_kind='observation' AND subject_id=? AND evidence_kind='snapshot'")?;
     let addresses=refs.query_map([object.to_string()],|r|r.get::<_,String>(0))?.collect::<rusqlite::Result<Vec<_>>>()?;
-    let mut header=conn.prepare_cached("SELECT observed_at,seq FROM evidence INDEXED BY evidence_source_address WHERE source=? AND evidence_id=? AND kind='snapshot' ORDER BY item_id LIMIT 1")?;
+    let mut header=conn.prepare_cached("SELECT observed_at,first_seq FROM observation_runs WHERE source_key=(SELECT id FROM storage_strings WHERE value=?1) AND evidence_id=?2 UNION ALL SELECT observed_at,seq FROM evidence WHERE source=?1 AND evidence_id=?2 AND kind='snapshot' LIMIT 1")?;
     let mut candidates=Vec::new();
     for address in addresses {
         let key=(source.to_owned(),address.clone());
@@ -235,7 +235,8 @@ mod tests {
         assert_eq!(target["right"]["summary"]["lifecycle"],"not_observed");
         let mut plan=s.conn.prepare(&format!("EXPLAIN QUERY PLAN {ITEM_AT_ADDRESS}")).unwrap();
         let steps=plan.query_map(params!["pcscope.startup.services","address","service-0",i64::MAX],|r|r.get::<_,String>(3)).unwrap().collect::<rusqlite::Result<Vec<_>>>().unwrap();
-        assert!(steps.iter().any(|s|s.contains("evidence_source_address")&&s.contains("item_id=?")),"{steps:?}");
+        assert!(steps.iter().any(|s|s.contains("SEARCH evidence")&&s.contains("item_id=?")),"{steps:?}");
+        assert!(steps.iter().any(|s|s.contains("SEARCH m")&&s.contains("item_key=?")),"{steps:?}");
     }
     #[test]
     fn shared_headers_preserve_same_time_order_watermarks_and_missing_items(){
@@ -248,7 +249,7 @@ mod tests {
         let bounded=answer_at(&s.conn,at,at,Some("startup.service"),None,50,Some(&mark)).unwrap().data.unwrap();assert_eq!(value(&bounded["objects"][0]["right"],"state"),"Stopped");
         ingest(&mut s,"three","2026-10-22T01:00:00Z",json!([item("B","B","Paused")]),true);
         let a=rows[0]["instance_id"].as_i64().unwrap();
-        s.conn.execute("INSERT OR IGNORE INTO evidence_refs(subject_kind,subject_id,evidence_kind,evidence_id) SELECT 'observation',?,'snapshot',evidence_id FROM evidence WHERE item_id='B'",[a.to_string()]).unwrap();
+        s.conn.execute("INSERT OR IGNORE INTO evidence_refs(subject_kind,subject_id,evidence_kind,evidence_id) SELECT 'observation',?,'snapshot',evidence_id FROM all_evidence WHERE item_id='B'",[a.to_string()]).unwrap();
         let rows=read(&s,at,"2026-10-22T01:30:00Z");assert_eq!(value(&rows[0]["right"],"state"),"Running");
         assert_eq!(rows[0]["right"]["summary"]["lifecycle"],"not_observed");
     }

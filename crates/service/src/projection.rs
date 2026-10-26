@@ -168,8 +168,8 @@ mod tests {
         assert!(pending.data.unwrap().as_array().unwrap().iter().any(|row|row["projection"]=="objects" && row["pending"]==1));
         let worker = Worker::start(store.clone(), "M".into()).unwrap();
         wait_for(|| worker.ready.load(Ordering::SeqCst));
-        assert_eq!(count(&store, "evidence"), 1);
-        assert_eq!(count(&store, "projection_queue WHERE state='failed'"), 1);
+        assert_eq!(count(&store, "all_evidence"), 1);
+        assert_eq!(count(&store, "all_projection_queue WHERE state='failed'"), 1);
         let failed = store.lock().unwrap().query(&pcscope_contracts::query::QueryRequest::ProjectionStatus).unwrap();
         assert!(failed.data.unwrap().as_array().unwrap().iter().any(|row|row["projection"]=="objects" && row["failed"]==1 && row["last_error"].is_string()));
     }
@@ -182,12 +182,12 @@ mod tests {
         let worker = Worker::start(store.clone(), "M".into()).unwrap();
         wait_for(|| worker.status.lock().unwrap()["state"] == "retrying");
         assert!(!worker.ready.load(Ordering::SeqCst));
-        assert_eq!(count(&store, "evidence"), 1);
-        assert_eq!(count(&store, "projection_queue WHERE state='pending'"), 1);
+        assert_eq!(count(&store, "all_evidence"), 1);
+        assert_eq!(count(&store, "all_projection_queue WHERE state='pending'"), 1);
         store.lock().unwrap().reader().execute_batch("DROP TRIGGER injected_failure").unwrap();
         wait_for(|| worker.ready.load(Ordering::SeqCst));
         assert_eq!(count(&store, "object_instances"), 1);
-        assert_eq!(count(&store, "evidence"), 2,"snapshot and initial-inventory reference both survive retry");
+        assert_eq!(count(&store, "all_evidence"), 2,"snapshot and initial-inventory reference both survive retry");
     }
 
     #[test]
@@ -208,7 +208,7 @@ mod tests {
             wait_for(|| worker.ready.load(Ordering::SeqCst));
             assert_eq!(installation, store.lock().unwrap().projection_installation("M").unwrap());
             assert_eq!(count(&store, "object_instances"), 1);
-            assert_eq!(count(&store, "projection_queue WHERE state='pending'"), 0);
+            assert_eq!(count(&store, "all_projection_queue WHERE state='pending'"), 0);
         }
         std::fs::remove_file(path).unwrap();
     }
@@ -219,10 +219,10 @@ mod tests {
         for run in 0..130 {store.lock().unwrap().ingest(&material(run)).unwrap();}
         let worker = Worker::start(store.clone(), "M".into()).unwrap();
         wait_for(|| worker.ready.load(Ordering::SeqCst));
-        assert_eq!(count(&store, "projection_queue WHERE state='pending'"), 0);
+        assert_eq!(count(&store, "all_projection_queue WHERE state='pending'"), 0);
         assert_eq!(count(&store, "object_instances"), 1);
         store.lock().unwrap().ingest(&material(131)).unwrap();
-        wait_for(|| count(&store, "projection_queue WHERE state='pending'")==0);
+        wait_for(|| count(&store, "all_projection_queue WHERE state='pending'")==0);
         drop(worker);
         let identity = store.lock().unwrap().projection_installation("M").unwrap();
         store.lock().unwrap().ingest(&material(132)).unwrap();
@@ -230,7 +230,7 @@ mod tests {
         wait_for(|| worker.ready.load(Ordering::SeqCst));
         assert_eq!(identity, store.lock().unwrap().projection_installation("M").unwrap());
         assert_eq!(count(&store, "object_instances"), 1);
-        assert_eq!(count(&store, "evidence"), 133,"one retained initial-inventory record is prepared once");
+        assert_eq!(count(&store, "all_evidence"), 133,"one retained initial-inventory record is prepared once");
         assert_eq!(count(&store, "object_actions WHERE action_id='observed.first_seen' AND json_extract(source_record,'$.snapshot_presence.baseline')=1"),1);
         assert!(store.lock().unwrap().projection_installation("other-machine").is_err());
     }

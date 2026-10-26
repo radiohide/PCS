@@ -137,7 +137,13 @@ pub fn report(conn:&Connection,source:Option<&str>)->Result<Vec<serde_json::Valu
     let cached:bool=conn.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name='coverage_projection_counts')",[],|r|r.get(0))?;
     // A reader opened before the writer has performed the additive migration keeps the previous
     // exact query. It must not invent zero failures while the count table is unavailable.
-    let aggregate=if cached {
+    let compact:bool=conn.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE name='compact_counts')",[],|r|r.get(0))?;
+    let aggregate=if cached && compact {
+        "SELECT source,sum(CASE WHEN state='pending' THEN item_count ELSE 0 END) AS pending,
+          sum(CASE WHEN state='failed' THEN item_count ELSE 0 END) AS failed,
+          sum(CASE WHEN state='done' THEN item_count ELSE 0 END) AS done
+          FROM (SELECT * FROM coverage_projection_counts UNION ALL SELECT * FROM compact_counts) GROUP BY source"
+    }else if cached {
         "SELECT source,sum(CASE WHEN state='pending' THEN item_count ELSE 0 END) AS pending,
           sum(CASE WHEN state='failed' THEN item_count ELSE 0 END) AS failed,
           sum(CASE WHEN state='done' THEN item_count ELSE 0 END) AS done

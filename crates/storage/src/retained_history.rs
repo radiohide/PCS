@@ -12,10 +12,10 @@ pub(crate) fn advance(conn:&Connection,limit:usize,budget:Duration)->Result<Valu
     let mut cache=crate::evidence::SnapshotCache::default();
     for source in ["pcscope.system.update-history","pcscope.security.detections"] {
         let rule=format!("retained-history-v1/{source}");
-        conn.execute("INSERT OR IGNORE INTO association_repair_state(rule,cursor,bound) SELECT ?,0,coalesce(max(seq),0) FROM evidence WHERE source=?",params![rule,source])?;
+        conn.execute("INSERT OR IGNORE INTO association_repair_state(rule,cursor,bound) SELECT ?,0,coalesce(max(seq),0) FROM all_evidence WHERE source=?",params![rule,source])?;
         let (cursor,bound):(i64,i64)=conn.query_row("SELECT cursor,bound FROM association_repair_state WHERE rule=?",[&rule],|r|Ok((r.get(0)?,r.get(1)?)))?;
         if cursor>=bound {continue}
-        let rows={let mut q=conn.prepare_cached("SELECT seq,evidence_id,item_id FROM evidence WHERE source=? AND seq>? AND seq<=? ORDER BY seq LIMIT ?")?;
+        let rows={let mut q=conn.prepare_cached("SELECT seq,evidence_id,item_id FROM all_evidence WHERE source=? AND seq>? AND seq<=? ORDER BY seq LIMIT ?")?;
             let rows=q.query_map(params![source,cursor,bound,limit],|r|Ok((r.get::<_,i64>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;rows};
         let mut last=cursor;let mut examined=0;let mut actions=0;let mut missing=0;
         for (seq,address,item) in &rows {

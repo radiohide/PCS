@@ -69,7 +69,7 @@ fn historical_session_repair_is_bounded_idempotent_and_keeps_action_identity() {
     let c=store.reader();let after:(i64,String)=c.query_row("SELECT action_row,occurred_at FROM object_actions",[],|r|Ok((r.get(0)?,r.get(1)?))).unwrap();assert_eq!(before,after);
     assert_eq!(c.query_row("SELECT lifecycle FROM object_instances",[],|r|r.get::<_,String>(0)).unwrap(),"not_observed");
     assert_eq!(store.repair_event_context(1,Duration::from_secs(1)).unwrap()["batch_repaired"],0);
-    c.execute("UPDATE projection_queue SET state='pending'",[]).unwrap();
+    c.execute("UPDATE all_projection_queue SET state='pending'",[]).unwrap();
     while store.project_pending("M","I",64).unwrap().examined>0{}
     assert_eq!(store.reader().query_row("SELECT count(*) FROM object_actions",[],|r|r.get::<_,i64>(0)).unwrap(),1);
 }
@@ -144,7 +144,7 @@ fn incomplete_secondary_evidence_keeps_its_replay_claim_after_repair() {
       DELETE FROM object_actions WHERE action_row=2;
       DELETE FROM evidence_refs WHERE subject_kind='action' AND subject_id NOT IN ('1','2');").unwrap();
     assert_eq!(store.repair_event_context(100,Duration::from_secs(1)).unwrap()["unresolved"],0);
-    c.execute("UPDATE projection_queue SET state='pending'",[]).unwrap();
+    c.execute("UPDATE all_projection_queue SET state='pending'",[]).unwrap();
     while store.project_pending("M","I",64).unwrap().examined>0{}
     assert_eq!(store.reader().query_row("SELECT count(*) FROM object_actions",[],|r|r.get::<_,i64>(0)).unwrap(),1);
 }
