@@ -8,7 +8,7 @@ $loader=Join-Path $debug 'WebView2Loader.dll'
 $loaderBackup=$null
 if(Test-Path -LiteralPath $desktop -PathType Leaf){
     $active=@(Get-Process -Name pcscope-desktop -ErrorAction SilentlyContinue|Where-Object {$_.Path -eq $desktop})
-    if($active.Count){throw '请先关闭从 debug 打开的界面再构建；后台可以继续运行。'}
+    if($active.Count){throw '请先从托盘菜单退出 debug 界面再构建；后台可以继续运行。'}
     $hash=(Get-FileHash -LiteralPath $desktop).Hash
     # Cargo may hard-link its published exe to deps. Keep the previous executable recoverable,
     # and remove only matching compiler aliases so a low-integrity linker gets a fresh output.

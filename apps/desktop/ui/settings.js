@@ -5,7 +5,7 @@
     let storage=null,deletion=null,disposed=false;
     const row=(title,description,control)=>`<div class="settings-row"><div>${title}<p>${description}</p></div><div class="settings-control">${control}</div></div>`;
     container.innerHTML=`<div class="settings-tabs" role="tablist" aria-label="系统配置分类">${tabs.map(([id,label])=>`<button id="settings-tab-${id}" role="tab" aria-controls="settings-${id}" data-settings-tab="${id}">${label}</button>`).join('')}</div>
-      <section id="settings-general" class="panel settings-section" role="tabpanel" aria-labelledby="settings-tab-general"><h2>常规</h2>${row('<label for="setting-theme">界面主题</label>','立即应用，并记住你的选择。','<select id="setting-theme"><option value="dark">深色</option><option value="light">浅色</option></select>')}</section>
+      <section id="settings-general" class="panel settings-section" role="tabpanel" aria-labelledby="settings-tab-general"><h2>常规</h2>${row('<label for="setting-theme">界面主题</label>','立即应用，并记住你的选择。','<select id="setting-theme"><option value="dark">深色</option><option value="light">浅色</option></select>')}<p class="muted">关闭窗口会收起到系统托盘，后台继续采集。点击托盘图标可重新打开。</p></section>
       <section id="settings-storage" class="panel settings-section" role="tabpanel" aria-labelledby="settings-tab-storage"></section>
       <section id="settings-monitoring" class="panel settings-section monitoring-panel" role="tabpanel" aria-labelledby="settings-tab-monitoring"></section>
       <section id="settings-privacy" class="panel settings-section" role="tabpanel" aria-labelledby="settings-tab-privacy"></section>`;

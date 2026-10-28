@@ -1,6 +1,7 @@
 #![windows_subsystem = "windows"]
 use tauri::Manager;
 mod service_control;
+mod resident;
 mod launch;
 mod launch_settings;
 use service_control::ServiceControl;
@@ -41,7 +42,7 @@ async fn switch_service(endpoint: tauri::State<'_,pcscope_ipc::Endpoint>, contro
     if current["elevated"]==target {
         return pcscope_ipc::call_on(&endpoint,pcscope_ipc::Request::CheckMonitoring).await.map_err(|e|e.to_string());
     }
-    if !target && pcscope_ipc::elevated().map_err(|e|e.to_string())? {return Err("桌面本身以管理员运行，无法降权。请关闭桌面并以普通方式重新打开，再切换低权限运行。".into());}
+    if !target && pcscope_ipc::elevated().map_err(|e|e.to_string())? {return Err("桌面本身以管理员运行，无法降权。请从托盘菜单退出界面，再以普通方式打开，再切换低权限运行。".into());}
     if current["instance_id"]!=endpoint.instance_id {return Err("后台实例身份不匹配".into());}
     let result=launch_selected_daemon(&endpoint,target).await;
     // Replacement may wait up to 180 seconds for the old daemon to drain. Never race it
@@ -111,12 +112,20 @@ fn main() {
 }
 
 fn run() -> tauri::Result<()> {
-    tauri::Builder::default().setup(|app| {
-        let data=match std::env::var_os("PCSCOPE_DATA_DIR") {Some(path)=>std::path::PathBuf::from(path),None=>app.path().app_local_data_dir()?.join("native-v1")};
-        std::fs::create_dir_all(&data)?;
-        let endpoint=pcscope_ipc::Endpoint::for_directory(&data)?;
+    let context=tauri::generate_context!();
+    let data=match std::env::var_os("PCSCOPE_DATA_DIR") {
+        Some(path)=>std::path::PathBuf::from(path),
+        None=>std::path::PathBuf::from(std::env::var_os("LOCALAPPDATA")
+            .ok_or_else(||std::io::Error::other("无法确定本地数据目录"))?).join("local.pcscope.desktop/native-v1"),
+    };
+    std::fs::create_dir_all(&data)?;
+    let endpoint=pcscope_ipc::Endpoint::for_directory(&data).map_err(std::io::Error::other)?;
+    let Some(instance)=resident::Instance::acquire(&endpoint.instance_id)? else{return Ok(())};
+    tauri::Builder::default().setup(move |app| {
         app.manage(launch_settings::Settings::new(endpoint.data_dir.clone()).map_err(std::io::Error::other)?);
         app.manage(endpoint.clone());
+        let mut tray=resident::install(app)?;
+        instance.listen(app.handle().clone());
         let control=Arc::new(ServiceControl::default());
         app.manage(control.clone());
         tauri::async_runtime::spawn(async move {
@@ -124,15 +133,20 @@ fn run() -> tauri::Result<()> {
                 // Native recovery also runs while WebView timers are suspended/minimized.
                 // Recovery uses no shell or privilege prompt and never opens the database itself.
                 if pcscope_ipc::call_on(&endpoint,pcscope_ipc::Request::RegisterFrontend {pid:std::process::id()}).await.is_ok() {
+                    tray.update(true);
                     if let Ok(mut launch)=control.0.try_lock(){launch.connected(std::time::Instant::now());}
                 } else {
-                    let _=ensure_service(&endpoint,&control,false).await;
+                    tray.update(ensure_service(&endpoint,&control,false).await.is_ok());
                 }
                 tokio::time::sleep(std::time::Duration::from_secs(10)).await;
             }
         });
         Ok(())
-    }).invoke_handler(tauri::generate_handler![request,start_service,switch_service,launch_settings::get_launch_settings,launch_settings::set_launch_settings]).run(tauri::generate_context!())
+    }).on_window_event(|window,event| {
+        if let tauri::WindowEvent::CloseRequested{api,..}=event {
+            if window.label()=="main" && window.hide().is_ok(){api.prevent_close();}
+        }
+    }).invoke_handler(tauri::generate_handler![request,start_service,switch_service,launch_settings::get_launch_settings,launch_settings::set_launch_settings]).run(context)
 }
 
 #[cfg(test)]

@@ -1,6 +1,6 @@
 [package]
 name = "pcscope-desktop"
-version = "0.2.45"
+version = "0.2.46"
 edition = "2021"
 
 [workspace]
@@ -9,10 +9,10 @@ edition = "2021"
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["tray-icon"] }
 serde_json = "1"
 pcscope-ipc = { path = "../../../crates/ipc" }
 tokio = { version = "1.53", features = ["time", "sync"] }
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_UI_WindowsAndMessaging", "Win32_Storage_FileSystem"] }
+windows-sys = { version = "0.61", features = ["Win32_UI_WindowsAndMessaging", "Win32_Storage_FileSystem", "Win32_System_Threading", "Win32_Security"] }

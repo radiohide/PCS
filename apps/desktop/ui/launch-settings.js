@@ -22,7 +22,7 @@
           try{
             const saved=await invoke('set_launch_settings',{dataDir:data.value.trim(),runtimeDir:runtime.value.trim()});
             draft=null;if(!body.isConnected)return;
-            feedback.textContent=saved.restart_required?'已保存。重新打开程序后生效，已运行的后台不会自动替换。':'位置已保存。';
+            feedback.textContent=saved.restart_required?'已保存。从托盘菜单退出界面，再打开程序后生效；后台保持运行。':'位置已保存。';
           }catch(error){if(body.isConnected)feedback.textContent=error?.message||String(error);}
           finally{if(body.isConnected)button.disabled=false;}
         };
